@@ -1,3 +1,4 @@
+/// <reference types="node" />
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 

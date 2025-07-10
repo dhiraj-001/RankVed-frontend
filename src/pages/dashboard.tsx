@@ -15,11 +15,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { useChatbotActions } from '@/hooks/use-chatbot-actions';
 import { useState, useEffect } from 'react';
-import { SignedIn, SignedOut, SignIn } from '@clerk/clerk-react';
+import { SignedOut, SignIn } from '@clerk/clerk-react';
 
 export default function Dashboard() {
   const { activeChatbot } = useApp();
-  const { data: stats, isLoading: statsLoading } = useDashboardStats();
+  const { data: stats } = useDashboardStats();
   const { data: chatbots, isLoading: chatbotsLoading } = useChatbots();
 
   // Chatbot creation dialog state

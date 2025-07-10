@@ -48,7 +48,7 @@ export function useChatbotActions({ setShowCreateDialog, setNewChatbot }: { setS
     }
   };
 
-  const handleDeleteChatbot = async (id: any, name: any) => {
+  const handleDeleteChatbot = async (id: any) => {
     try {
       await deleteChatbot.mutateAsync(id);
       toast({

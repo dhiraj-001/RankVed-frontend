@@ -48,7 +48,6 @@ export default function Chatbots() {
     shadowStyle: 'soft'
   });
 
-  const { setActiveChatbot } = useApp();
   const { data: chatbots, isLoading, refetch } = useChatbots();
   const updateChatbot = useUpdateChatbot();
   const { handleCreateChatbot, handleDeleteChatbot, createChatbot } = useChatbotActions({ setShowCreateDialog, setNewChatbot });

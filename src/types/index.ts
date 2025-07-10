@@ -67,6 +67,7 @@ export interface Chatbot {
   questionFlow?: any;
   questionFlowEnabled?: boolean;
   
+  leadButtonText?: string;
   createdAt: Date;
   updatedAt: Date;
   conversations?: number;

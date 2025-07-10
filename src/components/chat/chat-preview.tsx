@@ -2,7 +2,6 @@ import { Bot, Send } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import type { Chatbot } from '@/types';
 
 interface ChatPreviewProps {
   chatbot?: any; // Accepts Chatbot or preview object with appearance props

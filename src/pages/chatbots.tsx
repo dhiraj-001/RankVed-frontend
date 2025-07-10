@@ -9,7 +9,6 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { useChatbots, useUpdateChatbot } from '@/hooks/use-chatbots';
-import { useApp } from '@/contexts/app-context';
 import { formatDateTime } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useChatbotActions } from '@/hooks/use-chatbot-actions';

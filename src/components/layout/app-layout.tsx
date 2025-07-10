@@ -1,5 +1,3 @@
-import { useEffect } from 'react';
-import { useLocation } from 'wouter';
 import { Sidebar } from './sidebar';
 import { useApp } from '@/contexts/app-context';
 

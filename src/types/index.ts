@@ -168,6 +168,7 @@ export interface InsertChatbot {
   questionFlow?: any;
   questionFlowEnabled?: boolean;
   isActive?: boolean;
+  primaryColor?: string;
 }
 
 export interface InsertLead {
@@ -179,6 +180,7 @@ export interface InsertLead {
   metadata?: any;
   consentGiven?: boolean;
   conversationContext?: any;
+  userId?: string;
 }
 
 export interface InsertChatbotExtended extends InsertChatbot {

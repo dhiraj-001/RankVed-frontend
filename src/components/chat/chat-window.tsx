@@ -1,10 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
-import { Send, Bot, User, X, Loader2 } from 'lucide-react';
+import { Send, Bot, X, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { useChatResponse } from '@/hooks/use-chatbots';
 import { useCreateLead } from '@/hooks/use-leads';
@@ -97,10 +96,11 @@ export function ChatWindow({ chatbot, onClose, className }: ChatWindowProps) {
     try {
       await createLead.mutateAsync({
         chatbotId: chatbot.id,
-        userId: chatbot.userId,
+        userId: String(chatbot.userId),
         name: leadData.name,
         phone: leadData.phone,
         email: leadData.email,
+        source: 'chat-widget',
         consentGiven: true,
         conversationContext: { messages },
       });

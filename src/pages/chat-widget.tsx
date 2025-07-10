@@ -9,7 +9,6 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { cn } from '@/lib/utils';
-import { apiRequest } from '@/lib/queryClient';
 import type { Chatbot } from '@/types';
 
 interface Message {
@@ -19,16 +18,6 @@ interface Message {
   timestamp: Date;
   type?: 'text' | 'options' | 'form';
   options?: { text: string; value: string; action?: string; nextId?: string }[];
-}
-
-interface QuestionNode {
-  id: string;
-  type: 'statement' | 'multiple-choice' | 'contact-form' | 'open-ended';
-  question: string;
-  options?: { text: string; nextId?: string; action?: 'continue' | 'collect-lead' | 'end-chat' }[];
-  nextId?: string;
-  collectVariable?: string;
-  aiHandling?: boolean;
 }
 
 interface ConversationContext {

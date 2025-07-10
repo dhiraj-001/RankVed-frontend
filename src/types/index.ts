@@ -72,6 +72,10 @@ export interface Chatbot {
   conversations?: number;
   leads?: number;
   allowedDomains?: string[];
+  inputPlaceholder?: string;
+  primaryColor?: string;
+  suggestionButtons?: any;
+  title?: string;
 }
 
 export interface Lead {

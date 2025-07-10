@@ -569,7 +569,7 @@ const [showDeleteDialog, setShowDeleteDialog] = useState<{ open: boolean; nodeId
                   </div>
                 ) : (
                   <div className="space-y-8">
-                    {questionFlow.map((node, index) => {
+                    {questionFlow.map((node) => {
                       const Icon = getNodeIcon(node.type);
                       return (
                         <div key={node.id} className="relative group transition-transform duration-200 hover:scale-[1.01]">
@@ -628,7 +628,7 @@ const [showDeleteDialog, setShowDeleteDialog] = useState<{ open: boolean; nodeId
                               </div>
                             </div>
                           </div>
-                          {index < questionFlow.length - 1 && (
+                          {questionFlow.length - 1 > questionFlow.indexOf(node) && (
                             <div className="flex justify-center">
                               <ArrowRight className="h-6 w-6 text-slate-300 my-2" />
                             </div>
@@ -1029,7 +1029,7 @@ const [showDeleteDialog, setShowDeleteDialog] = useState<{ open: boolean; nodeId
                 <div className="pt-3 border-t">
                   <h5 className="font-medium text-slate-900 mb-2">Current Flow</h5>
                   <div className="space-y-1">
-                    {questionFlow.map((node, index) => (
+                    {questionFlow.map((node) => (
                       <div key={node.id} className="text-xs p-2 bg-gray-50 rounded flex items-center space-x-2">
                         <span className={`w-2 h-2 rounded-full ${
                           node.id === currentNodeId ? 'bg-green-500' : 'bg-gray-300'

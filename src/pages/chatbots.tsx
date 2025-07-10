@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
-import { useChatbots, useCreateChatbot, useDeleteChatbot, useUpdateChatbot } from '@/hooks/use-chatbots';
+import { useChatbots, useUpdateChatbot } from '@/hooks/use-chatbots';
 import { useApp } from '@/contexts/app-context';
 import { formatDateTime } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -48,7 +48,7 @@ export default function Chatbots() {
     shadowStyle: 'soft'
   });
 
-  const { user, setActiveChatbot } = useApp();
+  const { setActiveChatbot } = useApp();
   const { data: chatbots, isLoading, refetch } = useChatbots();
   const updateChatbot = useUpdateChatbot();
   const { handleCreateChatbot, handleDeleteChatbot, createChatbot } = useChatbotActions({ setShowCreateDialog, setNewChatbot });
@@ -87,11 +87,6 @@ export default function Chatbots() {
   };
 
   // Set active functionality
-  const handleSetActive = (chatbot: any) => {
-    setActiveChatbot(chatbot);
-    refetch();
-  };
-
   const handleToggleActive = async (chatbot: any) => {
     setActiveTogglingId(chatbot.id);
     await updateChatbot.mutateAsync({

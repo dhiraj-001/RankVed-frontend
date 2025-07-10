@@ -2,7 +2,6 @@ import { ArrowUpIcon, Bot, MessageCircle, Users, TrendingUp, Download, Plus, Tra
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
 import { ChatPreview } from '@/components/chat/chat-preview';
 import { useDashboardStats } from '@/hooks/use-leads';
 import { useChatbots } from '@/hooks/use-chatbots';
@@ -17,7 +16,6 @@ import { Switch } from '@/components/ui/switch';
 import { useChatbotActions } from '@/hooks/use-chatbot-actions';
 import { useState, useEffect } from 'react';
 import { SignedIn, SignedOut, SignIn } from '@clerk/clerk-react';
-import { Sign } from 'crypto';
 
 export default function Dashboard() {
   const { activeChatbot } = useApp();

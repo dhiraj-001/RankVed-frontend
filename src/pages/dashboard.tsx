@@ -283,7 +283,7 @@ export default function Dashboard() {
                   variant="destructive"
                   onClick={() => {
                     if (chatbotToDelete) {
-                      handleDeleteChatbot(chatbotToDelete.id, chatbotToDelete.name);
+                      handleDeleteChatbot(chatbotToDelete.id);
                     }
                     setShowDeleteDialog(false);
                   }}

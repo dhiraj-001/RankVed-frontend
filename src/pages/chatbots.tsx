@@ -77,7 +77,7 @@ export default function Chatbots() {
   const handleDeleteConfirm = async () => {
     if (chatbotToDelete) {
       setIsDeleting(true);
-      await handleDeleteChatbot(chatbotToDelete.id, chatbotToDelete.name);
+      await handleDeleteChatbot(chatbotToDelete.id);
       setIsDeleting(false);
       setShowDeleteDialog(false);
       refetch();

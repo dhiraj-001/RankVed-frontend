@@ -169,6 +169,20 @@ export interface InsertChatbot {
   questionFlowEnabled?: boolean;
   isActive?: boolean;
   primaryColor?: string;
+  showWelcomePopup?: boolean;
+  suggestionButtons?: string;
+  suggestionTiming?: string;
+  suggestionPersistence?: string;
+  suggestionTimeout?: number;
+  inputPlaceholder?: string;
+  leadButtonText?: string;
+  chatWidgetIcon?: string;
+  chatWidgetName?: string;
+  chatWindowStyle?: string;
+  chatWindowTheme?: string;
+  borderRadius?: number;
+  shadowStyle?: string;
+  allowedDomains?: string[];
 }
 
 export interface InsertLead {

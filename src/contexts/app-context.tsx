@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { useUser } from '@clerk/clerk-react';
 import type { User, Chatbot } from '@/types';
 
 interface AppContextType {
@@ -15,7 +14,6 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
-  const { user: clerkUser, isLoaded: clerkLoaded } = useUser();
   const [user, setUser] = useState<User | null>(null);
   const [activeChatbot, setActiveChatbot] = useState<Chatbot | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -25,8 +23,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       const apiUrl = (import.meta as any).env?.VITE_API_URL || 'http://localhost:5000';
       
       // Get user email from Clerk
-      const email = clerkUser?.primaryEmailAddress?.emailAddress;
-      if (!email) return;
+      // const email = clerkUser?.primaryEmailAddress?.emailAddress; // Removed Clerk user email
+      // if (!email) return; // Removed Clerk user email check
 
       // Try to fetch user data from backend (assuming user ID 1 for demo)
       try {
@@ -42,8 +40,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             // Fallback to demo user with Clerk data
             const demoUser: User = {
               id: 1,
-              username: clerkUser?.username || 'user',
-              email: email,
+              username: "user", // Placeholder, ideally from Clerk
+              email: "user@example.com", // Placeholder, ideally from Clerk
               agencyName: "Your Agency Name",
               agencyLogo: undefined,
               onboardingCompleted: true,
@@ -60,8 +58,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           // Fallback to demo user with Clerk data
           const demoUser: User = {
             id: 1,
-            username: clerkUser?.username || 'user',
-            email: email,
+            username: "user", // Placeholder, ideally from Clerk
+            email: "user@example.com", // Placeholder, ideally from Clerk
             agencyName: "Your Agency Name",
             agencyLogo: undefined,
             onboardingCompleted: true,
@@ -79,8 +77,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         // Fallback to demo user with Clerk data
         const demoUser: User = {
           id: 1,
-          username: clerkUser?.username || 'user',
-          email: email,
+          username: "user", // Placeholder, ideally from Clerk
+          email: "user@example.com", // Placeholder, ideally from Clerk
           agencyName: "Your Agency Name",
           agencyLogo: undefined,
           onboardingCompleted: true,
@@ -121,23 +119,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   };
 
   const refreshUser = async () => {
-    if (clerkUser) {
-      await fetchUserData();
-    }
+    // Removed Clerk user refresh logic
+    await fetchUserData();
   };
 
   useEffect(() => {
-    if (!clerkLoaded) return;
-
-    if (clerkUser) {
-      fetchUserData();
-    } else {
-      // User is not authenticated
-      setUser(null);
-      setActiveChatbot(null);
-      setIsLoading(false);
-    }
-  }, [clerkUser, clerkLoaded]);
+    // Removed Clerk user effect logic
+    fetchUserData();
+  }, []); // Removed clerkUser and clerkLoaded from dependencies
 
   return (
     <AppContext.Provider

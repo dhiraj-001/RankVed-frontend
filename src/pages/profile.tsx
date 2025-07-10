@@ -10,19 +10,25 @@ import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useApp } from '@/contexts/app-context';
-import { useUser } from '@clerk/clerk-react';
 import { fileToDataURI } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 
 export default function Profile() {
-  const { user: appUser, setUser, refreshUser } = useApp();
-  const { user: clerkUser } = useUser();
+  // Use dummy data for now
+  const user = {
+    id: 1,
+    username: 'demo_user',
+    email: 'demo@example.com',
+    agencyName: 'Demo Agency',
+    agencyLogo: undefined,
+  };
+
   const { toast } = useToast();
 
   // Agency branding settings (synced with backend)
   const [agencySettings, setAgencySettings] = useState({
-    agencyName: appUser?.agencyName || '',
-    agencyLogo: appUser?.agencyLogo || '',
+    agencyName: user?.agencyName || '',
+    agencyLogo: user?.agencyLogo || '',
   });
 
   // User preferences (local state only)
@@ -38,16 +44,16 @@ export default function Profile() {
 
   // Update agency settings when app user changes
   useEffect(() => {
-    if (appUser) {
+    if (user) {
       setAgencySettings({
-        agencyName: appUser.agencyName || '',
-        agencyLogo: appUser.agencyLogo || '',
+        agencyName: user.agencyName || '',
+        agencyLogo: user.agencyLogo || '',
       });
     }
-  }, [appUser]);
+  }, [user]);
 
   const handleSaveAgency = async () => {
-    if (!appUser) {
+    if (!user) {
       toast({
         title: 'Error',
         description: 'No user session found.',
@@ -60,7 +66,7 @@ export default function Profile() {
     
     try {
       const apiUrl = (import.meta as any).env?.VITE_API_URL || 'http://localhost:5000';
-      const response = await fetch(`${apiUrl}/api/users/${appUser.id}`, {
+      const response = await fetch(`${apiUrl}/api/users/${user.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -74,11 +80,11 @@ export default function Profile() {
         throw new Error('Failed to update agency settings');
       }
 
-      const updatedUser = await response.json();
-      setUser(updatedUser.user || updatedUser);
+      // const updatedUser = await response.json();
+      // setUser(updatedUser.user || updatedUser); // This line was removed as per the edit hint
       
       // Refresh user data to ensure persistence
-      await refreshUser();
+      // await refreshUser(); // This line was removed as per the edit hint
       
       toast({
         title: 'Agency settings saved',
@@ -120,7 +126,7 @@ export default function Profile() {
     });
   };
 
-  if (!appUser || !clerkUser) {
+  if (!user) {
     return (
       <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-slate-50 to-white">
         <div className="text-center">
@@ -133,11 +139,11 @@ export default function Profile() {
   }
 
   // Get user info from Clerk
-  const firstName = clerkUser.firstName || '';
-  const lastName = clerkUser.lastName || '';
-  const email = clerkUser.primaryEmailAddress?.emailAddress || '';
-  const username = clerkUser.username || '';
-  const userImage = clerkUser.imageUrl;
+  const firstName = user.username || '';
+  const lastName = ''; // No last name in dummy data
+  const email = user.email || '';
+  const username = user.username || '';
+  const userImage = undefined; // No image in dummy data
 
   return (
     <div className="flex-1 bg-gradient-to-br from-slate-50 to-white min-h-screen">
@@ -208,12 +214,13 @@ export default function Profile() {
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-slate-600">Member since</span>
                     <span className="font-medium">
-                      {appUser.createdAt ? new Date(appUser.createdAt).toLocaleDateString() : 'N/A'}
+                      {/* appUser.createdAt ? new Date(appUser.createdAt).toLocaleDateString() : 'N/A' */}
+                      N/A
                     </span>
                   </div>
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-slate-600">Experience</span>
-                    <span className="font-medium capitalize">{appUser.experienceLevel || 'Beginner'}</span>
+                    <span className="font-medium capitalize">Beginner</span>
                   </div>
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-slate-600">Status</span>

@@ -20,7 +20,6 @@ import ChatEmbed from "@/pages/chat-embed";
 import ChatWidget from "@/pages/chat-widget";
 import ChatStandalone from "@/pages/chat-standalone";
 import NotFound from "@/pages/not-found";
-import { SignedIn, SignedOut, SignIn } from '@clerk/clerk-react';
 
 function Router() {
   return (

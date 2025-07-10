@@ -2,7 +2,6 @@ import { Link, useLocation } from 'wouter';
 import { cn } from '@/lib/utils';
 import { useApp } from '@/contexts/app-context';
 import { useChatbots } from '@/hooks/use-chatbots';
-import { useUser, useClerk } from '@clerk/clerk-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
@@ -37,8 +36,6 @@ export function Sidebar() {
   const [location] = useLocation();
   const { activeChatbot, setActiveChatbot } = useApp();
   const { data: chatbots } = useChatbots();
-  const { user } = useUser();
-  const { signOut } = useClerk();
 
   return (
     <aside className="w-64 bg-white border-r border-slate-200 flex flex-col">
@@ -111,20 +108,20 @@ export function Sidebar() {
       <div className="p-4 border-t border-slate-200">
         <div className="flex items-center space-x-3">
           <Avatar className="h-8 w-8">
-            <AvatarImage src={user?.imageUrl || undefined} alt={user?.username || user?.primaryEmailAddress?.emailAddress || undefined} />
+            <AvatarImage src="https://via.placeholder.com/50" alt="User" />
             <AvatarFallback>
               <User className="h-4 w-4" />
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-slate-900 truncate">
-              {user?.firstName || user?.username || user?.primaryEmailAddress?.emailAddress || 'User'}
+              User
             </p>
             <p className="text-xs text-slate-500 truncate">
-              {user?.primaryEmailAddress?.emailAddress || 'user@example.com'}
+              user@example.com
             </p>
           </div>
-          <Button variant="ghost" size="sm" className="text-slate-400 hover:text-slate-600" onClick={() => signOut()} title="Sign out" aria-label="Sign out">
+          <Button variant="ghost" size="sm" className="text-slate-400 hover:text-slate-600" title="Sign out" aria-label="Sign out">
             <LogOut className="h-4 w-4" />
           </Button>
         </div>

@@ -48,7 +48,7 @@ function Router() {
 function App() {
   return (
     <>
-      <SignedIn>
+  
         <QueryClientProvider client={queryClient}>
           <AppProvider>
             <TooltipProvider>
@@ -59,12 +59,8 @@ function App() {
             </TooltipProvider>
           </AppProvider>
         </QueryClientProvider>
-      </SignedIn>
-      <SignedOut>
-        <div className="flex items-center justify-center min-h-screen">
-          <SignIn />
-        </div>
-      </SignedOut>
+
+    
     </>
   );
 }

@@ -15,7 +15,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { useChatbotActions } from '@/hooks/use-chatbot-actions';
 import { useState, useEffect } from 'react';
-import { SignedOut, SignIn } from '@clerk/clerk-react';
 
 export default function Dashboard() {
   const { activeChatbot } = useApp();
@@ -515,11 +514,6 @@ export default function Dashboard() {
           </div>
         </div>
      
-      <SignedOut>
-        <div className="flex items-center justify-center min-h-screen">
-          <SignIn />
-        </div>
-      </SignedOut>
     </>
   );
 }

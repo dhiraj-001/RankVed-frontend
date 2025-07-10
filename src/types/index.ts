@@ -71,6 +71,7 @@ export interface Chatbot {
   updatedAt: Date;
   conversations?: number;
   leads?: number;
+  allowedDomains?: string[];
 }
 
 export interface Lead {
@@ -82,6 +83,8 @@ export interface Lead {
   source: string;
   metadata?: any;
   createdAt: Date;
+  consentGiven?: boolean;
+  conversationContext?: any;
 }
 
 export interface ChatSession {
@@ -169,6 +172,8 @@ export interface InsertLead {
   phone?: string;
   source: string;
   metadata?: any;
+  consentGiven?: boolean;
+  conversationContext?: any;
 }
 
 export interface InsertChatbotExtended extends InsertChatbot {

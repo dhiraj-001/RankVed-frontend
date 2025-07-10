@@ -1,11 +1,9 @@
 import { useState } from 'react';
-import { Save, Upload, Brain, Globe, FileText, Trash2, Plus, Loader2 } from 'lucide-react';
+import { Save, Upload, Brain, Globe, FileText, Trash2, Loader2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { useApp } from '@/contexts/app-context';
 import { useUpdateChatbot } from '@/hooks/use-chatbots';

@@ -33,7 +33,7 @@ export default function Embed() {
   }
 
   const embedCode = generateEmbedCode(activeChatbot.id, activeChatbot);
-  
+
   const iframeEmbed = `<iframe 
   src="${window.location.origin}/chat/${activeChatbot.id}"
   width="400" 
@@ -306,82 +306,82 @@ export default ChatWidget;`;
           </CardContent>
         </Card>
 
-          {/* Installation Instructions */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Installation Instructions</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div>
-                  <h4 className="font-medium text-slate-900 mb-2">Step 1: Copy the Code</h4>
-                  <p className="text-sm text-slate-600">
-                    Copy the embed code from one of the tabs above.
-                  </p>
-                </div>
-                
-                <div>
-                  <h4 className="font-medium text-slate-900 mb-2">Step 2: Add to Your Website</h4>
-                  <ul className="text-sm text-slate-600 space-y-1">
-                    <li>• For HTML websites: Paste before the closing &lt;/body&gt; tag</li>
-                    <li>• For WordPress: Add to your theme's footer.php or use a code injection plugin</li>
-                    <li>• For Shopify: Add to your theme's theme.liquid file</li>
-                    <li>• For React: Import and render the component</li>
-                  </ul>
-                </div>
-                
-                <div>
-                  <h4 className="font-medium text-slate-900 mb-2">Step 3: Test</h4>
-                  <p className="text-sm text-slate-600">
-                    Visit your website and look for the chat bubble in the bottom-right corner. 
-                    Click it to test the chatbot functionality.
-                  </p>
-                </div>
+        {/* Installation Instructions */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Installation Instructions</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div>
+                <h4 className="font-medium text-slate-900 mb-2">Step 1: Copy the Code</h4>
+                <p className="text-sm text-slate-600">
+                  Copy the embed code from one of the tabs above.
+                </p>
               </div>
-            </CardContent>
-          </Card>
 
-          {/* Customization Options */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Customization Options</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div>
-                  <h4 className="font-medium text-slate-900 mb-2">Current Settings</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <p className="font-medium text-slate-600">Position</p>
-                      <p className="text-slate-900">{activeChatbot.bubblePosition || 'bottom-right'}</p>
-                    </div>
-                    <div>
-                      <p className="font-medium text-slate-600">Offsets</p>
-                      <p className="text-slate-900">
-                        H: {activeChatbot.horizontalOffset || 20}px, V: {activeChatbot.verticalOffset || 20}px
-                      </p>
-                    </div>
-                    <div>
-                      <p className="font-medium text-slate-600">Welcome Message</p>
-                      <p className="text-slate-900">{activeChatbot.welcomeMessage || 'Hello! How can I help you today?'}</p>
-                    </div>
-                    <div>
-                      <p className="font-medium text-slate-600">Powered By</p>
-                      <p className="text-slate-900">{activeChatbot.poweredByText || 'None'}</p>
-                    </div>
+              <div>
+                <h4 className="font-medium text-slate-900 mb-2">Step 2: Add to Your Website</h4>
+                <ul className="text-sm text-slate-600 space-y-1">
+                  <li>• For HTML websites: Paste before the closing &lt;/body&gt; tag</li>
+                  <li>• For WordPress: Add to your theme's footer.php or use a code injection plugin</li>
+                  <li>• For Shopify: Add to your theme's theme.liquid file</li>
+                  <li>• For React: Import and render the component</li>
+                </ul>
+              </div>
+
+              <div>
+                <h4 className="font-medium text-slate-900 mb-2">Step 3: Test</h4>
+                <p className="text-sm text-slate-600">
+                  Visit your website and look for the chat bubble in the bottom-right corner.
+                  Click it to test the chatbot functionality.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Customization Options */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Customization Options</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div>
+                <h4 className="font-medium text-slate-900 mb-2">Current Settings</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <p className="font-medium text-slate-600">Position</p>
+                    <p className="text-slate-900">{activeChatbot.bubblePosition || 'bottom-right'}</p>
+                  </div>
+                  <div>
+                    <p className="font-medium text-slate-600">Offsets</p>
+                    <p className="text-slate-900">
+                      H: {activeChatbot.horizontalOffset || 20}px, V: {activeChatbot.verticalOffset || 20}px
+                    </p>
+                  </div>
+                  <div>
+                    <p className="font-medium text-slate-600">Welcome Message</p>
+                    <p className="text-slate-900">{activeChatbot.welcomeMessage || 'Hello! How can I help you today?'}</p>
+                  </div>
+                  <div>
+                    <p className="font-medium text-slate-600">Powered By</p>
+                    <p className="text-slate-900">{activeChatbot.poweredByText || 'None'}</p>
                   </div>
                 </div>
-                
-                <Alert>
-                  <AlertDescription>
-                    To customize these settings, go to the <strong>Settings</strong> or <strong>Appearance</strong> pages. 
-                    Changes will automatically apply to your embedded chatbot.
-                  </AlertDescription>
-                </Alert>
               </div>
-            </CardContent>
-          </Card>
-        </div>
+
+              <Alert>
+                <AlertDescription>
+                  To customize these settings, go to the <strong>Settings</strong> or <strong>Appearance</strong> pages.
+                  Changes will automatically apply to your embedded chatbot.
+                </AlertDescription>
+              </Alert>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </TooltipProvider>
   );
 }

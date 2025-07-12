@@ -5,6 +5,10 @@ import type { Chatbot, InsertChatbot } from '@/types';
 export function useChatbots() {
   return useQuery<Chatbot[]>({
     queryKey: ['/api/chatbots'],
+    queryFn: async () => {
+      const response = await apiRequest('GET', '/api/chatbots');
+      return response.json();
+    },
   });
 }
 
@@ -12,6 +16,10 @@ export function useChatbot(id: string) {
   return useQuery<Chatbot>({
     queryKey: ['/api/chatbots', id],
     enabled: !!id,
+    queryFn: async () => {
+      const response = await apiRequest('GET', `/api/chatbots/${id}`);
+      return response.json();
+    },
   });
 }
 

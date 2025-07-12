@@ -29,6 +29,8 @@ export interface Chatbot {
   // Branding
   chatWindowAvatar?: string;
   chatBubbleIcon?: string;
+  chatWidgetIcon?: string;
+  chatWidgetName?: string;
   
   // Messaging
   welcomeMessage: string;
@@ -77,6 +79,14 @@ export interface Chatbot {
   primaryColor?: string;
   suggestionButtons?: any;
   title?: string;
+  showWelcomePopup?: boolean;
+  suggestionTiming?: string;
+  suggestionPersistence?: string;
+  suggestionTimeout?: number;
+  chatWindowStyle?: string;
+  chatWindowTheme?: string;
+  borderRadius?: number;
+  shadowStyle?: string;
 }
 
 export interface Lead {

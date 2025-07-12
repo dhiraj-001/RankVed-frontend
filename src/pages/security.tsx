@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Shield, Globe, Plus, X, Save, AlertTriangle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useApp } from '@/contexts/app-context';
-import { useUpdateChatbot } from '@/hooks/use-chatbots';
+import { useUpdateChatbot, useChatbot } from '@/hooks/use-chatbots';
 import { useToast } from '@/hooks/use-toast';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
@@ -15,12 +15,18 @@ export default function Security() {
   const { activeChatbot } = useApp();
   const updateChatbot = useUpdateChatbot();
   const { toast } = useToast();
+  const { data: fetchedChatbot, refetch } = useChatbot(activeChatbot?.id || "");
 
-  const [allowedDomains, setAllowedDomains] = useState<string[]>(
-    activeChatbot?.allowedDomains || []
-  );
+  const [allowedDomains, setAllowedDomains] = useState<string[]>([]);
   const [newDomain, setNewDomain] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+
+  // Sync allowedDomains state with fetchedChatbot
+  useEffect(() => {
+    if (fetchedChatbot) {
+      setAllowedDomains(fetchedChatbot.allowedDomains || []);
+    }
+  }, [fetchedChatbot]);
 
   const validateDomain = (domain: string): boolean => {
     const domainRegex = /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/i;
@@ -81,6 +87,7 @@ export default function Security() {
         title: 'Security settings saved',
         description: 'Domain restrictions have been updated successfully.',
       });
+      refetch(); // Refetch latest data after save
     } catch (error) {
       toast({
         title: 'Error',

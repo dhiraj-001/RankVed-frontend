@@ -42,75 +42,19 @@ export function formatTimeAgo(date: Date | string): string {
 }
 
 export function generateEmbedCode(chatbotId: string, chatbot?: any): string {
-  const domain = window.location.origin;
+  // Use the public API URL if available, otherwise fallback to window.location.origin
+  const apiUrl = chatbot?.apiUrl || window.location.origin;
 
-  return `<!-- RankVed WordPress Compatible Embed -->
+  return `<!-- RankVed Chatbot Embed: Only the widget will load, not the whole app -->
+<link rel="stylesheet" href="${apiUrl}/chat-embed.css">
 <script>
-  (function() {
-    // WordPress compatibility check
-    if (window.rankvedChatbotInitialized) return;
-    window.rankvedChatbotInitialized = true;
-    
-    // Enhanced configuration for WordPress
-    window.CHATBOT_CONFIG = {
-      chatbotId: '${chatbotId}',
-      apiUrl: '${domain}',
-      name: '${chatbot?.name || "Support Chat"}',
-      welcomeMessage: '${chatbot?.welcomeMessage || "Hello! How can I help you today?"}',
-      placeholder: '${chatbot?.placeholder || "Type your message..."}',
-      primaryColor: '${chatbot?.primaryColor || "#3B82F6"}',
-      chatWindowAvatar: '${chatbot?.chatWindowAvatar || ""}',
-      chatBubbleIcon: '${chatbot?.chatBubbleIcon || ""}',
-      questionFlow: ${JSON.stringify(chatbot?.questionFlow || null)},
-      questionFlowEnabled: ${chatbot?.questionFlowEnabled || false},
-      suggestionButtons: ${JSON.stringify(chatbot?.suggestionButtons || [])},
-      suggestionTiming: '${chatbot?.suggestionTiming || "after_welcome"}',
-      leadCollectionEnabled: ${chatbot?.leadCollectionEnabled || false},
-      leadCollectionAfterMessages: ${chatbot?.leadCollectionAfterMessages || 3},
-      leadCollectionMessage: '${chatbot?.leadCollectionMessage || "Would you like to leave your contact information?"}',
-      chatWindowTheme: '${chatbot?.chatWindowTheme || "light"}',
-      borderRadius: ${chatbot?.borderRadius || 16},
-      shadowStyle: '${chatbot?.shadowStyle || "soft"}',
-      poweredBy: 'Powered by RankVed',
-      poweredByLink: 'https://rankved.com'
-    };
-    
-    // WordPress-safe loading function
-    function loadChatBot() {
-      const script = document.createElement('script');
-      script.src = '${domain}/wordpress-embed.js';
-      script.async = true;
-      script.defer = true;
-      script.setAttribute('data-rankved-widget', 'true');
-      script.onload = function() {
-        console.log('RankVed Chat loaded');
-      };
-      script.onerror = function() {
-        console.warn('RankVed Chat could not be loaded');
-      };
-      
-      // WordPress theme compatibility
-      const target = document.querySelector('head') || document.body;
-      target.appendChild(script);
-    }
-    
-    // Enhanced DOM ready detection for WordPress
-    function initWhenReady() {
-      if (document.readyState === 'complete' || 
-          (document.readyState === 'interactive' && document.body)) {
-        loadChatBot();
-      } else {
-        document.addEventListener('DOMContentLoaded', loadChatBot);
-        document.addEventListener('load', loadChatBot);
-        // Fallback for WordPress AJAX themes
-        setTimeout(loadChatBot, 1000);
-      }
-    }
-    
-    initWhenReady();
-  })();
+  window.CHATBOT_CONFIG = {
+    chatbotId: '${chatbotId}',
+    apiUrl: '${apiUrl}'
+  };
 </script>
-<!-- End RankVed Embed -->`;
+<script src="${apiUrl}/chat-embed.js"></script>
+<!-- End RankVed Chatbot Embed -->`;
 }
 
 export function validateEmail(email: string): boolean {
@@ -176,4 +120,46 @@ export function getContrastColor(hexColor: string): string {
 
   const brightness = (r * 299 + g * 587 + b * 114) / 1000;
   return brightness > 128 ? "#000000" : "#ffffff";
+}
+
+// Compress and convert image file to data URI (base64)
+export async function compressAndConvertToDataURI(file: File, maxWidth = 128, maxHeight = 128, quality = 0.7): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const img = new window.Image();
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      img.onload = () => {
+        // Calculate new dimensions
+        let { width, height } = img;
+        if (width > maxWidth || height > maxHeight) {
+          const aspect = width / height;
+          if (width > height) {
+            width = maxWidth;
+            height = Math.round(maxWidth / aspect);
+          } else {
+            height = maxHeight;
+            width = Math.round(maxHeight * aspect);
+          }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return reject(new Error('Canvas not supported'));
+        ctx.drawImage(img, 0, 0, width, height);
+        // Use JPEG for better compression, fallback to PNG
+        let dataUrl;
+        try {
+          dataUrl = canvas.toDataURL('image/jpeg', quality);
+        } catch {
+          dataUrl = canvas.toDataURL('image/png');
+        }
+        resolve(dataUrl);
+      };
+      img.onerror = reject;
+      img.src = e.target?.result as string;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
 }

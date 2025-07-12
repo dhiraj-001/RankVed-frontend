@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Save, Palette, Eye, Code } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,63 +10,108 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ChatPreview } from '@/components/chat/chat-preview';
 import { useApp } from '@/contexts/app-context';
-import { useUpdateChatbot } from '@/hooks/use-chatbots';
-import { fileToDataURI } from '@/lib/utils';
+import { useUpdateChatbot, useChatbot } from '@/hooks/use-chatbots';
+import {  compressAndConvertToDataURI } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 
-interface ExtendedChatbot {
-  title?: string;
-  welcomeMessage?: string;
-  primaryColor?: string;
-  showWelcomePopup?: boolean;
-  suggestionButtons?: string[];
-  suggestionTiming?: string;
-  suggestionPersistence?: string;
-  suggestionTimeout?: number;
-  inputPlaceholder?: string;
-  leadButtonText?: string;
-  chatBubbleIcon?: string;
-  chatWidgetIcon?: string;
-  chatWidgetName?: string;
-  chatWindowAvatar?: string;
-  chatWindowStyle?: string;
-  chatWindowTheme?: string;
-  borderRadius?: number;
-  shadowStyle?: string;
-}
 
 export default function Appearance() {
   const { activeChatbot, user } = useApp();
   const updateChatbot = useUpdateChatbot();
   const { toast } = useToast();
+  const { data: fetchedChatbot, refetch } = useChatbot(activeChatbot?.id || "");
 
-  const chatbot = activeChatbot as ExtendedChatbot | undefined;
+  // Debug: Log activeChatbot and fetchedChatbot
+  // console.log('activeChatbot:', activeChatbot);
+  // console.log('fetchedChatbot:', fetchedChatbot);
+  // console.log('useChatbot query key:', ['/api/chatbots', activeChatbot?.id || ""]);
 
-  const [appearance, setAppearance] = useState({
-    // Chatbot specific appearance
-    title: chatbot?.title || '',
-    welcomeMessage: chatbot?.welcomeMessage || '',
-    primaryColor: chatbot?.primaryColor || '#6366F1',
-    showWelcomePopup: chatbot?.showWelcomePopup ?? true,
-    suggestionButtons: chatbot?.suggestionButtons ? JSON.parse(chatbot.suggestionButtons as unknown as string) : [],
-    suggestionTiming: chatbot?.suggestionTiming || 'initial',
-    suggestionPersistence: chatbot?.suggestionPersistence || 'until_clicked',
-    suggestionTimeout: chatbot?.suggestionTimeout || 30000,
-    inputPlaceholder: chatbot?.inputPlaceholder || '',
-    leadButtonText: chatbot?.leadButtonText || '',
-    
-    // Visual Branding
-    chatBubbleIcon: chatbot?.chatBubbleIcon || '',
-    chatWidgetIcon: chatbot?.chatWidgetIcon || '',
-    chatWidgetName: chatbot?.chatWidgetName || 'Support Chat',
-    chatWindowAvatar: chatbot?.chatWindowAvatar || '',
-    
-    // Modern Styling Options
-    chatWindowStyle: chatbot?.chatWindowStyle || 'modern',
-    chatWindowTheme: chatbot?.chatWindowTheme || 'light',
-    borderRadius: chatbot?.borderRadius || 16,
-    shadowStyle: chatbot?.shadowStyle || 'soft',
+  // Debug: Log the actual API response
+  // useEffect(() => {
+  //   if (activeChatbot?.id) {
+  //     console.log('Fetching chatbot with ID:', activeChatbot.id);
+  //     fetch(`http://localhost:5000/api/chatbots/${activeChatbot.id}`)
+  //       .then(res => res.json())
+  //       .then(data => {
+  //         console.log('Raw API response:', data);
+  //       })
+  //       .catch(err => {
+  //         console.error('API fetch error:', err);
+  //       });
+  //   }
+  // }, [activeChatbot?.id]);
+
+  const [appearance, setAppearance] = useState<{
+    title: string;
+    welcomeMessage: string;
+    primaryColor: string;
+    showWelcomePopup: boolean;
+    suggestionButtons: string[];
+    suggestionTiming: 'initial' | 'after_welcome' | 'after_first_message' | 'manual';
+    suggestionPersistence: 'until_clicked' | 'always_visible' | 'hide_after_timeout';
+    suggestionTimeout: number;
+    inputPlaceholder: string;
+    leadButtonText: string;
+    chatBubbleIcon: string;
+    chatWidgetIcon: string;
+    chatWidgetName: string;
+    chatWindowAvatar: string;
+    chatWindowStyle: 'modern' | 'classic' | 'minimal' | 'floating';
+    chatWindowTheme: 'light' | 'dark' | 'auto';
+    borderRadius: number;
+    shadowStyle: 'none' | 'soft' | 'medium' | 'strong';
+  }>({
+    title: '',
+    welcomeMessage: '',
+    primaryColor: '#6366F1',
+    showWelcomePopup: true,
+    suggestionButtons: [],
+    suggestionTiming: 'initial',
+    suggestionPersistence: 'until_clicked',
+    suggestionTimeout: 30000,
+    inputPlaceholder: '',
+    leadButtonText: '',
+    chatBubbleIcon: '',
+    chatWidgetIcon: '',
+    chatWidgetName: 'Support Chat',
+    chatWindowAvatar: '',
+    chatWindowStyle: 'modern',
+    chatWindowTheme: 'light',
+    borderRadius: 16,
+    shadowStyle: 'soft',
   });
+
+  // Sync appearance state with fetchedChatbot
+  useEffect(() => {
+    if (fetchedChatbot) {
+      
+      setAppearance({
+        title: fetchedChatbot.title || '',
+        welcomeMessage: fetchedChatbot.welcomeMessage || '',
+        primaryColor: fetchedChatbot.primaryColor || '#6366F1',
+        showWelcomePopup: fetchedChatbot.showWelcomePopup ?? true,
+        suggestionButtons: fetchedChatbot.suggestionButtons ? JSON.parse(fetchedChatbot.suggestionButtons) : [],
+        suggestionTiming: (fetchedChatbot.suggestionTiming as 'initial' | 'after_welcome' | 'after_first_message' | 'manual') || 'initial',
+        suggestionPersistence: (fetchedChatbot.suggestionPersistence as 'until_clicked' | 'always_visible' | 'hide_after_timeout') || 'until_clicked',
+        suggestionTimeout: fetchedChatbot.suggestionTimeout || 30000,
+        inputPlaceholder: fetchedChatbot.inputPlaceholder || '',
+        leadButtonText: fetchedChatbot.leadButtonText || '',
+        chatBubbleIcon: fetchedChatbot.chatBubbleIcon || '',
+        chatWidgetIcon: fetchedChatbot.chatWidgetIcon || '',
+        chatWidgetName: fetchedChatbot.chatWidgetName || 'Support Chat',
+        chatWindowAvatar: fetchedChatbot.chatWindowAvatar || '',
+        chatWindowStyle: (fetchedChatbot.chatWindowStyle as 'modern' | 'classic' | 'minimal' | 'floating') || 'modern',
+        chatWindowTheme: (fetchedChatbot.chatWindowTheme as 'light' | 'dark' | 'auto') || 'light',
+        borderRadius: fetchedChatbot.borderRadius || 16,
+        shadowStyle: (fetchedChatbot.shadowStyle as 'none' | 'soft' | 'medium' | 'strong') || 'soft',
+      });
+    }
+  }, [fetchedChatbot]);
+
+  // Debug: Log appearance state changes
+  // useEffect(() => {
+  //   console.log('Current appearance state:', appearance);
+  // }, [appearance]);
 
   // Build preview props for ChatPreview
   const previewProps = {
@@ -126,7 +171,6 @@ export default function Appearance() {
 
   const handleSave = async () => {
     if (activeChatbot) {
-      // Save chatbot-specific appearance
       try {
         await updateChatbot.mutateAsync({
           id: activeChatbot.id,
@@ -150,11 +194,11 @@ export default function Appearance() {
             chatWindowAvatar: appearance.chatWindowAvatar,
           },
         });
-        
         toast({
           title: 'Appearance saved',
           description: 'Your chatbot appearance has been updated successfully.',
         });
+        refetch(); // Refetch latest data after save
       } catch (error) {
         toast({
           title: 'Error',
@@ -163,7 +207,6 @@ export default function Appearance() {
         });
       }
     } else {
-      // Save global/agency appearance
       toast({
         title: 'Global settings',
         description: 'Global appearance settings would be saved here.',
@@ -172,8 +215,10 @@ export default function Appearance() {
   };
 
   const handleFileUpload = async (field: string, file: File) => {
+    console.log('handleFileUpload called', field, file);
     try {
-      const dataUri = await fileToDataURI(file);
+      // Compress and convert image to data URI
+      const dataUri = await compressAndConvertToDataURI(file, 128, 128, 0.7);
       setAppearance(prev => ({ ...prev, [field]: dataUri }));
     } catch (error) {
       toast({
@@ -185,6 +230,7 @@ export default function Appearance() {
   };
 
   const addSuggestionButton = () => {
+    console.log('addSuggestionButton called', newSuggestion);
     if (newSuggestion.trim()) {
       setAppearance(prev => ({
         ...prev,
@@ -195,6 +241,7 @@ export default function Appearance() {
   };
 
   const removeSuggestionButton = (index: number) => {
+    console.log('removeSuggestionButton called', index);
     setAppearance(prev => ({
       ...prev,
       suggestionButtons: prev.suggestionButtons.filter((_: string, i: number) => i !== index)
@@ -259,7 +306,7 @@ export default function Appearance() {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
                           <Label htmlFor="title">Chat Window Title</Label>
-                          <Input id="title" value={appearance.title} onChange={e => setAppearance(prev => ({ ...prev, title: e.target.value }))} placeholder="Chat with us" />
+                          <Input id="title" value={appearance.title} onChange={e => { console.log('title changed', e.target.value); setAppearance(prev => ({ ...prev, title: e.target.value })) }} placeholder="Chat with us" />
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="primaryColor">Primary Color</Label>
@@ -292,7 +339,7 @@ export default function Appearance() {
                       <div className="space-y-4">
                         <div className="space-y-2">
                           <Label htmlFor="chatWindowStyle">Window Style</Label>
-                          <select id="chatWindowStyle" value={appearance.chatWindowStyle} onChange={e => setAppearance(prev => ({ ...prev, chatWindowStyle: e.target.value }))} className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                          <select id="chatWindowStyle" value={appearance.chatWindowStyle} onChange={e => setAppearance(prev => ({ ...prev, chatWindowStyle: e.target.value as 'modern' | 'classic' | 'minimal' | 'floating' }))} className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                             <option value="modern">Modern</option>
                             <option value="classic">Classic</option>
                             <option value="minimal">Minimal</option>
@@ -301,7 +348,7 @@ export default function Appearance() {
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="chatWindowTheme">Theme</Label>
-                          <select id="chatWindowTheme" value={appearance.chatWindowTheme} onChange={e => setAppearance(prev => ({ ...prev, chatWindowTheme: e.target.value }))} className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                          <select id="chatWindowTheme" value={appearance.chatWindowTheme} onChange={e => setAppearance(prev => ({ ...prev, chatWindowTheme: e.target.value as 'light' | 'dark' | 'auto' }))} className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                             <option value="light">Light</option>
                             <option value="dark">Dark</option>
                             <option value="auto">Auto</option>
@@ -317,7 +364,7 @@ export default function Appearance() {
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="shadowStyle">Shadow Style</Label>
-                          <select id="shadowStyle" value={appearance.shadowStyle} onChange={e => setAppearance(prev => ({ ...prev, shadowStyle: e.target.value }))} className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                          <select id="shadowStyle" value={appearance.shadowStyle} onChange={e => setAppearance(prev => ({ ...prev, shadowStyle: e.target.value as 'none' | 'soft' | 'medium' | 'strong' }))} className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                             <option value="none">None</option>
                             <option value="soft">Soft</option>
                             <option value="medium">Medium</option>
@@ -361,7 +408,10 @@ export default function Appearance() {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t">
                         <div className="space-y-2">
                           <Label htmlFor="suggestionTiming">Show Quick Replies</Label>
-                          <Select value={appearance.suggestionTiming || 'initial'} onValueChange={value => setAppearance(prev => ({ ...prev, suggestionTiming: value }))}>
+                          <Select
+                            value={appearance.suggestionTiming}
+                            onValueChange={value => setAppearance(prev => ({ ...prev, suggestionTiming: value as 'initial' | 'after_welcome' | 'after_first_message' | 'manual' }))}
+                          >
                             <SelectTrigger><SelectValue placeholder="Select timing" /></SelectTrigger>
                             <SelectContent>
                               <SelectItem value="initial">Immediately</SelectItem>
@@ -373,7 +423,10 @@ export default function Appearance() {
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="suggestionPersistence">Button Behavior</Label>
-                          <Select value={appearance.suggestionPersistence || 'until_clicked'} onValueChange={value => setAppearance(prev => ({ ...prev, suggestionPersistence: value }))}>
+                          <Select
+                            value={appearance.suggestionPersistence}
+                            onValueChange={value => setAppearance(prev => ({ ...prev, suggestionPersistence: value as 'until_clicked' | 'always_visible' | 'hide_after_timeout' }))}
+                          >
                             <SelectTrigger><SelectValue placeholder="Select behavior" /></SelectTrigger>
                             <SelectContent>
                               <SelectItem value="until_clicked">Hide after click</SelectItem>

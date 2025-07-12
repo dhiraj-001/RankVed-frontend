@@ -44,9 +44,17 @@ export default function Profile() {
   // Update agency settings when app user changes
   useEffect(() => {
     if (user) {
-      setAgencySettings({
+      setAgencySettings(prev => {
+        if (
+          prev.agencyName === (user.agencyName || '') &&
+          prev.agencyLogo === (user.agencyLogo || '')
+        ) {
+          return prev; // No change, don't update state
+        }
+        return {
         agencyName: user.agencyName || '',
         agencyLogo: user.agencyLogo || '',
+        };
       });
     }
   }, [user]);

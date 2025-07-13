@@ -1,4 +1,4 @@
-import ChatWidget from '@/pages/chat-widget';
+
 import { Sidebar } from './sidebar';
 
 interface AppLayoutProps {

@@ -41,7 +41,7 @@ export function formatTimeAgo(date: Date | string): string {
   return formatDate(d);
 }
 
-export function generateEmbedCode(chatbotId: string, chatbot?: any): string {
+export function generateEmbedCode(chatbotId: string): string {
   // Use the backend API URL from the environment variable for apiUrl
   const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
   // Use the current frontend origin for static assets

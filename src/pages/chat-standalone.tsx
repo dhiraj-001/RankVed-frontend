@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams } from 'wouter';
 import { Send, Bot, X, Loader2 } from 'lucide-react';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import {  useMutation } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -9,7 +9,6 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { cn } from '@/lib/utils';
-import type { Chatbot } from '@/types';
 import { useChatbot } from '@/hooks/use-chatbots';
 
 interface Message {

@@ -32,7 +32,7 @@ export default function Embed() {
     );
   }
 
-  const embedCode = generateEmbedCode(activeChatbot.id, activeChatbot);
+  const embedCode = generateEmbedCode(activeChatbot.id);
 
   const iframeEmbed = `<iframe 
   src="${window.location.origin}/chat/${activeChatbot.id}"

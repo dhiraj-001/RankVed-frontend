@@ -47,7 +47,7 @@ function Router() {
 function App() {
   return (
     <>
-  
+ 
         <QueryClientProvider client={queryClient}>
           <AppProvider>
             <TooltipProvider>

@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { cn } from '@/lib/utils';
 import type { Chatbot } from '@/types';
+import { useChatbot } from '@/hooks/use-chatbots';
 
 interface Message {
   id: string;
@@ -42,18 +43,19 @@ export default function ChatStandalone() {
     email: '',
     consent: false
   });
+  const [questionFlowActive, setQuestionFlowActive] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  const apiUrl = import.meta.env.VITE_API_URL || '';
+
   // Fetch chatbot data
-  const { data: chatbot } = useQuery<Chatbot>({
-    queryKey: ['/api/chatbots', chatbotId],
-    enabled: !!chatbotId,
-  });
+
+  const { data: chatbot } = useChatbot(chatbotId || "");
 
   // Chat response mutation
   const chatMutation = useMutation({
     mutationFn: async (data: { message: string; chatbotId: string; context: ConversationContext }) => {
-      const response = await fetch(`/api/chatbots/${data.chatbotId}/chat`, {
+      const response = await fetch(`${apiUrl}/api/chat/${data.chatbotId}/message`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -70,7 +72,7 @@ export default function ChatStandalone() {
   // Lead submission mutation
   const leadMutation = useMutation({
     mutationFn: async (data: any) => {
-      const response = await fetch('/api/leads', {
+      const response = await fetch(`${apiUrl}/api/leads`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -83,6 +85,8 @@ export default function ChatStandalone() {
 
   // Initialize chat with welcome message
   useEffect(() => {
+    console.log('Chatbot config:', chatbot);
+    console.log('Messages length:', messages.length);
     if (chatbot && messages.length === 0) {
       const welcomeMessage: Message = {
         id: 'welcome',
@@ -91,6 +95,14 @@ export default function ChatStandalone() {
         timestamp: new Date(),
       };
       setMessages([welcomeMessage]);
+      // Start question flow if present
+      if (chatbot.questionFlow && Array.isArray(chatbot.questionFlow)) {
+        const startNode = chatbot.questionFlow.find((n: any) => n.id === 'start');
+        if (startNode) {
+          setQuestionFlowActive(true);
+          processQuestionNode(startNode);
+        }
+      }
     }
   }, [chatbot, messages.length]);
 
@@ -99,73 +111,76 @@ export default function ChatStandalone() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const handleSendMessage = async () => {
-    if (!input.trim() || !chatbotId || !chatbot) return;
+  function processQuestionNode(node: any) {
+    console.log('Processing node:', node);
+    setContext(prev => ({ ...prev, currentNodeId: node.id }));
+    switch (node.type) {
+      case 'statement':
+        addBotMessage(node.question);
+        if (node.nextId && chatbot?.questionFlow) {
+          const nextNode = chatbot.questionFlow.find((n: any) => n.id === node.nextId);
+          if (nextNode) setTimeout(() => processQuestionNode(nextNode), 1200);
+        }
+        break;
+      case 'multiple-choice':
+        const options = node.options?.map((opt: any) => ({
+          text: opt.text,
+          value: opt.text,
+          action: opt.action,
+          nextId: opt.nextId
+        })) || [];
+        console.log('Multiple-choice options:', options);
+        addBotMessage(node.question, 'options', options);
+        setContext(prev => ({ ...prev, awaitingInput: 'choice' }));
+        break;
+      case 'contact-form':
+        addBotMessage(node.question, 'form');
+        setContext(prev => ({ ...prev, awaitingInput: 'form', showingLeadForm: true }));
+        break;
+      case 'open-ended':
+        addBotMessage(node.question);
+        setContext(prev => ({ ...prev, awaitingInput: 'text' }));
+        break;
+    }
+  }
 
-    const userMessage: Message = {
+  function addBotMessage(content: string, type: 'text' | 'options' | 'form' = 'text', options?: any[]) {
+    const message: Message = {
       id: Date.now().toString(),
-      content: input.trim(),
+      content,
+      sender: 'bot',
+      timestamp: new Date(),
+      type,
+      options
+    };
+    setMessages(prev => [...prev, message]);
+  }
+  function addUserMessage(content: string) {
+    const message: Message = {
+      id: Date.now().toString(),
+      content,
       sender: 'user',
       timestamp: new Date(),
     };
-
-    setMessages(prev => [...prev, userMessage]);
-    setInput('');
-    setIsLoading(true);
-
-    try {
-      const response = await chatMutation.mutateAsync({
-        message: input.trim(),
-        chatbotId,
-        context
-      });
-
-      const botMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        content: response.message || 'I\'m here to help! How can I assist you?',
-        sender: 'bot',
-        timestamp: new Date(),
-        type: response.type || 'text',
-        options: response.options
-      };
-
-      setMessages(prev => [...prev, botMessage]);
-      
-      if (response.context) {
-        setContext(response.context);
-      }
-    } catch (error) {
-      const errorMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        content: 'Sorry, I\'m having trouble responding right now. Please try again.',
-        sender: 'bot',
-        timestamp: new Date(),
-      };
-      setMessages(prev => [...prev, errorMessage]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    setMessages(prev => [...prev, message]);
+  }
 
   const handleOptionClick = (option: any) => {
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      content: option.text,
-      sender: 'user',
-      timestamp: new Date(),
-    };
-
-    setMessages(prev => [...prev, userMessage]);
-
+    addUserMessage(option.text);
+    setContext(prev => ({
+      ...prev,
+      variables: { ...prev.variables, [context.currentNodeId || 'selection']: option.text },
+      awaitingInput: undefined
+    }));
     if (option.action === 'collect-lead') {
-      const leadMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        content: 'Please provide your contact information so we can help you better.',
-        sender: 'bot',
-        timestamp: new Date(),
-        type: 'form'
-      };
-      setMessages(prev => [...prev, leadMessage]);
+      setContext(prev => ({ ...prev, showingLeadForm: true, awaitingInput: 'form' }));
+      addBotMessage('Please provide your contact information so we can help you better.', 'form');
+    } else if (option.action === 'end-chat') {
+      addBotMessage('Thank you for chatting with us! Have a great day!');
+      setQuestionFlowActive(false);
+    } else if (option.nextId && chatbot?.questionFlow) {
+      const nextNode = chatbot.questionFlow.find((n: any) => n.id === option.nextId);
+      if (nextNode) setTimeout(() => processQuestionNode(nextNode), 500);
     }
   };
 
@@ -175,6 +190,7 @@ export default function ChatStandalone() {
     try {
       await leadMutation.mutateAsync({
         chatbotId,
+        userId: chatbot?.userId, // <-- Add userId from chatbot config
         name: leadForm.name,
         email: leadForm.email,
         phone: leadForm.phone,
@@ -193,6 +209,53 @@ export default function ChatStandalone() {
       setLeadForm({ name: '', phone: '', email: '', consent: false });
     } catch (error) {
       console.error('Failed to submit lead:', error);
+    }
+  };
+
+  const handleSendMessage = async () => {
+    if (!input.trim() || !chatbotId || !chatbot) return;
+    const userInput = input.trim();
+    setInput('');
+    addUserMessage(userInput);
+    if (questionFlowActive && chatbot.questionFlow && Array.isArray(chatbot.questionFlow)) {
+      // Store input in context
+      if (context.currentNodeId) {
+        setContext(prev => ({
+          ...prev,
+          variables: { ...prev.variables, [context.currentNodeId!]: userInput },
+          awaitingInput: undefined
+        }));
+      }
+      const currentNode = chatbot.questionFlow.find((n: any) => n.id === context.currentNodeId);
+      if (currentNode?.aiHandling || context.awaitingInput === 'text') {
+        setIsLoading(true);
+        try {
+          const response = await chatMutation.mutateAsync({ message: userInput, chatbotId, context });
+          addBotMessage(response.message || 'I\'m here to help! How can I assist you?');
+        } catch (error) {
+          addBotMessage('Sorry, I\'m having trouble responding right now. Please try again.');
+        } finally {
+          setIsLoading(false);
+        }
+      } else {
+        addBotMessage('Thank you for your message. Is there anything else I can help you with?');
+      }
+      if (currentNode?.nextId) {
+        const nextNode = chatbot.questionFlow.find((n: any) => n.id === currentNode.nextId);
+        if (nextNode) setTimeout(() => processQuestionNode(nextNode), 1000);
+      }
+    } else {
+      // Fallback to classic AI chat
+      setIsLoading(true);
+      try {
+        const response = await chatMutation.mutateAsync({ message: userInput, chatbotId, context });
+        addBotMessage(response.message || 'I\'m here to help! How can I assist you?');
+        if (response.context) setContext(response.context);
+      } catch (error) {
+        addBotMessage('Sorry, I\'m having trouble responding right now. Please try again.');
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 

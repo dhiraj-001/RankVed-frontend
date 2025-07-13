@@ -47,8 +47,7 @@
   // Sound effect for open/close
   function playOpenCloseSound() {
     try {
-      const baseUrl = config.apiUrl || '';
-      const audio = new Audio(baseUrl.replace(/\/$/, '') + '/openclose.mp3');
+      const audio = new Audio('https://rank-ved-frontend-rfam.vercel.app/openclose.mp3');
       audio.currentTime = 0;
       audio.play();
     } catch (e) {

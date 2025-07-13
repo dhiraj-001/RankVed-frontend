@@ -42,18 +42,20 @@ export function formatTimeAgo(date: Date | string): string {
 }
 
 export function generateEmbedCode(chatbotId: string, chatbot?: any): string {
-  // Use the public API URL if available, otherwise fallback to window.location.origin
-  const apiUrl = chatbot?.apiUrl || window.location.origin;
+  // Use the backend API URL from the environment variable for apiUrl
+  const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+  // Use the current frontend origin for static assets
+  const frontendUrl = window.location.origin;
 
   return `<!-- RankVed Chatbot Embed: Only the widget will load, not the whole app -->
-<link rel="stylesheet" href="${apiUrl}/chat-embed.css">
+<link rel="stylesheet" href="${frontendUrl}/chat-embed.css">
 <script>
   window.CHATBOT_CONFIG = {
     chatbotId: '${chatbotId}',
-    apiUrl: '${apiUrl}'
+    apiUrl: '${backendUrl}'
   };
 </script>
-<script src="${apiUrl}/chat-embed.js"></script>
+<script src="${frontendUrl}/chat-embed.js"></script>
 <!-- End RankVed Chatbot Embed -->`;
 }
 

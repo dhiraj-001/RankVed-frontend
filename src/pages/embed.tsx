@@ -44,34 +44,34 @@ export default function Embed() {
 
   const reactComponent = `import React from 'react';
 
-const ChatWidget = () => {
+const ChatWidget = ({ chatbotId }) => {
   React.useEffect(() => {
     const script = document.createElement('script');
     script.src = '${window.location.origin}/chat-embed.js';
     script.onload = function() {
-      window.ChatBotPro.init({
-        chatbotId: '${activeChatbot.id}',
-        primaryColor: '${activeChatbot.primaryColor}',
-        position: 'bottom-right'
-      });
+      window.ChatBotPro.init({ chatbotId });
     };
     document.head.appendChild(script);
-    
+
     const link = document.createElement('link');
     link.rel = 'stylesheet';
     link.href = '${window.location.origin}/chat-embed.css';
     document.head.appendChild(link);
-    
+
     return () => {
       script.remove();
       link.remove();
     };
-  }, []);
+  }, [chatbotId]);
 
   return null;
 };
 
-export default ChatWidget;`;
+export default ChatWidget;
+
+// Usage:
+// <ChatWidget chatbotId="${activeChatbot.id}" />
+`;
 
   const copyToClipboard = async (text: string, type: string) => {
     try {

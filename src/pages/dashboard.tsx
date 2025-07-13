@@ -14,7 +14,8 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { useChatbotActions } from '@/hooks/use-chatbot-actions';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { useLeads } from '@/hooks/use-leads';
 
 export default function Dashboard() {
   const { activeChatbot } = useApp();
@@ -96,6 +97,9 @@ export default function Dashboard() {
       setEditMode(false);
     }
   }, [showCreateDialog]);
+
+  // Fetch all leads for recent leads section using useLeads (like leads page)
+  const { data: leads, isLoading: leadsLoading } = useLeads();
 
   const statsData = [
     {
@@ -484,31 +488,64 @@ export default function Dashboard() {
                     {/* Optionally, add a typing indicator or quick replies here */}
                   </CardContent>
                 </Card>
-                {/* Recent Leads */}
-                <Card className={`${cardBase} ${cardHover} before:absolute before:left-0 before:top-0 before:bottom-0 before:w-1.5 before:rounded-l-3xl before:bg-emerald-500`}>
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="text-lg font-semibold text-slate-900">Recent Leads</CardTitle>
-                      <Button variant="link" size="sm" aria-label="View all leads">
-                        View All
-                      </Button>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      {/* Example: Map real leads here. For now, show empty state. */}
-                      <div className="flex items-center space-x-3 p-3 bg-slate-50 rounded-lg">
-                        <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center">
-                          <Users className="h-4 w-4 text-emerald-600" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium text-slate-900 text-sm">No leads yet</p>
-                          <p className="text-xs text-slate-500">Leads will appear here</p>
-                        </div>
+                {/* Recent Leads Section */}
+                <div className="max-w-7xl mx-auto mt-8">
+                  <Card className="shadow-lg rounded-2xl border-0">
+                    <CardHeader className="sticky top-[180px] z-10 bg-white/90 backdrop-blur-md rounded-t-2xl">
+                      <CardTitle className="flex items-center gap-2 text-lg font-bold">
+                        <Users className="h-5 w-5 text-blue-600" /> Recent Leads
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-0">
+                      <div className="overflow-x-auto">
+                        <table className="w-full">
+                          <thead>
+                            <tr className="border-b border-slate-200 bg-white/80 sticky top-0 z-10">
+                              <th className="text-left p-4 font-medium text-slate-600">Contact</th>
+                              <th className="text-left p-4 font-medium text-slate-600">Phone</th>
+                              <th className="text-left p-4 font-medium text-slate-600">Email</th>
+                              <th className="text-left p-4 font-medium text-slate-600">Consent</th>
+                              <th className="text-left p-4 font-medium text-slate-600">Chatbot</th>
+                              <th className="text-left p-4 font-medium text-slate-600">Date</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {leadsLoading ? (
+                              <tr><td colSpan={6} className="p-8 text-center">Loading...</td></tr>
+                            ) : !leads || leads.length === 0 ? (
+                              <tr><td colSpan={6} className="p-8 text-center">No leads found.</td></tr>
+                            ) : (
+                              [...leads].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 10).map((lead) => (
+                                <tr key={lead.id} className="border-b border-slate-100 hover:bg-blue-50/40 transition-colors">
+                                  <td className="p-4">
+                                    <div className="flex items-center gap-3">
+                                      <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                                        <Users className="h-5 w-5 text-blue-600" />
+                                      </div>
+                                      <div>
+                                        <p className="font-semibold text-slate-900">{lead.name}</p>
+                                        <p className="text-xs text-slate-500">ID: {lead.id}</p>
+                                      </div>
+                                    </div>
+                                  </td>
+                                  <td className="p-4">{lead.phone || <span className="text-slate-400 text-sm">No phone</span>}</td>
+                                  <td className="p-4">{lead.email || <span className="text-slate-400 text-sm">No email</span>}</td>
+                                  <td className="p-4">
+                                    <Badge variant={lead.consentGiven ? "default" : "secondary"} className={lead.consentGiven ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}>
+                                      {lead.consentGiven ? 'Yes' : 'No'}
+                                    </Badge>
+                                  </td>
+                                  <td className="p-4">{chatbots?.find(c => c.id === lead.chatbotId)?.name || 'Unknown'}</td>
+                                  <td className="p-4">{formatTimeAgo(lead.createdAt)}</td>
+                                </tr>
+                              ))
+                            )}
+                          </tbody>
+                        </table>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                    </CardContent>
+                  </Card>
+                </div>
               </div>
             </div>
           </div>

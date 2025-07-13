@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Save, Plus, Edit, Trash2, GitBranch, MessageSquare, HelpCircle, FileText, RotateCcw, Building2, ShoppingCart, Heart, Home, Play, ArrowRight } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -100,6 +100,18 @@ export default function Questions() {
     
     return [];
   });
+  // Sync questionFlow with activeChatbot changes
+  useEffect(() => {
+    if (!activeChatbot?.questionFlow) {
+      setQuestionFlow([]);
+      return;
+    }
+    if (Array.isArray(activeChatbot.questionFlow)) {
+      setQuestionFlow(activeChatbot.questionFlow as QuestionNode[]);
+    } else if (typeof activeChatbot.questionFlow === 'object' && activeChatbot.questionFlow.nodes) {
+      setQuestionFlow((activeChatbot.questionFlow as any).nodes as QuestionNode[]);
+    }
+  }, [activeChatbot]);
   const [showNodeDialog, setShowNodeDialog] = useState(false);
   const [showTemplatesDialog, setShowTemplatesDialog] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -278,18 +290,25 @@ const [showDeleteDialog, setShowDeleteDialog] = useState<{ open: boolean; nodeId
 
   const loadTemplate = async (businessType: string) => {
     try {
-      const response = await fetch(`/api/sample-flows/${businessType}`);
+      const apiUrl = import.meta.env.VITE_API_URL || '';
+      const response = await fetch(`${apiUrl}/api/sample-flows/${businessType}`);
       const template = await response.json();
-      
+      console.log('Loaded template:', template);
+      if (!template.nodes || !Array.isArray(template.nodes)) {
+        toast({
+          title: "Error",
+          description: "Template is not available or is in the wrong format.",
+          variant: "destructive"
+        });
+        return;
+      }
       // Convert template to nodes format
       const templateNodes: QuestionNode[] = template.nodes.map((node: any) => ({
         ...node,
         id: node.id || generateId()
       }));
-      
       setQuestionFlow(templateNodes);
       setShowTemplatesDialog(false);
-      
       toast({
         title: "Template loaded",
         description: `${template.name || businessType} template has been applied to your chatbot.`

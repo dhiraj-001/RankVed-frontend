@@ -32,7 +32,6 @@
     `;
     document.head.appendChild(style);
   }
-
   // Only get chatbotId and apiUrl from window.CHATBOT_CONFIG
   let config = {
     chatbotId: window.CHATBOT_CONFIG?.chatbotId,
@@ -58,12 +57,31 @@
   // Fetch chatbot config from backend
   async function fetchChatbotConfig() {
     if (!config.chatbotId) return;
-    // Use VITE_API_URI from env if available, else config.apiUrl, else window.location.origin
     let baseUrl = (typeof window !== 'undefined' && window.VITE_API_URL) ? window.VITE_API_URL : (config.apiUrl || window.location.origin);
     try {
       const res = await fetch(`${baseUrl}/api/chatbots/${config.chatbotId}/public`);
       if (res.ok) {
         config = await res.json();
+        // --- Robustly parse questionFlow ---
+        if (typeof config.questionFlow === 'string') {
+          try {
+            config.questionFlow = JSON.parse(config.questionFlow);
+          } catch (e) {
+            config.questionFlow = undefined;
+          }
+        }
+        // If questionFlow is an array, wrap as object
+        if (Array.isArray(config.questionFlow)) {
+          config.questionFlow = { nodes: config.questionFlow };
+        }
+        // If questionFlow is an object but nodes is a string, parse it
+        if (config.questionFlow && typeof config.questionFlow.nodes === 'string') {
+          try {
+            config.questionFlow.nodes = JSON.parse(config.questionFlow.nodes);
+          } catch (e) {
+            config.questionFlow.nodes = [];
+          }
+        }
         configLoaded = true;
       } else {
         showError('Failed to load chatbot config.');
@@ -129,7 +147,9 @@
       `<img src="${iconSrc}" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover; pointer-events: none;" alt="Chat Icon">` :
       `<svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M20 2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h4l4 4 4-4h4c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>`;
     bubble.title = config.chatWidgetName || config.name || config.title || 'ChatBot';
-    bubble.onclick = openChat;
+    bubble.onclick = function() {
+      openChat();
+    };
     return bubble;
   }
 
@@ -171,13 +191,6 @@
         <div style="display: flex; align-items: flex-start; gap: 10px;">
           ${headerIconHTML.replace('32px', '28px').replace('32px', '28px')}
           <div style="background: ${a.msgBg}; color: ${a.msgText}; border-radius: 18px; padding: 10px 16px; font-size: 15px; box-shadow: 0 1px 2px rgba(0,0,0,0.08);">${config.welcomeMessage || 'Hello! How can I help you today?'}</div>
-        </div>
-        <div style="display: flex; justify-content: flex-end; align-items: flex-end; gap: 10px;">
-          <div style="background: ${a.primaryColor}; color: #fff; border-radius: 18px; padding: 10px 16px; font-size: 15px; box-shadow: 0 1px 2px rgba(0,0,0,0.08);">I need help with my account</div>
-        </div>
-        <div style="display: flex; align-items: flex-start; gap: 10px;">
-          ${headerIconHTML.replace('32px', '28px').replace('32px', '28px')}
-          <div style="background: ${a.msgBg}; color: ${a.msgText}; border-radius: 18px; padding: 10px 16px; font-size: 15px; box-shadow: 0 1px 2px rgba(0,0,0,0.08);">I'd be happy to help! What specific issue are you experiencing?</div>
         </div>
       </div>
       <div style="padding: 14px 14px 10px 14px; border-top: 1px solid ${a.inputBorder}; background: ${a.inputBg}; border-bottom-left-radius: ${a.borderRadius}px; border-bottom-right-radius: ${a.borderRadius}px;">
@@ -248,6 +261,235 @@
     }
   }
 
+  // --- Question Flow State ---
+  let questionFlowState = {
+    currentNodeId: null,
+    history: [],
+    userInputs: {},
+  };
+
+  function resetQuestionFlow() {
+    questionFlowState = {
+      currentNodeId: null,
+      history: [],
+      userInputs: {},
+    };
+  }
+
+   function renderQuestionNode(node) {
+    const messagesContainer = document.getElementById('rankved-messages');
+    if (!messagesContainer || !node) return;
+    addMessage(node.question, 'bot');
+    // Remove any previous options/input
+    const oldOptions = document.getElementById('rankved-flow-options');
+    if (oldOptions) oldOptions.remove();
+    const oldInput = document.getElementById('rankved-flow-input');
+    if (oldInput) oldInput.remove();
+    // Handle node types
+    if (node.type === 'multiple-choice' && node.options && node.options.length > 0) {
+      const optionsDiv = document.createElement('div');
+      optionsDiv.id = 'rankved-flow-options';
+      optionsDiv.style.margin = '8px 0';
+      optionsDiv.style.display = 'flex';
+      optionsDiv.style.flexDirection = 'column';
+      optionsDiv.style.gap = '6px';
+      node.options.forEach(option => {
+        const btn = document.createElement('button');
+        btn.textContent = option.text;
+        btn.style.background = getAppearance().primaryColor;
+        btn.style.color = '#fff';
+        btn.style.border = 'none';
+        btn.style.borderRadius = '6px';
+        btn.style.padding = '8px 12px';
+        btn.style.fontSize = '14px';
+        btn.style.cursor = 'pointer';
+        btn.onclick = function() {
+          addMessage(option.text, 'user');
+          if (option.action === 'collect-lead') {
+            addMessage('Thank you! Please provide your contact information so we can help you better.', 'bot');
+            optionsDiv.remove();
+            return;
+          }
+          if (option.action === 'end-chat') {
+            addMessage('Thank you for using our service! Have a great day!', 'bot');
+            optionsDiv.remove();
+            return;
+          }
+          if (option.nextId) {
+            optionsDiv.remove();
+            const nextNode = config.questionFlow.nodes.find(n => n.id === option.nextId);
+            if (nextNode) {
+              questionFlowState.currentNodeId = nextNode.id;
+              setTimeout(() => renderQuestionNode(nextNode), 500);
+            }
+          }
+        };
+        optionsDiv.appendChild(btn);
+      });
+      messagesContainer.appendChild(optionsDiv);
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    } else if (node.type === 'open-ended') {
+      const inputDiv = document.createElement('div');
+      inputDiv.id = 'rankved-flow-input';
+      inputDiv.style.margin = '8px 0';
+      inputDiv.style.display = 'flex';
+      inputDiv.style.gap = '6px';
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.placeholder = 'Type your answer...';
+      input.style.flex = '1';
+      input.style.padding = '8px 12px';
+      input.style.borderRadius = '6px';
+      input.style.border = '1px solid #e2e8f0';
+      input.style.fontSize = '14px';
+      const sendBtn = document.createElement('button');
+      sendBtn.textContent = 'Send';
+      sendBtn.style.background = getAppearance().primaryColor;
+      sendBtn.style.color = '#fff';
+      sendBtn.style.border = 'none';
+      sendBtn.style.borderRadius = '6px';
+      sendBtn.style.padding = '8px 16px';
+      sendBtn.style.fontSize = '14px';
+      sendBtn.style.cursor = 'pointer';
+      sendBtn.onclick = function() {
+        if (!input.value.trim()) return;
+        addMessage(input.value, 'user');
+        input.disabled = true;
+        sendBtn.disabled = true;
+        // Simulate AI handling if enabled
+        if (node.aiHandling) {
+          setTimeout(() => {
+            addMessage(`I understand you're asking about: "${input.value}". Let me help you with that. Is there anything specific you'd like to know more about?`, 'bot');
+            // Show follow-up options
+            const followUpDiv = document.createElement('div');
+            followUpDiv.id = 'rankved-flow-options';
+            followUpDiv.style.margin = '8px 0';
+            followUpDiv.style.display = 'flex';
+            followUpDiv.style.flexDirection = 'column';
+            followUpDiv.style.gap = '6px';
+            [
+              { text: 'Tell me more', nextId: node.nextId },
+              { text: 'Contact support', action: 'collect-lead' },
+              { text: 'End chat', action: 'end-chat' }
+            ].forEach(opt => {
+              const btn = document.createElement('button');
+              btn.textContent = opt.text;
+              btn.style.background = getAppearance().primaryColor;
+              btn.style.color = '#fff';
+              btn.style.border = 'none';
+              btn.style.borderRadius = '6px';
+              btn.style.padding = '8px 12px';
+              btn.style.fontSize = '14px';
+              btn.style.cursor = 'pointer';
+              btn.onclick = function() {
+                addMessage(opt.text, 'user');
+                if (opt.action === 'collect-lead') {
+                  addMessage('Thank you! Please provide your contact information so we can help you better.', 'bot');
+                  followUpDiv.remove();
+                  return;
+                }
+                if (opt.action === 'end-chat') {
+                  addMessage('Thank you for using our service! Have a great day!', 'bot');
+                  followUpDiv.remove();
+                  return;
+                }
+                if (opt.nextId) {
+                  followUpDiv.remove();
+                  const nextNode = config.questionFlow.nodes.find(n => n.id === opt.nextId);
+                  if (nextNode) {
+                    questionFlowState.currentNodeId = nextNode.id;
+                    setTimeout(() => renderQuestionNode(nextNode), 500);
+                  }
+                }
+              };
+              followUpDiv.appendChild(btn);
+            });
+            messagesContainer.appendChild(followUpDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+          }, 1000);
+        } else if (node.nextId) {
+          const nextNode = config.questionFlow.nodes.find(n => n.id === node.nextId);
+          if (nextNode) {
+            questionFlowState.currentNodeId = nextNode.id;
+            setTimeout(() => renderQuestionNode(nextNode), 500);
+          }
+        }
+      };
+      inputDiv.appendChild(input);
+      inputDiv.appendChild(sendBtn);
+      messagesContainer.appendChild(inputDiv);
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    } else if (node.type === 'contact-form') {
+      const inputDiv = document.createElement('div');
+      inputDiv.id = 'rankved-flow-input';
+      inputDiv.style.margin = '8px 0';
+      inputDiv.style.display = 'flex';
+      inputDiv.style.flexDirection = 'column';
+      inputDiv.style.gap = '6px';
+      const nameInput = document.createElement('input');
+      nameInput.type = 'text';
+      nameInput.placeholder = 'Your Name';
+      nameInput.style.padding = '8px 12px';
+      nameInput.style.borderRadius = '6px';
+      nameInput.style.border = '1px solid #e2e8f0';
+      nameInput.style.fontSize = '14px';
+      const emailInput = document.createElement('input');
+      emailInput.type = 'email';
+      emailInput.placeholder = 'Your Email';
+      emailInput.style.padding = '8px 12px';
+      emailInput.style.borderRadius = '6px';
+      emailInput.style.border = '1px solid #e2e8f0';
+      emailInput.style.fontSize = '14px';
+      const sendBtn = document.createElement('button');
+      sendBtn.textContent = 'Send';
+      sendBtn.style.background = getAppearance().primaryColor;
+      sendBtn.style.color = '#fff';
+      sendBtn.style.border = 'none';
+      sendBtn.style.borderRadius = '6px';
+      sendBtn.style.padding = '8px 16px';
+      sendBtn.style.fontSize = '14px';
+      sendBtn.style.cursor = 'pointer';
+      sendBtn.onclick = async function() {
+        if (!nameInput.value.trim() || !emailInput.value.trim()) return;
+        addMessage(`Name: ${nameInput.value}, Email: ${emailInput.value}`, 'user');
+        sendBtn.disabled = true;
+
+        // --- Send lead data to backend (public endpoint) ---
+        try {
+          let apiUrl =
+            (typeof window !== 'undefined' && window.VITE_API_URL) ? window.VITE_API_URL
+            : (config.apiUrl || (window.CHATBOT_CONFIG && window.CHATBOT_CONFIG.apiUrl) || window.location.origin);
+          const chatbotId = config.chatbotId || (window.CHATBOT_CONFIG && window.CHATBOT_CONFIG.chatbotId);
+          if (!chatbotId) {
+            addMessage('Chatbot ID is missing. Please refresh the page.', 'bot');
+            return;
+          }
+          const res = await fetch(apiUrl + '/api/chat/' + chatbotId + '/leads', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              name: nameInput.value,
+              email: emailInput.value,
+              source: 'chat_widget'
+            })
+          });
+          if (res.ok) {
+            addMessage('Thank you! Our team will contact you soon.', 'bot');
+          } else {
+            addMessage('Failed to submit your info. Please try again later.', 'bot');
+          }
+        } catch (e) {
+          addMessage('Failed to submit your info. Please try again later.', 'bot');
+        }
+      };
+      inputDiv.appendChild(nameInput);
+      inputDiv.appendChild(emailInput);
+      inputDiv.appendChild(sendBtn);
+      messagesContainer.appendChild(inputDiv);
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+  }
+
   // Open chat window with animation
   async function openChat() {
     playOpenCloseSound();
@@ -259,8 +501,18 @@
     chatWindow = createChatWindow();
     document.body.appendChild(chatWindow);
     isOpen = true;
-    addMessage(config.welcomeMessage || 'Hello! How can I help you today?', 'bot');
-    showSuggestions();
+    // --- Show question flow if it exists, otherwise show welcome message ---
+    if (config.questionFlowEnabled && config.questionFlow && Array.isArray(config.questionFlow.nodes) && config.questionFlow.nodes.length > 0) {
+      resetQuestionFlow();
+      const startNode = config.questionFlow.nodes.find(n => n.id === 'start') || config.questionFlow.nodes[0];
+      if (startNode) {
+        questionFlowState.currentNodeId = startNode.id;
+        setTimeout(() => renderQuestionNode(startNode), 500);
+      }
+    } else {
+      addMessage(config.welcomeMessage || 'Hello! How can I help you today?', 'bot');
+      showSuggestions();
+    }
     chatWindow.querySelector('#rankved-close-btn').onclick = closeChat;
     chatWindow.querySelector('#rankved-send-btn').onclick = sendMessage;
     chatWindow.querySelector('#rankved-input').onkeydown = function(e) {

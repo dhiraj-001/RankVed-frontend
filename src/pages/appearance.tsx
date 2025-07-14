@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Save, Palette, Eye, Code } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -168,6 +168,8 @@ export default function Appearance() {
 <script src='https://your-cdn/chatbot.js'></script>`;
 
   const [newSuggestion, setNewSuggestion] = useState('');
+  const previewRef = useRef<HTMLDivElement>(null);
+  const [highlightPreview, setHighlightPreview] = useState(false);
 
   const handleSave = async () => {
     if (activeChatbot) {
@@ -265,7 +267,13 @@ export default function Appearance() {
             <Button
               variant="outline"
               className="border-gray-300 text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-              onClick={() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })}
+              onClick={() => {
+                if (previewRef.current) {
+                  previewRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  setHighlightPreview(true);
+                  setTimeout(() => setHighlightPreview(false), 1200);
+                }
+              }}
             >
               <Eye className="h-5 w-5 mr-2" /> Preview
             </Button>
@@ -535,14 +543,16 @@ export default function Appearance() {
 
         {/* Right Column: Live Preview & Embed Code */}
         <div className="space-y-8 lg:sticky lg:top-24 h-fit">
-          <Card className="shadow-sm border-slate-200">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-lg font-semibold"><Eye className="h-5 w-5" /> Live Preview</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ChatPreview chatbot={previewChatbot} {...previewProps} />
-            </CardContent>
-          </Card>
+          <div ref={previewRef} className={`transition-all duration-500 ${highlightPreview ? 'ring-4 ring-blue-400 ring-opacity-60' : ''}`}>
+            <Card className="shadow-sm border-slate-200">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-lg font-semibold"><Eye className="h-5 w-5" /> Live Preview</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ChatPreview chatbot={previewChatbot} {...previewProps} />
+              </CardContent>
+            </Card>
+          </div>
           <Card className="shadow-sm border-slate-200">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-lg font-semibold"><Code className="h-5 w-5" /> Embed Code</CardTitle>

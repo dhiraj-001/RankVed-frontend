@@ -56,12 +56,23 @@
 
   // Fetch chatbot config from backend
   async function fetchChatbotConfig() {
-    if (!config.chatbotId) return;
+    if (!config.chatbotId) {
+      console.warn('[RankVed Chat] chatbotId missing at fetchChatbotConfig. window.CHATBOT_CONFIG:', window.CHATBOT_CONFIG);
+      return;
+    }
     let baseUrl = (typeof window !== 'undefined' && window.VITE_API_URL) ? window.VITE_API_URL : (config.apiUrl || window.location.origin);
     try {
       const res = await fetch(`${baseUrl}/api/chatbots/${config.chatbotId}/public`);
       if (res.ok) {
         config = await res.json();
+        // Ensure chatbotId is always present
+        if (config.id && !config.chatbotId) {
+          config.chatbotId = config.id;
+        }
+        // Ensure apiUrl is always set from window.CHATBOT_CONFIG if present
+        if (window.CHATBOT_CONFIG && window.CHATBOT_CONFIG.apiUrl) {
+          config.apiUrl = window.CHATBOT_CONFIG.apiUrl;
+        }
         // --- Robustly parse questionFlow ---
         if (typeof config.questionFlow === 'string') {
           try {
@@ -81,6 +92,17 @@
           } catch (e) {
             config.questionFlow.nodes = [];
           }
+        }
+        // Debug log for question flow
+        console.log('[RankVed Chat] After config fetch: questionFlowEnabled:', config.questionFlowEnabled, 'questionFlow:', config.questionFlow);
+        // If no flow, add a default for testing
+        if (!config.questionFlow || !Array.isArray(config.questionFlow.nodes) || config.questionFlow.nodes.length === 0) {
+          config.questionFlowEnabled = true;
+          config.questionFlow = { nodes: [
+            { id: 'start', type: 'statement', question: 'This is a default flow. How can I help you?', nextId: 'end' },
+            { id: 'end', type: 'statement', question: 'Thank you for using the chatbot!' }
+          ] };
+          console.log('[RankVed Chat] No question flow found. Injected default flow:', config.questionFlow);
         }
         configLoaded = true;
       } else {
@@ -188,10 +210,7 @@
         <button id="rankved-close-btn" style="background: none; border: none; color: ${a.headerText}; font-size: 22px; cursor: pointer;">×</button>
       </div>
       <div id="rankved-messages" style="flex: 1; overflow-y: auto; padding: 18px 14px 0 14px; background: ${a.msgBg}; color: ${a.msgText}; display: flex; flex-direction: column; gap: 14px; border-bottom-left-radius: ${a.borderRadius}px; border-bottom-right-radius: ${a.borderRadius}px;">
-        <div style="display: flex; align-items: flex-start; gap: 10px;">
-          ${headerIconHTML.replace('32px', '28px').replace('32px', '28px')}
-          <div style="background: ${a.msgBg}; color: ${a.msgText}; border-radius: 18px; padding: 10px 16px; font-size: 15px; box-shadow: 0 1px 2px rgba(0,0,0,0.08);">${config.welcomeMessage || 'Hello! How can I help you today?'}</div>
-        </div>
+        <!-- Welcome message removed; will be added by JS only -->
       </div>
       <div style="padding: 14px 14px 10px 14px; border-top: 1px solid ${a.inputBorder}; background: ${a.inputBg}; border-bottom-left-radius: ${a.borderRadius}px; border-bottom-right-radius: ${a.borderRadius}px;">
         <div style="display: flex; gap: 8px; align-items: center;">
@@ -498,7 +517,6 @@
           }
           // Build context from questionFlowState (add more if needed)
           const context = { questionFlowState };
-          console.log('Sending context:', context);
           const res = await fetch(apiUrl + '/api/chat/' + chatbotId + '/leads', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -528,6 +546,15 @@
       messagesContainer.appendChild(inputDiv);
       messagesContainer.scrollTop = messagesContainer.scrollHeight;
     }
+    if (node.type === 'statement' && node.nextId) {
+      setTimeout(() => {
+        const nextNode = config.questionFlow.nodes.find(n => n.id === node.nextId);
+        if (nextNode) {
+          questionFlowState.currentNodeId = nextNode.id;
+          renderQuestionNode(nextNode);
+        }
+      }, 900); // 900ms delay for smoothness
+    }
   }
 
   // Open chat window with animation
@@ -542,6 +569,7 @@
     document.body.appendChild(chatWindow);
     isOpen = true;
     // --- Show question flow if it exists, otherwise show welcome message ---
+    console.log('[RankVed Chat] openChat: questionFlowEnabled:', config.questionFlowEnabled, 'questionFlow:', config.questionFlow);
     if (config.questionFlowEnabled && config.questionFlow && Array.isArray(config.questionFlow.nodes) && config.questionFlow.nodes.length > 0) {
       resetQuestionFlow();
       const startNode = config.questionFlow.nodes.find(n => n.id === 'start') || config.questionFlow.nodes[0];
@@ -578,6 +606,11 @@
     const input = chatWindow.querySelector('#rankved-input');
     const text = input.value.trim();
     if (!text) return;
+    if (!config.chatbotId) {
+      console.error('[RankVed Chat] chatbotId is missing at sendMessage. window.CHATBOT_CONFIG:', window.CHATBOT_CONFIG, 'config:', config);
+      addMessage('Chatbot ID is missing. Please refresh the page.', 'bot');
+      return;
+    }
     addMessage(text, 'user');
     input.value = '';
     // Build context for backend
@@ -713,8 +746,6 @@
   async function init() {
     injectStyles();
     await fetchChatbotConfig(); // Wait for config to load before rendering bubble
-    // Debug: Log config for question flow
-    console.log('Chatbot config loaded:', config);
     // If question flow is enabled and present, preload the first node as a preview (optional)
     if (config.questionFlowEnabled && config.questionFlow && Array.isArray(config.questionFlow.nodes) && config.questionFlow.nodes.length > 0) {
       resetQuestionFlow();

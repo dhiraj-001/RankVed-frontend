@@ -59,7 +59,10 @@ export default function Chatbots() {
     setShowEditDialog(true);
   };
   const handleEditSave = async () => {
-    // TODO: Implement update logic (call backend, then refetch)
+    if (!editChatbot?.id) return;
+    // Actually update the chatbot via API
+    const { id, ...data } = editChatbot;
+    await updateChatbot.mutateAsync({ id, data });
     setShowEditDialog(false);
     refetch();
   };

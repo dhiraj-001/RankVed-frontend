@@ -6,12 +6,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
-import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useApp } from '@/contexts/app-context';
 import { useUpdateChatbot } from '@/hooks/use-chatbots';
 import {  compressAndConvertToDataURI } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
+import { useEffect } from 'react';
 
 export default function Settings() {
   const { activeChatbot } = useApp();
@@ -63,6 +64,36 @@ export default function Settings() {
     dailyChatLimit: activeChatbot?.dailyChatLimit || 100,
     monthlyChatLimit: activeChatbot?.monthlyChatLimit || 1000,
   });
+
+  // Sync settings state with activeChatbot changes
+  useEffect(() => {
+    if (activeChatbot) {
+      setSettings({
+        name: activeChatbot.name || '',
+        aiSystemPrompt: activeChatbot.aiSystemPrompt || '',
+        chatWindowAvatar: activeChatbot.chatWindowAvatar || '',
+        chatBubbleIcon: activeChatbot.chatBubbleIcon || '',
+        welcomeMessage: activeChatbot.welcomeMessage || '',
+        initialMessageDelay: activeChatbot.initialMessageDelay || 1000,
+        enableNotificationSound: activeChatbot.enableNotificationSound ?? true,
+        customNotificationSound: activeChatbot.customNotificationSound || '',
+        leadsWebhookUrl: activeChatbot.leadsWebhookUrl || '',
+        businessType: activeChatbot.businessType || 'general',
+        poweredByText: activeChatbot.poweredByText || '',
+        poweredByLink: activeChatbot.poweredByLink || '',
+        bubblePosition: activeChatbot.bubblePosition || 'bottom-right',
+        horizontalOffset: activeChatbot.horizontalOffset || 20,
+        verticalOffset: activeChatbot.verticalOffset || 20,
+        leadCollectionEnabled: activeChatbot.leadCollectionEnabled ?? true,
+        leadCollectionAfterMessages: activeChatbot.leadCollectionAfterMessages || 3,
+        leadCollectionMessage: activeChatbot.leadCollectionMessage || 'To help you better, may I have your name and contact information?',
+        aiProvider: activeChatbot.aiProvider || 'platform',
+        customApiKey: activeChatbot.customApiKey || '',
+        dailyChatLimit: activeChatbot.dailyChatLimit || 100,
+        monthlyChatLimit: activeChatbot.monthlyChatLimit || 1000,
+      });
+    }
+  }, [activeChatbot]);
 
   const handleSave = async () => {
     if (!activeChatbot) {
@@ -470,7 +501,9 @@ export default function Settings() {
                     value={settings.bubblePosition}
                     onValueChange={(value) => setSettings(prev => ({ ...prev, bubblePosition: value }))}
                   >
-                    <SelectTrigger className="border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500" />
+                    <SelectTrigger className="border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                      <SelectValue placeholder="Select a position" />
+                    </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="bottom-right">Bottom Right</SelectItem>
                       <SelectItem value="bottom-left">Bottom Left</SelectItem>
@@ -526,7 +559,9 @@ export default function Settings() {
                     value={settings.aiProvider}
                     onValueChange={(value) => setSettings(prev => ({ ...prev, aiProvider: value }))}
                   >
-                    <SelectTrigger className="border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500" />
+                    <SelectTrigger className="border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                      <SelectValue placeholder="Select AI Provider" />
+                    </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="platform">Platform Default (Gemini)</SelectItem>
                       <SelectItem value="google">Custom Google AI Key</SelectItem>

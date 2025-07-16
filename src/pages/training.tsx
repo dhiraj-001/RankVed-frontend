@@ -18,7 +18,10 @@ export default function Training() {
   const updateChatbot = useUpdateChatbot();
   const { toast } = useToast();
 
-  const [trainingData, setTrainingData] = useState(activeChatbot?.trainingData || '');
+  const [trainingData, setTrainingData] = useState(() => {
+    const initial = activeChatbot?.trainingData || '';
+    return initial;
+  });
   const [urls, setUrls] = useState('');
   const [fetchedContent, setFetchedContent] = useState<string[]>([]);
 
@@ -48,21 +51,24 @@ export default function Training() {
       return;
     }
 
+    let processed = { processed: false, wordCount: 0 };
     try {
-      // Process the training data before saving
-      const processed = await processTrainingData.mutateAsync(trainingData);
-      
-      if (processed.processed) {
-        await updateChatbot.mutateAsync({
-          id: activeChatbot.id,
-          data: { trainingData },
-        });
-        
-        toast({
-          title: 'Training data saved',
-          description: `Successfully processed ${processed.wordCount} words of training data.`,
-        });
-      }
+      processed = await processTrainingData.mutateAsync(trainingData);
+    } catch (error) {
+      console.warn('[Training] Training data processing failed, saving anyway:', error);
+    }
+
+    try {
+      await updateChatbot.mutateAsync({
+        id: activeChatbot.id,
+        data: { trainingData },
+      });
+      toast({
+        title: 'Training data saved',
+        description: processed.processed
+          ? `Successfully processed ${processed.wordCount} words of training data.`
+          : 'Training data saved (processing failed, but data is stored).',
+      });
     } catch (error) {
       toast({
         title: 'Error',

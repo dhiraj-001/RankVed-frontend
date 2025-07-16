@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Save, Plus, Edit, Trash2, GitBranch, MessageSquare, HelpCircle, FileText, RotateCcw, Building2, ShoppingCart, Heart, Home, Play, ArrowRight } from 'lucide-react';
+import { Save, Plus, Edit, Trash2, GitBranch, MessageSquare, HelpCircle, FileText, RotateCcw, Building2, ShoppingCart, Heart, Home, Play, ArrowRight, Loader2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,6 +14,7 @@ import { useUpdateChatbot } from '@/hooks/use-chatbots';
 import { useToast } from '@/hooks/use-toast';
 import { generateId } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { apiRequest } from '@/lib/queryClient';
 
 interface QuestionNode {
   id: string;
@@ -25,60 +26,6 @@ interface QuestionNode {
   aiHandling?: boolean;
 }
 
-const defaultFlow: QuestionNode[] = [
-  {
-    id: 'start',
-    type: 'statement',
-    question: 'Welcome! How can we help you today?',
-    nextId: 'main-menu'
-  },
-  {
-    id: 'main-menu',
-    type: 'multiple-choice',
-    question: 'What can I help you with?',
-    options: [
-      { text: 'Product Information', nextId: 'product-info' },
-      { text: 'Support', nextId: 'support' },
-      { text: 'Contact Sales', action: 'collect-lead' }
-    ]
-  },
-  {
-    id: 'product-info',
-    type: 'open-ended',
-    question: 'What would you like to know about our products?',
-    collectVariable: 'product_inquiry',
-    aiHandling: true
-  },
-  {
-    id: 'support',
-    type: 'multiple-choice',
-    question: 'What type of support do you need?',
-    options: [
-      { text: 'Technical Issue', nextId: 'tech-support' },
-      { text: 'Account Help', nextId: 'account-help' },
-      { text: 'Other', nextId: 'general-support' }
-    ]
-  },
-  {
-    id: 'tech-support',
-    type: 'open-ended',
-    question: 'Please describe your technical issue.',
-    collectVariable: 'tech_issue',
-    aiHandling: true
-  },
-  {
-    id: 'account-help',
-    type: 'contact-form',
-    question: 'Please provide your contact information and we\'ll help with your account.',
-  },
-  {
-    id: 'general-support',
-    type: 'open-ended',
-    question: 'How can we help you?',
-    collectVariable: 'general_inquiry',
-    aiHandling: true
-  }
-];
 
 export default function Questions() {
   const { activeChatbot } = useApp();
@@ -117,6 +64,9 @@ export default function Questions() {
   const [isEditing, setIsEditing] = useState(false);
   const [showResetDialog, setShowResetDialog] = useState(false);
 const [showDeleteDialog, setShowDeleteDialog] = useState<{ open: boolean; nodeId?: string }>({ open: false });
+  const [showAddTemplateDialog, setShowAddTemplateDialog] = useState(false);
+  const [templateJson, setTemplateJson] = useState('');
+  const [addTemplateLoading, setAddTemplateLoading] = useState(false);
 
   const [nodeForm, setNodeForm] = useState<QuestionNode>({
     id: '',
@@ -293,7 +243,6 @@ const [showDeleteDialog, setShowDeleteDialog] = useState<{ open: boolean; nodeId
       const apiUrl = import.meta.env.VITE_API_URL || '';
       const response = await fetch(`${apiUrl}/api/sample-flows/${businessType}`);
       const template = await response.json();
-      console.log('Loaded template:', template);
       if (!template.nodes || !Array.isArray(template.nodes)) {
         toast({
           title: "Error",
@@ -383,13 +332,24 @@ const [showDeleteDialog, setShowDeleteDialog] = useState<{ open: boolean; nodeId
   const handleResetToDefault = () => {
     setShowResetDialog(true);
   };
-  const confirmResetToDefault = () => {
-    setQuestionFlow(defaultFlow);
+  const confirmResetToDefault = async () => {
+    setQuestionFlow([]);
     toast({
       title: 'Flow reset',
-      description: 'Question flow has been reset to default template.',
+      description: 'All question flow has been removed. The chatbot now has no flow.',
     });
     setShowResetDialog(false);
+    // Also update the chatbot to remove any flow
+    if (activeChatbot) {
+      await updateChatbot.mutateAsync({
+        id: activeChatbot.id,
+        data: {
+          questionFlow: [],
+          questionFlowEnabled: false,
+        },
+      });
+      toast({ title: 'Chatbot updated', description: 'All question flow removed from chatbot.' });
+    }
   };
 
   const handleCreateNode = () => {
@@ -476,6 +436,37 @@ const [showDeleteDialog, setShowDeleteDialog] = useState<{ open: boolean; nodeId
     }
   };
 
+  // Add this function to handle saving as a custom template
+  const handleSaveAsCustomTemplate = async () => {
+    const name = prompt('Enter a name for your custom template:');
+    if (!name) return;
+    try {
+      const response = await apiRequest('POST', '/api/question-templates', {
+        name,
+        nodes: questionFlow,
+      });
+      if (response.ok) {
+        toast({
+          title: 'Template saved',
+          description: `Custom template "${name}" saved successfully.`
+        });
+      } else {
+        const data = await response.json();
+        toast({
+          title: 'Error',
+          description: data.message || 'Failed to save template.',
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to save template. Please try again.',
+        variant: 'destructive',
+      });
+    }
+  };
+
   if (!activeChatbot) {
     return (
       <div className="flex-1 flex items-center justify-center bg-slate-50">
@@ -550,6 +541,9 @@ const [showDeleteDialog, setShowDeleteDialog] = useState<{ open: boolean; nodeId
               <Button onClick={handleSave} disabled={updateChatbot.isPending} className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2 rounded-lg shadow-md">
                 <Save className="h-5 w-5 mr-2" />
                 {updateChatbot.isPending ? 'Saving...' : 'Save Flow'}
+              </Button>
+              <Button onClick={() => setShowAddTemplateDialog(true)} variant="outline" className="ml-2">
+                Add Template from JSON
               </Button>
             </div>
           </div>
@@ -1026,7 +1020,7 @@ const [showDeleteDialog, setShowDeleteDialog] = useState<{ open: boolean; nodeId
               <h4 className="font-medium text-slate-900 mb-3">How to Test</h4>
               <div className="space-y-3 text-sm text-slate-600">
                 <div className="p-3 bg-blue-50 rounded-lg">
-                  <p className="font-medium text-blue-900 mb-1">💬 Chat Interface</p>
+                  <p className="font-medium text-blue-900 mb-1">�� Chat Interface</p>
                   <p>This simulates exactly how users will interact with your chatbot on your website.</p>
                 </div>
                 
@@ -1087,6 +1081,96 @@ const [showDeleteDialog, setShowDeleteDialog] = useState<{ open: boolean; nodeId
           <div className="flex justify-end gap-2 mt-4">
             <Button variant="outline" onClick={() => setShowDeleteDialog({ open: false })}>Cancel</Button>
             <Button variant="destructive" onClick={confirmDeleteNode}>Delete</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Custom Template Dialog */}
+      <Dialog open={showAddTemplateDialog} onOpenChange={setShowAddTemplateDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add Custom Template (Paste JSON)</DialogTitle>
+          </DialogHeader>
+          <Textarea
+            value={templateJson}
+            onChange={e => setTemplateJson(e.target.value)}
+            placeholder={`{
+  "name": "My Custom Support Flow",
+  "nodes": [
+    {
+      "id": "start",
+      "type": "statement",
+      "question": "Welcome! How can I help you today?",
+      "nextId": "main-menu"
+    },
+    {
+      "id": "main-menu",
+      "type": "multiple-choice",
+      "question": "Choose an option:",
+      "options": [
+        { "text": "Product Info", "nextId": "product-info" },
+        { "text": "Contact Support", "nextId": "support" }
+      ]
+    },
+    {
+      "id": "product-info",
+      "type": "open-ended",
+      "question": "What would you like to know about our products?",
+      "aiHandling": true
+    },
+    {
+      "id": "support",
+      "type": "contact-form",
+      "question": "Please provide your contact information."
+    }
+  ]
+}`}
+            rows={10}
+            className="mb-4"
+          />
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setShowAddTemplateDialog(false)}>Cancel</Button>
+            <Button
+              disabled={addTemplateLoading}
+              onClick={async () => {
+                setAddTemplateLoading(true);
+                try {
+                  const parsed = JSON.parse(templateJson);
+                  if (!parsed.name || !Array.isArray(parsed.nodes)) {
+                    toast({ title: 'Invalid template', description: 'Template must have a name and nodes array.', variant: 'destructive' });
+                    setAddTemplateLoading(false);
+                    return;
+                  }
+                  const response = await apiRequest('POST', '/api/question-templates', parsed);
+                  if (response.ok) {
+                    toast({ title: 'Template added', description: `Template "${parsed.name}" added successfully.` });
+                    setShowAddTemplateDialog(false);
+                    setTemplateJson('');
+                    // Apply the template to the current chatbot
+                    if (activeChatbot) {
+                      await updateChatbot.mutateAsync({
+                        id: activeChatbot.id,
+                        data: {
+                          questionFlow: parsed.nodes,
+                          questionFlowEnabled: true,
+                        },
+                      });
+                      toast({ title: 'Applied to chatbot', description: 'This template is now active for your chatbot.' });
+                    }
+                  } else {
+                    const data = await response.json();
+                    toast({ title: 'Error', description: data.message || 'Failed to add template.', variant: 'destructive' });
+                  }
+                } catch (err) {
+                  toast({ title: 'Invalid JSON', description: 'Could not parse JSON.', variant: 'destructive' });
+                } finally {
+                  setAddTemplateLoading(false);
+                }
+              }}
+            >
+              {addTemplateLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
+              Add Template
+            </Button>
           </div>
         </DialogContent>
       </Dialog>

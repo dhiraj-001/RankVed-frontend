@@ -601,6 +601,21 @@
   async function init() {
     injectStyles();
     await fetchChatbotConfig(); // Wait for config to load before rendering bubble
+    // Debug: Log config for question flow
+    console.log('Chatbot config loaded:', config);
+    // If question flow is enabled and present, preload the first node as a preview (optional)
+    if (config.questionFlowEnabled && config.questionFlow && Array.isArray(config.questionFlow.nodes) && config.questionFlow.nodes.length > 0) {
+      resetQuestionFlow();
+      const startNode = config.questionFlow.nodes.find(n => n.id === 'start') || config.questionFlow.nodes[0];
+      if (startNode) {
+        questionFlowState.currentNodeId = startNode.id;
+        // Optionally, show a preview or indicator here
+        // e.g., addMessage('Ready for a guided conversation!', 'bot');
+      }
+    } else {
+      if (!config.questionFlowEnabled) console.log('Question flow not enabled');
+      if (!config.questionFlow) console.log('No question flow data');
+    }
     bubble = createChatBubble();
     document.body.appendChild(bubble);
   }

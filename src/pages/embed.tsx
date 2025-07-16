@@ -34,44 +34,57 @@ export default function Embed() {
 
   const embedCode = generateEmbedCode(activeChatbot.id);
 
-  const iframeEmbed = `<iframe 
-  src="${window.location.origin}/chat/${activeChatbot.id}"
-  width="400" 
-  height="600"
-  frameborder="0"
-  style="position: fixed; bottom: 20px; right: 20px; z-index: 1000; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
-</iframe>`;
+  // Use backend URL from env for iframe src and script API
+  const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+  const frontendUrl = window.location.origin;
 
-  const reactComponent = `import React from 'react';
+  // Updated iframe embed code using VITE_API_URL
 
-const ChatWidget = ({ chatbotId }) => {
-  React.useEffect(() => {
+  // Improved React component for multi-widget support and cleanup, without duplicate checks
+  // This is a string for user copy-paste, not for direct execution in this file
+  const reactComponent = `import React, { useRef, useEffect } from 'react';
+
+const ChatWidget = ({ chatbotId, style }) => {
+  // Generate a unique container ID for each instance
+  const containerIdRef = useRef('chatbot-widget-container-' + Math.random().toString(36).substr(2, 9));
+
+  useEffect(() => {
+    // Always inject script
     const script = document.createElement('script');
-    script.src = '${window.location.origin}/chat-embed.js';
+    script.src = '${frontendUrl}/chat-embed.js';
     script.onload = function() {
-      window.ChatBotPro.init({ chatbotId });
+      if (window.ChatBotPro) {
+        window.ChatBotPro.init({ chatbotId, containerId: containerIdRef.current });
+      }
     };
     document.head.appendChild(script);
 
+    // Always inject CSS
     const link = document.createElement('link');
     link.rel = 'stylesheet';
-    link.href = '${window.location.origin}/chat-embed.css';
+    link.href = '${frontendUrl}/chat-embed.css';
     document.head.appendChild(link);
 
+    // Cleanup: remove the container div, script, and link on unmount
     return () => {
+      const container = document.getElementById(containerIdRef.current);
+      if (container) container.remove();
       script.remove();
       link.remove();
     };
   }, [chatbotId]);
 
-  return null;
+  return <div id={containerIdRef.current} style={style} />;
 };
 
 export default ChatWidget;
 
 // Usage:
-// <ChatWidget chatbotId="${activeChatbot.id}" />
+// <ChatWidget chatbotId='${activeChatbot.id}' style={{ position: 'fixed', bottom: 20, right: 20, zIndex: 1000 }} />
 `;
+
+  // New recommended iframe embed code using /api/iframe/:chatbotId
+  const recommendedIframeEmbed = `<iframe\n  src=\"${backendUrl}/api/iframe/${activeChatbot.id}\"\n  width=\"400\"\n  height=\"600\"\n  frameborder=\"0\"\n  allow=\"microphone; clipboard-write\"\n  loading=\"lazy\"\n  title=\"Chatbot\"\n  style=\"position: fixed; bottom: 20px; right: 20px; z-index: 1000; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); background: #fff;\">\n</iframe>`;
 
   const copyToClipboard = async (text: string, type: string) => {
     try {
@@ -188,8 +201,9 @@ export default ChatWidget;
             <Tabs defaultValue="script" className="space-y-4">
               <TabsList className="grid w-full grid-cols-3 rounded-xl bg-slate-50">
                 <TabsTrigger value="script" className="transition-all">HTML Script</TabsTrigger>
-                <TabsTrigger value="iframe" className="transition-all">HTML Iframe</TabsTrigger>
+                <TabsTrigger value="recommended-iframe" className="transition-all">Recommended Iframe</TabsTrigger>
                 <TabsTrigger value="react" className="transition-all">React Component</TabsTrigger>
+
               </TabsList>
 
               {/* Script Tab */}
@@ -229,43 +243,6 @@ export default ChatWidget;
                 </div>
               </TabsContent>
 
-              {/* Iframe Tab */}
-              <TabsContent value="iframe" className="space-y-4">
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="font-medium">HTML Iframe</h3>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => copyToClipboard(iframeEmbed, 'iframe')}
-                          aria-label="Copy iframe code"
-                          className="transition-all"
-                        >
-                          {copiedType === 'iframe' ? (
-                            <CheckCircle className="h-4 w-4 mr-2 text-green-600 animate-bounce" />
-                          ) : (
-                            <Copy className="h-4 w-4 mr-2" />
-                          )}
-                          {copiedType === 'iframe' ? 'Copied!' : 'Copy Code'}
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>Copy Iframe Code</TooltipContent>
-                    </Tooltip>
-                  </div>
-                  <Textarea
-                    value={iframeEmbed}
-                    readOnly
-                    rows={8}
-                    className="font-mono text-sm bg-slate-50 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                  <p className="text-sm text-slate-600 mt-2">
-                    Simple iframe implementation. Less flexible but easier to implement if you have restrictions on JavaScript.
-                  </p>
-                </div>
-              </TabsContent>
-
               {/* React Tab */}
               <TabsContent value="react" className="space-y-4">
                 <div>
@@ -299,6 +276,43 @@ export default ChatWidget;
                   />
                   <p className="text-sm text-slate-600 mt-2">
                     Use this React component to embed the chatbot in your React app. Make sure to include the script and CSS as shown.
+                  </p>
+                </div>
+              </TabsContent>
+
+              {/* Recommended Iframe Tab */}
+              <TabsContent value="recommended-iframe" className="space-y-4">
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="font-medium">Recommended HTML Iframe (Production)</h3>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => copyToClipboard(recommendedIframeEmbed, 'recommended-iframe')}
+                          aria-label="Copy recommended iframe code"
+                          className="transition-all"
+                        >
+                          {copiedType === 'recommended-iframe' ? (
+                            <CheckCircle className="h-4 w-4 mr-2 text-green-600 animate-bounce" />
+                          ) : (
+                            <Copy className="h-4 w-4 mr-2" />
+                          )}
+                          {copiedType === 'recommended-iframe' ? 'Copied!' : 'Copy Code'}
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Copy Recommended Iframe Code</TooltipContent>
+                    </Tooltip>
+                  </div>
+                  <Textarea
+                    value={recommendedIframeEmbed}
+                    readOnly
+                    rows={10}
+                    className="font-mono text-sm bg-slate-50 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  <p className="text-sm text-slate-600 mt-2">
+                    This is the recommended way to embed your chatbot in production. It loads a minimal, robust HTML page for the widget.
                   </p>
                 </div>
               </TabsContent>

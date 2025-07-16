@@ -52,6 +52,7 @@ function App() {
           <AppProvider>
             <TooltipProvider>
               <Toaster />
+             
               <AppLayout>
                 <Router />
               </AppLayout>

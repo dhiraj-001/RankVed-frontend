@@ -280,6 +280,8 @@
     const messagesContainer = document.getElementById('rankved-messages');
     if (!messagesContainer || !node) return;
     addMessage(node.question, 'bot');
+    // Track flow history
+    questionFlowState.history.push(node.id);
     // Remove any previous options/input
     const oldOptions = document.getElementById('rankved-flow-options');
     if (oldOptions) oldOptions.remove();
@@ -305,6 +307,9 @@
         btn.style.cursor = 'pointer';
         btn.onclick = function() {
           addMessage(option.text, 'user');
+          // Track user input
+          questionFlowState.userInputs[node.id] = option.text;
+          questionFlowState.currentNodeId = node.id;
           if (option.action === 'collect-lead') {
             addMessage('Thank you! Please provide your contact information so we can help you better.', 'bot');
             optionsDiv.remove();
@@ -354,6 +359,9 @@
       sendBtn.onclick = function() {
         if (!input.value.trim()) return;
         addMessage(input.value, 'user');
+        // Track user input
+        questionFlowState.userInputs[node.id] = input.value;
+        questionFlowState.currentNodeId = node.id;
         input.disabled = true;
         sendBtn.disabled = true;
         // Simulate AI handling if enabled
@@ -383,6 +391,9 @@
               btn.style.cursor = 'pointer';
               btn.onclick = function() {
                 addMessage(opt.text, 'user');
+                // Track user input for follow-up
+                questionFlowState.userInputs[node.id + '_followup'] = opt.text;
+                questionFlowState.currentNodeId = node.id;
                 if (opt.action === 'collect-lead') {
                   addMessage('Thank you! Please provide your contact information so we can help you better.', 'bot');
                   followUpDiv.remove();
@@ -440,6 +451,28 @@
       emailInput.style.borderRadius = '6px';
       emailInput.style.border = '1px solid #e2e8f0';
       emailInput.style.fontSize = '14px';
+      // Add mobile number input
+      const phoneInput = document.createElement('input');
+      phoneInput.type = 'tel';
+      phoneInput.placeholder = 'Your Mobile Number';
+      phoneInput.style.padding = '8px 12px';
+      phoneInput.style.borderRadius = '6px';
+      phoneInput.style.border = '1px solid #e2e8f0';
+      phoneInput.style.fontSize = '14px';
+      // Add consent checkbox
+      const consentDiv = document.createElement('div');
+      consentDiv.style.display = 'flex';
+      consentDiv.style.alignItems = 'center';
+      consentDiv.style.gap = '8px';
+      const consentCheckbox = document.createElement('input');
+      consentCheckbox.type = 'checkbox';
+      consentCheckbox.id = 'rankved-consent-checkbox';
+      const consentLabel = document.createElement('label');
+      consentLabel.htmlFor = 'rankved-consent-checkbox';
+      consentLabel.textContent = 'I consent to be contacted.';
+      consentLabel.style.fontSize = '13px';
+      consentDiv.appendChild(consentCheckbox);
+      consentDiv.appendChild(consentLabel);
       const sendBtn = document.createElement('button');
       sendBtn.textContent = 'Send';
       sendBtn.style.background = getAppearance().primaryColor;
@@ -450,10 +483,9 @@
       sendBtn.style.fontSize = '14px';
       sendBtn.style.cursor = 'pointer';
       sendBtn.onclick = async function() {
-        if (!nameInput.value.trim() || !emailInput.value.trim()) return;
-        addMessage(`Name: ${nameInput.value}, Email: ${emailInput.value}`, 'user');
+        if (!nameInput.value.trim() || !emailInput.value.trim() || !phoneInput.value.trim() || !consentCheckbox.checked) return;
+        addMessage(`Name: ${nameInput.value}, Email: ${emailInput.value}, Phone: ${phoneInput.value}, Consent: Yes`, 'user');
         sendBtn.disabled = true;
-
         // --- Send lead data to backend (public endpoint) ---
         try {
           let apiUrl =
@@ -464,13 +496,19 @@
             addMessage('Chatbot ID is missing. Please refresh the page.', 'bot');
             return;
           }
+          // Build context from questionFlowState (add more if needed)
+          const context = { questionFlowState };
+          console.log('Sending context:', context);
           const res = await fetch(apiUrl + '/api/chat/' + chatbotId + '/leads', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               name: nameInput.value,
               email: emailInput.value,
-              source: 'chat_widget'
+              phone: phoneInput.value,
+              consentGiven: consentCheckbox.checked,
+              source: 'chat_widget',
+              conversationContext: context // <-- send context here
             })
           });
           if (res.ok) {
@@ -484,6 +522,8 @@
       };
       inputDiv.appendChild(nameInput);
       inputDiv.appendChild(emailInput);
+      inputDiv.appendChild(phoneInput);
+      inputDiv.appendChild(consentDiv);
       inputDiv.appendChild(sendBtn);
       messagesContainer.appendChild(inputDiv);
       messagesContainer.scrollTop = messagesContainer.scrollHeight;

@@ -129,7 +129,7 @@ export default function Appearance() {
   // Just before rendering <ChatPreview />
   const previewChatbot: any = {
     id: activeChatbot?.id || 'demo',
-    name: activeChatbot?.name || appearance.title || 'Support Bot',
+    name:  appearance.chatWidgetName || 'Support Bot',
     primaryColor: appearance.primaryColor,
     welcomeMessage: appearance.welcomeMessage,
     inputPlaceholder: appearance.inputPlaceholder,

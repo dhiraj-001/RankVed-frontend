@@ -158,7 +158,7 @@ export default function Leads() {
 
         {/* Leads Table */}
         <Card className="shadow-lg rounded-2xl border-0">
-          <CardHeader className="sticky top-[180px] z-10 bg-white/90 backdrop-blur-md rounded-t-2xl">
+          <CardHeader className="top-[180px] z-10 bg-white/90 backdrop-blur-md rounded-t-2xl">
             <CardTitle className="flex items-center gap-2 text-lg font-bold">
               <Users className="h-5 w-5 text-blue-600" /> Lead Details
             </CardTitle>
@@ -251,22 +251,26 @@ export default function Leads() {
                             </span>
                           </td>
                           <td className="p-4">
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <span className="cursor-pointer underline decoration-dotted" tabIndex={0}>{formatDateTime(lead.createdAt)}</span>
-                              </TooltipTrigger>
-                              <TooltipContent>{formatTimeAgo(lead.createdAt)}</TooltipContent>
-                            </Tooltip>
-                          </td>
-                          <td className="p-4">
                             <Button size="sm" variant="outline" onClick={() => setExpandedContext(expandedContext === lead.id ? null : lead.id)}>
                               {expandedContext === lead.id ? 'Hide' : 'View'}
                             </Button>
-                            {expandedContext === lead.id && (
-                              <div className="mt-2 max-w-xs text-xs bg-slate-50 border rounded p-2 overflow-x-auto">
-                                <pre className="whitespace-pre-wrap break-all">{JSON.stringify(lead.conversationContext, null, 2)}</pre>
-                              </div>
-                            )}
+                            <div
+                              className={`transition-all duration-700 ease-in-out overflow-hidden ${expandedContext === lead.id ? 'max-h-96 opacity-100 mt-3' : 'max-h-0 opacity-0 mt-0'}`}
+                              style={{ minWidth: 220 }}
+                            >
+                              {expandedContext === lead.id && (
+                                <div className="relative bg-gradient-to-br from-blue-50 to-white border border-blue-100 rounded-xl shadow-lg p-4 text-xs font-mono text-slate-800 break-all">
+                                  <button
+                                    className="absolute top-2 right-2 text-blue-500 hover:text-blue-700 text-xs px-2 py-1 rounded focus:outline-none focus:ring-2 focus:ring-blue-300"
+                                    onClick={() => navigator.clipboard.writeText(JSON.stringify(lead.conversationContext, null, 2))}
+                                    title="Copy context"
+                                  >
+                                    Copy
+                                  </button>
+                                  <pre className="whitespace-pre-wrap break-all">{JSON.stringify(lead.conversationContext, null, 2)}</pre>
+                                </div>
+                              )}
+                            </div>
                           </td>
                         </tr>
                       );

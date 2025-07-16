@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/u
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useApp } from '@/contexts/app-context';
 import { useUpdateChatbot } from '@/hooks/use-chatbots';
-import { fileToDataURI } from '@/lib/utils';
+import {  compressAndConvertToDataURI } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 
 export default function Settings() {
@@ -95,12 +95,24 @@ export default function Settings() {
 
   const handleFileUpload = async (field: string, file: File) => {
     try {
-      const dataUri = await fileToDataURI(file);
+      // Compress and convert image (same as appearance page)
+      const dataUri = await compressAndConvertToDataURI(file, 128, 128, 0.7);
+      // Check size after compression (base64 length * 3/4 for bytes)
+      const base64Length = dataUri.split(',')[1]?.length || 0;
+      const byteSize = Math.floor(base64Length * 3 / 4);
+      if (byteSize > 1024 * 1024) { // 1MB limit
+        toast({
+          title: 'Error',
+          description: 'Image is too large after compression. Please upload an image under 1MB.',
+          variant: 'destructive',
+        });
+        return;
+      }
       setSettings(prev => ({ ...prev, [field]: dataUri }));
     } catch (error) {
       toast({
         title: 'Error',
-        description: 'Failed to upload file. Please try again.',
+        description: 'Failed to upload or compress file. Please try again.',
         variant: 'destructive',
       });
     }

@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { fileToDataURI } from '@/lib/utils';
+import { fileToDataURI, compressAndConvertToDataURI } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 
 export default function Profile() {
@@ -110,7 +110,13 @@ export default function Profile() {
 
   const handleFileUpload = async (field: string, file: File) => {
     try {
-      const dataUri = await fileToDataURI(file);
+      // Compress and convert image for agencyLogo uploads, else fallback to fileToDataURI
+      let dataUri;
+      if (field === 'agencyLogo') {
+        dataUri = await compressAndConvertToDataURI(file, 128, 128, 0.7);
+      } else {
+        dataUri = await fileToDataURI(file);
+      }
       setAgencySettings(prev => ({ ...prev, [field]: dataUri }));
       toast({
         title: 'File uploaded',

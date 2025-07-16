@@ -8,7 +8,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { Switch } from '@/components/ui/switch';
 import { useApp } from '@/contexts/app-context';
 import { useUpdateChatbot } from '@/hooks/use-chatbots';
 import { useToast } from '@/hooks/use-toast';
@@ -59,6 +58,13 @@ export default function Questions() {
       setQuestionFlow((activeChatbot.questionFlow as any).nodes as QuestionNode[]);
     }
   }, [activeChatbot]);
+
+  // Add local state for questionFlowEnabled
+  const [questionFlowEnabled, setQuestionFlowEnabled] = useState(activeChatbot?.questionFlowEnabled ?? false);
+  // Sync local state with activeChatbot
+  useEffect(() => {
+    setQuestionFlowEnabled(activeChatbot?.questionFlowEnabled ?? false);
+  }, [activeChatbot?.questionFlowEnabled]);
   const [showNodeDialog, setShowNodeDialog] = useState(false);
   const [showTemplatesDialog, setShowTemplatesDialog] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -305,7 +311,9 @@ const [showDeleteDialog, setShowDeleteDialog] = useState<{ open: boolean; nodeId
 
   const handleToggleQuestionFlow = async (enabled: boolean) => {
     if (!activeChatbot) return;
-
+    // Optimistically update UI
+    console.log('[Questions] Toggle button clicked. Setting questionFlowEnabled to:', enabled);
+    setQuestionFlowEnabled(enabled);
     try {
       await updateChatbot.mutateAsync({
         id: activeChatbot.id,
@@ -313,7 +321,7 @@ const [showDeleteDialog, setShowDeleteDialog] = useState<{ open: boolean; nodeId
           questionFlowEnabled: enabled,
         },
       });
-      
+      console.log('[Questions] Backend update success. questionFlowEnabled is now:', enabled);
       toast({
         title: enabled ? 'Question flow enabled' : 'Question flow disabled',
         description: enabled 
@@ -321,12 +329,16 @@ const [showDeleteDialog, setShowDeleteDialog] = useState<{ open: boolean; nodeId
           : 'Question suggestions are now disabled.',
       });
     } catch (error) {
+      // Revert UI if error
+      setQuestionFlowEnabled(!enabled);
+      console.error('[Questions] Backend update failed. Reverting questionFlowEnabled to:', !enabled);
       toast({
         title: 'Error',
         description: 'Failed to update question flow settings.',
         variant: 'destructive',
       });
     }
+    console.log('[Questions] Current questionFlowEnabled state:', enabled);
   };
 
   const handleResetToDefault = () => {
@@ -439,6 +451,49 @@ const [showDeleteDialog, setShowDeleteDialog] = useState<{ open: boolean; nodeId
   // Add this function to handle saving as a custom template
  
 
+  // Handler to load the default template (general business)
+  const handleUseDefaultTemplate = async () => {
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || '';
+      const response = await fetch(`${apiUrl}/api/sample-flows/general`);
+      const template = await response.json();
+      if (!template.nodes || !Array.isArray(template.nodes)) {
+        toast({
+          title: 'Error',
+          description: 'Default template is not available or is in the wrong format.',
+          variant: 'destructive',
+        });
+        return;
+      }
+      // Convert template to nodes format
+      const templateNodes: QuestionNode[] = template.nodes.map((node: any) => ({
+        ...node,
+        id: node.id || generateId(),
+      }));
+      setQuestionFlow(templateNodes);
+      // Save to chatbot
+      if (activeChatbot) {
+        await updateChatbot.mutateAsync({
+          id: activeChatbot.id,
+          data: {
+            questionFlow: templateNodes,
+            questionFlowEnabled: true,
+          },
+        });
+      }
+      toast({
+        title: 'Default template loaded',
+        description: 'The default question flow has been applied to your chatbot.',
+      });
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to load default template. Please try again.',
+        variant: 'destructive',
+      });
+    }
+  };
+
   if (!activeChatbot) {
     return (
       <div className="flex-1 flex items-center justify-center bg-slate-50">
@@ -462,17 +517,25 @@ const [showDeleteDialog, setShowDeleteDialog] = useState<{ open: boolean; nodeId
                 Design the conversation logic for <span className="font-semibold">{activeChatbot.name}</span>
               </p>
               <div className="flex items-center gap-3 mt-3">
-                <Switch
-                  id="question-flow-enabled"
-                  checked={activeChatbot.questionFlowEnabled || false}
-                  onCheckedChange={handleToggleQuestionFlow}
-                />
-                <Label htmlFor="question-flow-enabled" className="flex items-center gap-2">
-                  <span>Enable Suggestions</span>
-                  <Badge variant={activeChatbot.questionFlowEnabled ? "default" : "secondary"}>
-                    {activeChatbot.questionFlowEnabled ? "Active" : "Disabled"}
-                  </Badge>
-                </Label>
+                <Button
+                  id="question-flow-enabled-toggle"
+                  type="button"
+                  onClick={() => handleToggleQuestionFlow(!questionFlowEnabled)}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-full font-semibold transition-colors duration-200 ${questionFlowEnabled ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
+                >
+                  {questionFlowEnabled ? (
+                    <>
+                      <span className="w-2 h-2 rounded-full bg-green-400 inline-block mr-2"></span>
+                      Disable 
+                    </>
+                  ) : (
+                    <>
+                      <span className="w-2 h-2 rounded-full bg-gray-400 inline-block mr-2"></span>
+                      Enable 
+                    </>
+                  )}
+                </Button>
+               
               </div>
             </div>
             <div className="flex flex-wrap items-center gap-2">
@@ -517,6 +580,7 @@ const [showDeleteDialog, setShowDeleteDialog] = useState<{ open: boolean; nodeId
               <Button onClick={() => setShowAddTemplateDialog(true)} variant="outline" className="ml-2">
                 Add Template from JSON
               </Button>
+          
             </div>
           </div>
         </header>
@@ -547,7 +611,7 @@ const [showDeleteDialog, setShowDeleteDialog] = useState<{ open: boolean; nodeId
                       <Button onClick={handleCreateNode}>
                         <Plus className="h-5 w-5 mr-2" /> Create First Question
                       </Button>
-                      <Button variant="outline" onClick={handleResetToDefault}>
+                      <Button variant="outline" onClick={handleUseDefaultTemplate}>
                         Use Default Template
                       </Button>
                     </div>

@@ -7,7 +7,6 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Switch } from '@/components/ui/switch';
 import { useChatbots, useUpdateChatbot } from '@/hooks/use-chatbots';
 import { formatDateTime } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -165,14 +164,16 @@ export default function Chatbots() {
                   />
                 </div>
                 <div className="border-t border-slate-100 pt-6 flex items-center space-x-2 mt-2">
-                  <Switch
-                    id="active"
-                    checked={newChatbot.isActive}
-                    onCheckedChange={(checked) => setNewChatbot(prev => ({ ...prev, isActive: checked }))}
-                    className={`transition-colors duration-300 w-10 h-6 rounded-full relative focus:ring-2 focus:ring-green-500 focus:border-green-500
-                      ${newChatbot.isActive ? 'bg-green-500 shadow-green-200 shadow' : 'bg-gray-300'}
-                    `}
-                  />
+                  <Button
+                    variant={newChatbot.isActive ? "default" : "outline"}
+                    onClick={() => setNewChatbot(prev => ({ ...prev, isActive: !prev.isActive }))}
+                    className={`rounded-full w-10 h-6 flex items-center justify-center transition-colors duration-300 ${newChatbot.isActive ? 'bg-green-500 text-white' : 'bg-gray-300 text-gray-700'}`}
+                    aria-label={newChatbot.isActive ? 'Deactivate chatbot' : 'Activate chatbot'}
+                  >
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                  </Button>
                   <Label
                     htmlFor="active"
                     className={`ml-2 font-medium transition-colors duration-300 flex items-center select-none
@@ -420,14 +421,16 @@ export default function Chatbots() {
               />
             </div>
             <div className="border-t border-slate-100 pt-6 flex items-center space-x-2 mt-2">
-              <Switch
-                id="edit-active"
-                checked={editChatbot?.isActive || false}
-                onCheckedChange={(checked) => setEditChatbot((prev: any) => ({ ...prev, isActive: checked }))}
-                className={`transition-colors duration-300 w-10 h-6 rounded-full relative focus:ring-2 focus:ring-green-500 focus:border-green-500
-                  ${editChatbot?.isActive ? 'bg-green-500 shadow-green-200 shadow' : 'bg-gray-300'}
-                `}
-              />
+              <Button
+                variant={editChatbot?.isActive ? "default" : "outline"}
+                onClick={() => setEditChatbot((prev: any) => ({ ...prev, isActive: !prev.isActive }))}
+                className={`rounded-full w-10 h-6 flex items-center justify-center transition-colors duration-300 ${editChatbot?.isActive ? 'bg-green-500 text-white' : 'bg-gray-300 text-gray-700'}`}
+                aria-label={editChatbot?.isActive ? 'Deactivate chatbot' : 'Activate chatbot'}
+              >
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              </Button>
               <Label
                 htmlFor="edit-active"
                 className={`ml-2 font-medium transition-colors duration-300 flex items-center select-none

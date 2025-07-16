@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useApp } from '@/contexts/app-context';
@@ -299,14 +298,14 @@ export default function Settings() {
                   />
                 </div>
                 <div className="flex items-center space-x-3">
-                  <Switch
-                    id="enableSound"
-                    checked={settings.enableNotificationSound}
-                    onCheckedChange={(checked) => setSettings(prev => ({ ...prev, enableNotificationSound: checked }))}
-                  />
-                  <Label htmlFor="enableSound" className="text-gray-700 font-medium">
-                    Enable Notification Sound
-                  </Label>
+                  <Button
+                    variant={settings.enableNotificationSound ? 'default' : 'outline'}
+                    onClick={() => setSettings(prev => ({ ...prev, enableNotificationSound: !prev.enableNotificationSound }))}
+                    className="flex-1"
+                  >
+                    <MessageSquare className="h-4 w-4 mr-2" />
+                    {settings.enableNotificationSound ? 'Enable Sound' : 'Disable Sound'}
+                  </Button>
                 </div>
                 <div className="space-y-1">
                   <Label>Chat Window Avatar</Label>
@@ -364,14 +363,14 @@ export default function Settings() {
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="flex items-center space-x-3">
-                  <Switch
-                    id="leadCollectionEnabled"
-                    checked={settings.leadCollectionEnabled}
-                    onCheckedChange={(checked) => setSettings(prev => ({ ...prev, leadCollectionEnabled: checked }))}
-                  />
-                  <Label htmlFor="leadCollectionEnabled" className="text-gray-700 font-medium">
-                    Enable automatic lead collection
-                  </Label>
+                  <Button
+                    variant={settings.leadCollectionEnabled ? 'default' : 'outline'}
+                    onClick={() => setSettings(prev => ({ ...prev, leadCollectionEnabled: !prev.leadCollectionEnabled }))}
+                    className="flex-1"
+                  >
+                    <MessageSquare className="h-4 w-4 mr-2" />
+                    {settings.leadCollectionEnabled ? 'Enable Lead Collection' : 'Disable Lead Collection'}
+                  </Button>
                 </div>
 
                 {settings.leadCollectionEnabled && (

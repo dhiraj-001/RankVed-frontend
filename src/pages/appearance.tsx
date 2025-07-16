@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ChatPreview } from '@/components/chat/chat-preview';
@@ -329,8 +328,14 @@ export default function Appearance() {
                         <Textarea id="welcomeMessage" value={appearance.welcomeMessage} onChange={e => setAppearance(prev => ({ ...prev, welcomeMessage: e.target.value }))} placeholder="Hello! How can I help you today?" rows={2} />
                       </div>
                       <div className="flex items-center gap-2 pt-2">
-                        <Switch id="showWelcomePopup" checked={appearance.showWelcomePopup} onCheckedChange={checked => setAppearance(prev => ({ ...prev, showWelcomePopup: checked }))} />
-                        <Label htmlFor="showWelcomePopup">Show welcome message popup</Label>
+                        <Button
+                          variant={appearance.showWelcomePopup ? 'default' : 'outline'}
+                          onClick={() => setAppearance(prev => ({ ...prev, showWelcomePopup: !prev.showWelcomePopup }))}
+                          className="bg-blue-600 hover:bg-blue-700 focus:ring-blue-500 text-white font-semibold px-6 py-2 rounded-lg shadow-sm"
+                        >
+                          <Eye className="h-5 w-5 mr-2" />
+                          {appearance.showWelcomePopup ? 'Hide Welcome Popup' : 'Show Welcome Popup'}
+                        </Button>
                       </div>
                     </CardContent>
                   </Card>

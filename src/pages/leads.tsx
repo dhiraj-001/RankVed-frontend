@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useLeads } from '@/hooks/use-leads';
 import { useChatbots } from '@/hooks/use-chatbots';
-import { formatDateTime, formatTimeAgo } from '@/lib/utils';
+import { formatDateTime } from '@/lib/utils';
 import { useEffect } from 'react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { toast } from '@/hooks/use-toast';

@@ -12,6 +12,7 @@ import { useChatbots, useUpdateChatbot } from '@/hooks/use-chatbots';
 import { formatDateTime } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useChatbotActions } from '@/hooks/use-chatbot-actions';
+import { useToast } from '@/hooks/use-toast';
 
 export default function Chatbots() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -50,6 +51,7 @@ export default function Chatbots() {
   const { data: chatbots, isLoading, refetch } = useChatbots();
   const updateChatbot = useUpdateChatbot();
   const { handleCreateChatbot, handleDeleteChatbot, createChatbot } = useChatbotActions({ setShowCreateDialog, setNewChatbot });
+  const { toast } = useToast();
 
   const [activeTogglingId, setActiveTogglingId] = useState<string | null>(null);
 
@@ -65,6 +67,7 @@ export default function Chatbots() {
     await updateChatbot.mutateAsync({ id, data });
     setShowEditDialog(false);
     refetch();
+    toast({ title: 'Chatbot updated', description: 'Your changes have been saved.', variant: 'default' });
   };
 
   // Preview functionality
@@ -84,6 +87,7 @@ export default function Chatbots() {
       setIsDeleting(false);
       setShowDeleteDialog(false);
       refetch();
+      toast({ title: 'Chatbot deleted', description: 'The chatbot has been removed.', variant: 'default' });
     }
   };
 

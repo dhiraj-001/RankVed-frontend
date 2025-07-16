@@ -20,6 +20,10 @@
         0% { transform: scale(1) translateY(0); opacity: 1; }
         100% { transform: scale(0.8) translateY(40px); opacity: 0; }
       }
+      @keyframes rankved-dot-bounce {
+        0% { transform: translateY(0); }
+        100% { transform: translateY(-6px); }
+      }
       #rankved-chat-bubble[data-rankved-widget] {
         animation: rankved-bubble-pop 0.5s cubic-bezier(.5,1.8,.5,1) 0.1s both;
       }
@@ -601,6 +605,35 @@
     }
   }
 
+  function showLoadingMessage() {
+    const messagesContainer = document.getElementById('rankved-messages');
+    if (!messagesContainer) return;
+    // Remove any existing loading message
+    const oldLoading = document.getElementById('rankved-loading-message');
+    if (oldLoading) oldLoading.remove();
+    // Add new loading message
+    const loadingDiv = document.createElement('div');
+    loadingDiv.id = 'rankved-loading-message';
+    loadingDiv.setAttribute('style', 'margin-bottom: 14px; display: flex; justify-content: flex-start; align-items: flex-start; gap: 8px;');
+    loadingDiv.innerHTML = `
+      <div style="width: 28px; height: 28px;"></div>
+      <div style="max-width: 80%; padding: 10px 16px; border-radius: 12px; font-size: 14px; background: #f3f4f6; color: #333; box-shadow: 0 1px 2px rgba(0,0,0,0.08);">
+        <span class="rankved-typing-dots" style="display: inline-block;">
+          <span style="display:inline-block;width:6px;height:6px;background:#6366F1;border-radius:50%;margin-right:2px;animation:rankved-dot-bounce 1s infinite alternate;"></span>
+          <span style="display:inline-block;width:6px;height:6px;background:#6366F1;border-radius:50%;margin-right:2px;animation:rankved-dot-bounce 1s 0.2s infinite alternate;"></span>
+          <span style="display:inline-block;width:6px;height:6px;background:#6366F1;border-radius:50%;animation:rankved-dot-bounce 1s 0.4s infinite alternate;"></span>
+        </span>
+      </div>
+    `;
+    messagesContainer.appendChild(loadingDiv);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+  }
+
+  function removeLoadingMessage() {
+    const oldLoading = document.getElementById('rankved-loading-message');
+    if (oldLoading) oldLoading.remove();
+  }
+
   // Send message to backend
   async function sendMessage() {
     const input = chatWindow.querySelector('#rankved-input');
@@ -613,6 +646,7 @@
     }
     addMessage(text, 'user');
     input.value = '';
+    showLoadingMessage(); // Show loading indicator
     // Build context for backend
     let context = {
       messageCount: (questionFlowState.history?.length || 0) + 1,
@@ -627,6 +661,7 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: text, context })
       });
+      removeLoadingMessage(); // Remove loading indicator
       if (res.ok) {
         const data = await res.json();
         if (data.type === 'form' || data.shouldCollectLead) {
@@ -639,6 +674,7 @@
         addMessage('Sorry, there was a problem. Please try again.', 'bot');
       }
     } catch (e) {
+      removeLoadingMessage(); // Remove loading indicator on error
       addMessage('Sorry, there was a problem. Please try again.', 'bot');
     }
   }

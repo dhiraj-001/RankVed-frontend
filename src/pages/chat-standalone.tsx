@@ -384,11 +384,14 @@ export default function ChatStandalone() {
                       </div>
                       <Button
                         onClick={handleLeadSubmit}
-                        disabled={!leadForm.name || !leadForm.email || !leadForm.consent}
-                        className="w-full text-sm"
+                        disabled={!leadForm.name || !leadForm.email || !leadForm.consent || leadMutation.isPending}
+                        className="w-full text-sm flex items-center justify-center"
                         size="sm"
                         style={{ backgroundColor: chatbot.primaryColor || '#6366F1' }}
                       >
+                        {leadMutation.isPending ? (
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        ) : null}
                         Submit
                       </Button>
                     </div>

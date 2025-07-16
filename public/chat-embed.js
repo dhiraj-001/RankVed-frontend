@@ -580,21 +580,133 @@
     if (!text) return;
     addMessage(text, 'user');
     input.value = '';
+    // Build context for backend
+    let context = {
+      messageCount: (questionFlowState.history?.length || 0) + 1,
+      manualMessageCount: (questionFlowState.history?.length || 0) + 1,
+      isFlowBased: !!(config.questionFlowEnabled && config.questionFlow && Array.isArray(config.questionFlow.nodes) && config.questionFlow.nodes.length > 0),
+      usingSuggestions: false,
+      flowState: questionFlowState,
+    };
     try {
       const res = await fetch(`${config.apiUrl || ''}/api/chat/${config.chatbotId}/message`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: text })
+        body: JSON.stringify({ message: text, context })
       });
       if (res.ok) {
         const data = await res.json();
-        addMessage(data.message || '...', 'bot');
+        if (data.type === 'form' || data.shouldCollectLead) {
+          // Show lead collection form
+          renderLeadForm();
+        } else {
+          addMessage(data.message || '...', 'bot');
+        }
       } else {
         addMessage('Sorry, there was a problem. Please try again.', 'bot');
-  }
+      }
     } catch (e) {
       addMessage('Sorry, there was a problem. Please try again.', 'bot');
+    }
+  }
+
+  // Render lead collection form (when backend says to collect lead)
+  function renderLeadForm() {
+    const messagesContainer = document.getElementById('rankved-messages');
+    if (!messagesContainer) return;
+    // Remove any previous input
+    const oldInput = document.getElementById('rankved-flow-input');
+    if (oldInput) oldInput.remove();
+    const inputDiv = document.createElement('div');
+    inputDiv.id = 'rankved-flow-input';
+    inputDiv.style.margin = '8px 0';
+    inputDiv.style.display = 'flex';
+    inputDiv.style.flexDirection = 'column';
+    inputDiv.style.gap = '6px';
+    const nameInput = document.createElement('input');
+    nameInput.type = 'text';
+    nameInput.placeholder = 'Your Name';
+    nameInput.style.padding = '8px 12px';
+    nameInput.style.borderRadius = '6px';
+    nameInput.style.border = '1px solid #e2e8f0';
+    nameInput.style.fontSize = '14px';
+    const emailInput = document.createElement('input');
+    emailInput.type = 'email';
+    emailInput.placeholder = 'Your Email';
+    emailInput.style.padding = '8px 12px';
+    emailInput.style.borderRadius = '6px';
+    emailInput.style.border = '1px solid #e2e8f0';
+    emailInput.style.fontSize = '14px';
+    const phoneInput = document.createElement('input');
+    phoneInput.type = 'tel';
+    phoneInput.placeholder = 'Your Mobile Number';
+    phoneInput.style.padding = '8px 12px';
+    phoneInput.style.borderRadius = '6px';
+    phoneInput.style.border = '1px solid #e2e8f0';
+    phoneInput.style.fontSize = '14px';
+    const consentDiv = document.createElement('div');
+    consentDiv.style.display = 'flex';
+    consentDiv.style.alignItems = 'center';
+    consentDiv.style.gap = '8px';
+    const consentCheckbox = document.createElement('input');
+    consentCheckbox.type = 'checkbox';
+    consentCheckbox.id = 'rankved-consent-checkbox';
+    const consentLabel = document.createElement('label');
+    consentLabel.htmlFor = 'rankved-consent-checkbox';
+    consentLabel.textContent = 'I consent to be contacted.';
+    consentLabel.style.fontSize = '13px';
+    consentDiv.appendChild(consentCheckbox);
+    consentDiv.appendChild(consentLabel);
+    const sendBtn = document.createElement('button');
+    sendBtn.textContent = 'Send';
+    sendBtn.style.background = getAppearance().primaryColor;
+    sendBtn.style.color = '#fff';
+    sendBtn.style.border = 'none';
+    sendBtn.style.borderRadius = '6px';
+    sendBtn.style.padding = '8px 16px';
+    sendBtn.style.fontSize = '14px';
+    sendBtn.style.cursor = 'pointer';
+    sendBtn.onclick = async function() {
+      if (!nameInput.value.trim() || !emailInput.value.trim() || !phoneInput.value.trim() || !consentCheckbox.checked) return;
+      addMessage(`Name: ${nameInput.value}, Email: ${emailInput.value}, Phone: ${phoneInput.value}, Consent: Yes`, 'user');
+      sendBtn.disabled = true;
+      try {
+        let apiUrl = (typeof window !== 'undefined' && window.VITE_API_URL) ? window.VITE_API_URL : (config.apiUrl || (window.CHATBOT_CONFIG && window.CHATBOT_CONFIG.apiUrl) || window.location.origin);
+        const chatbotId = config.chatbotId || (window.CHATBOT_CONFIG && window.CHATBOT_CONFIG.chatbotId);
+        if (!chatbotId) {
+          addMessage('Chatbot ID is missing. Please refresh the page.', 'bot');
+          return;
+        }
+        // Build context from questionFlowState
+        const context = { questionFlowState };
+        const res = await fetch(apiUrl + '/api/chat/' + chatbotId + '/leads', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: nameInput.value,
+            email: emailInput.value,
+            phone: phoneInput.value,
+            consentGiven: consentCheckbox.checked,
+            source: 'chat_widget',
+            conversationContext: context
+          })
+        });
+        if (res.ok) {
+          addMessage('Thank you! Our team will contact you soon.', 'bot');
+        } else {
+          addMessage('Failed to submit your info. Please try again later.', 'bot');
+        }
+      } catch (e) {
+        addMessage('Failed to submit your info. Please try again later.', 'bot');
       }
+    };
+    inputDiv.appendChild(nameInput);
+    inputDiv.appendChild(emailInput);
+    inputDiv.appendChild(phoneInput);
+    inputDiv.appendChild(consentDiv);
+    inputDiv.appendChild(sendBtn);
+    messagesContainer.appendChild(inputDiv);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
   }
 
   // Initialize

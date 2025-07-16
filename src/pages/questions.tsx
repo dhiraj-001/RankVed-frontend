@@ -437,35 +437,7 @@ const [showDeleteDialog, setShowDeleteDialog] = useState<{ open: boolean; nodeId
   };
 
   // Add this function to handle saving as a custom template
-  const handleSaveAsCustomTemplate = async () => {
-    const name = prompt('Enter a name for your custom template:');
-    if (!name) return;
-    try {
-      const response = await apiRequest('POST', '/api/question-templates', {
-        name,
-        nodes: questionFlow,
-      });
-      if (response.ok) {
-        toast({
-          title: 'Template saved',
-          description: `Custom template "${name}" saved successfully.`
-        });
-      } else {
-        const data = await response.json();
-        toast({
-          title: 'Error',
-          description: data.message || 'Failed to save template.',
-          variant: 'destructive',
-        });
-      }
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to save template. Please try again.',
-        variant: 'destructive',
-      });
-    }
-  };
+ 
 
   if (!activeChatbot) {
     return (

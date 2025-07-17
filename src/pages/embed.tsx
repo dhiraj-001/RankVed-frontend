@@ -84,7 +84,7 @@ export default ChatWidget;
 `;
 
   // New recommended iframe embed code using /api/iframe/:chatbotId
-  const recommendedIframeEmbed = `<iframe\n  src=\"${backendUrl}/api/iframe/${activeChatbot.id}\"\n  width=\"400\"\n  height=\"600\"\n  frameborder=\"0\"\n  allow=\"microphone; clipboard-write\"\n  loading=\"lazy\"\n  title=\"Chatbot\"\n  style=\"position: fixed; bottom: 20px; right: 20px; z-index: 1000; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); background: #fff;\">\n</iframe>`;
+  const recommendedIframeEmbed = `<iframe\n  src=\"${backendUrl}/api/iframe/${activeChatbot.id}\"\n  width=\"500\"\n  height=\"600\"\n  frameborder=\"0\"\n  allow=\"microphone; clipboard-write\"\n  loading=\"lazy\"\n  title=\"Chatbot\"\n  style=\"position: fixed; bottom: 20px; right: 20px; z-index: 1000; border-radius: 12px; background: #fff;\">\n</iframe>`;
 
   const copyToClipboard = async (text: string, type: string) => {
     try {

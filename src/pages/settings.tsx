@@ -207,12 +207,12 @@ export default function Settings() {
           >
             Integrations
           </TabsTrigger>
-          <TabsTrigger
+          {/* <TabsTrigger
             value="placement"
             className="text-gray-700 hover:text-blue-600 focus:text-blue-600 font-medium py-3 px-4"
           >
             Placement
-          </TabsTrigger>
+          </TabsTrigger> */}
           <TabsTrigger
             value="ai-provider"
             className="text-gray-700 hover:text-blue-600 focus:text-blue-600 font-medium py-3 px-4"
@@ -483,7 +483,7 @@ export default function Settings() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="placement" className="space-y-6">
+          {/* <TabsContent value="placement" className="space-y-6">
             <Card className="shadow-sm border border-gray-200 rounded-lg">
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2 text-gray-900 font-semibold text-lg">
@@ -539,7 +539,7 @@ export default function Settings() {
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
+          </TabsContent> */}
 
           <TabsContent value="ai-provider" className="space-y-6">
             <Card className="shadow-sm border border-gray-200 rounded-lg">

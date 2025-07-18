@@ -7,18 +7,23 @@
     const style = document.createElement('style');
     style.id = 'rankved-chat-anim-style';
     style.textContent = `
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
+      html, body {
+        font-family: 'Inter', system-ui, sans-serif !important;
+        background: #f8fafc;
+      }
       @keyframes rankved-bubble-pop {
         0% { transform: scale(0.5); opacity: 0; }
         80% { transform: scale(1.1); opacity: 1; }
         100% { transform: scale(1); opacity: 1; }
       }
       @keyframes rankved-window-in {
-        0% { transform: scale(0.8) translateY(40px); opacity: 0; }
+        0% { transform: scale(0.95) translateY(40px); opacity: 0; }
         100% { transform: scale(1) translateY(0); opacity: 1; }
       }
       @keyframes rankved-window-out {
         0% { transform: scale(1) translateY(0); opacity: 1; }
-        100% { transform: scale(0.8) translateY(40px); opacity: 0; }
+        100% { transform: scale(0.95) translateY(40px); opacity: 0; }
       }
       @keyframes rankved-dot-bounce {
         0% { transform: translateY(0); }
@@ -26,12 +31,124 @@
       }
       #rankved-chat-bubble[data-rankved-widget] {
         animation: rankved-bubble-pop 0.5s cubic-bezier(.5,1.8,.5,1) 0.1s both;
+        box-shadow: 0 4px 24px rgba(60,72,88,0.12);
+        border: 1.5px solid #e0e7ef;
+        background: linear-gradient(135deg, #6366F1 60%, #818cf8 100%);
+      }
+      #rankved-chat-bubble[data-rankved-widget]:hover {
+        box-shadow: 0 8px 32px rgba(60,72,88,0.18);
+        filter: brightness(1.05);
       }
       #rankved-chat-window[data-rankved-widget] {
         animation: rankved-window-in 0.35s cubic-bezier(.5,1.8,.5,1) 0s both;
+        box-shadow: 0 8px 40px rgba(60,72,88,0.18);
+        border: 1.5px solid #e0e7ef;
+        background: #fff;
       }
       #rankved-chat-window[data-rankved-closing] {
         animation: rankved-window-out 0.25s cubic-bezier(.5,1.8,.5,1) 0s both;
+      }
+      #rankved-chat-window [id^=rankved-] input,
+      #rankved-chat-window [id^=rankved-] textarea {
+        font-family: 'Inter', system-ui, sans-serif !important;
+        background: #f8fafc;
+        border: 1.5px solid #e0e7ef;
+        transition: border 0.2s, box-shadow 0.2s;
+      }
+      #rankved-chat-window [id^=rankved-] input:focus,
+      #rankved-chat-window [id^=rankved-] textarea:focus {
+        border: 1.5px solid #6366F1;
+        box-shadow: 0 0 0 2px #6366F133;
+      }
+      #rankved-chat-window button {
+        transition: background 0.2s, box-shadow 0.2s, color 0.2s;
+      }
+      #rankved-chat-window button:hover {
+        filter: brightness(1.08);
+        box-shadow: 0 2px 8px rgba(60,72,88,0.10);
+      }
+      #rankved-chat-window [id^=rankved-] .rankved-typing-dots span {
+        background: #6366F1;
+      }
+      #rankved-chat-window [id^=rankved-] .rankved-typing-dots span:nth-child(2) {
+        background: #818cf8;
+      }
+      #rankved-chat-window [id^=rankved-] .rankved-typing-dots span:nth-child(3) {
+        background: #a5b4fc;
+      }
+      #rankved-chat-window [id^=rankved-] [id^=rankved-suggestions] button {
+        background: #f1f5f9;
+        color: #6366F1;
+        border: 1.5px solid #e0e7ef;
+        border-radius: 8px;
+        padding: 7px 16px;
+        font-size: 14px;
+        margin: 0;
+        transition: background 0.2s, color 0.2s;
+      }
+      #rankved-chat-window [id^=rankved-] [id^=rankved-suggestions] button:hover {
+        background: #6366F1;
+        color: #fff;
+      }
+      #rankved-chat-window [id^=rankved-messages] > div {
+        font-family: 'Inter', system-ui, sans-serif !important;
+      }
+      #rankved-chat-window [id^=rankved-messages] > div > div {
+        border-radius: 16px;
+        box-shadow: 0 1px 4px rgba(60,72,88,0.06);
+      }
+      #rankved-chat-window [id^=rankved-messages] > div[style*='flex-end'] > div {
+        background: linear-gradient(135deg, #6366F1 60%, #818cf8 100%);
+        color: #fff;
+      }
+      #rankved-chat-window [id^=rankved-messages] > div[style*='flex-start'] > div {
+        background: #f8fafc;
+        color: #333;
+      }
+      #rankved-chat-window [id^=rankved-flow-input] input,
+      #rankved-chat-window [id^=rankved-flow-input] button {
+        border-radius: 10px;
+      }
+      #rankved-chat-window [id^=rankved-flow-input] button {
+        background: #6366F1;
+        color: #fff;
+        font-weight: 600;
+        border: none;
+        box-shadow: 0 1px 4px rgba(60,72,88,0.08);
+      }
+      #rankved-chat-window [id^=rankved-flow-input] button:hover {
+        background: #4f46e5;
+      }
+      #rankved-chat-window [id^=rankved-flow-input] input {
+        background: #f8fafc;
+        border: 1.5px solid #e0e7ef;
+      }
+      #rankved-chat-window [id^=rankved-flow-input] input:focus {
+        border: 1.5px solid #6366F1;
+        box-shadow: 0 0 0 2px #6366F133;
+      }
+      #rankved-chat-window [id^=rankved-flow-input] label {
+        font-size: 13px;
+        color: #6366F1;
+        margin-bottom: 2px;
+      }
+      #rankved-chat-window [id^=rankved-flow-input] {
+        background: #f8fafc;
+        border-radius: 12px;
+        padding: 12px 10px;
+        margin-bottom: 8px;
+      }
+      #rankved-chat-window [id^=rankved-loading-message] {
+        background: #f1f5f9;
+        border-radius: 12px;
+      }
+      #rankved-chat-window [id^=rankved-loading-message] .rankved-typing-dots span {
+        background: #6366F1;
+      }
+      #rankved-chat-window [id^=rankved-close-btn]:hover {
+        color: #818cf8;
+        background: #f1f5f9;
+        border-radius: 50%;
       }
     `;
     document.head.appendChild(style);

@@ -12,6 +12,16 @@ import { useToast } from '@/hooks/use-toast';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Bot } from 'lucide-react';
 
+// Add these types and window extensions at the top of the file
+
+declare global {
+  interface Window {
+    CHATBOT_CONFIG?: any;
+    initRankVedChat?: () => void;
+  }
+}
+
+
 export default function Embed() {
   const { activeChatbot } = useApp();
   const { toast } = useToast();
@@ -45,7 +55,6 @@ export default function Embed() {
   const reactComponent = `import React, { useRef, useEffect } from 'react';
 
 const ChatWidget = ({ chatbotId, style }) => {
-  // Generate a unique container ID for each instance
   const containerIdRef = useRef('chatbot-widget-container-' + Math.random().toString(36).substr(2, 9));
 
   useEffect(() => {
@@ -54,19 +63,25 @@ const ChatWidget = ({ chatbotId, style }) => {
       apiUrl: '${backendUrl}'
     };
 
-    const script = document.createElement('script');
-    script.src = '${frontendUrl}/chat-embed.js';
-    document.head.appendChild(script);
+    // Load script and style only once globally
+    if (!window.__rankvedChatEmbedScriptLoaded) {
+      const script = document.createElement('script');
+      script.src = '${frontendUrl}/chat-embed.js';
+      script.async = true;
+      document.head.appendChild(script);
 
-    const link = document.createElement('link');
-    link.rel = 'stylesheet';
-    link.href = '${frontendUrl}/chat-embed.css';
-    document.head.appendChild(link);
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = '${frontendUrl}/chat-embed.css';
+      document.head.appendChild(link);
+
+      window.__rankvedChatEmbedScriptLoaded = true;
+    }
+
+    // Do not remove script or style on unmount to avoid duplicates
 
     return () => {
-      script.remove();
-      link.remove();
-      // Optionally delete window.CHATBOT_CONFIG
+      // Only clean up CHATBOT_CONFIG on unmount
       delete window.CHATBOT_CONFIG;
     };
   }, [chatbotId]);
@@ -393,6 +408,8 @@ export default ChatWidget;
           </CardContent>
         </Card>
       </div>
+      {/* Render the chat widget at the end of the page */}
+     
     </TooltipProvider>
   );
 }

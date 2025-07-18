@@ -19,6 +19,7 @@ import {
   Shield
 } from 'lucide-react';
 import { useClerk, useUser } from '@clerk/clerk-react';
+import { useEffect, useState } from 'react';
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: BarChart3 },
@@ -30,7 +31,7 @@ const navigation = [
   { name: 'Training Data', href: '/training', icon: Brain },
   { name: 'Leads', href: '/leads', icon: Users },
   { name: 'Embed Code', href: '/embed', icon: Code },
-  // { name: 'Profile', href: '/profile', icon: User },
+  { name: 'Profile', href: '/profile', icon: User },
 ];
 
 export function Sidebar() {
@@ -39,17 +40,38 @@ export function Sidebar() {
   const { data: chatbots } = useChatbots();
   const { signOut } = useClerk();
   const { user } = useUser();
+  const [agency, setAgency] = useState<{ name: string; logo: string }>({ name: '', logo: '' });
+
+  useEffect(() => {
+    const fetchAgency = async () => {
+      try {
+        const apiUrl = (import.meta as any).env?.VITE_API_URL || 'http://localhost:5000';
+        const userId = 1;
+        const res = await fetch(`${apiUrl}/api/users/${userId}`, { credentials: 'include' });
+        if (!res.ok) return;
+        const data = await res.json();
+        setAgency({ name: data.user?.agencyName || 'RankVed', logo: data.user?.agencyLogo || '' });
+      } catch (e) {
+        setAgency({ name: 'RankVed', logo: '' });
+      }
+    };
+    fetchAgency();
+  }, []);
 
   return (
     <aside className="w-64 bg-white border-r border-slate-200 flex flex-col">
       {/* Permanent Branding */}
       <div className="p-6 border-b border-slate-200">
         <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 rounded-lg bg-blue-600 flex items-center justify-center">
-            <Bot className="h-6 w-6 text-white" />
+          <div className="w-10 h-10 rounded-lg bg-blue-600 flex items-center justify-center overflow-hidden">
+            {agency.logo ? (
+              <img src={agency.logo} alt="Agency Logo" className="w-10 h-10 object-cover rounded-lg" />
+            ) : (
+              <Bot className="h-6 w-6 text-white" />
+            )}
           </div>
           <div>
-            <h1 className="font-semibold text-slate-900 text-lg">RankVed</h1>
+            <h1 className="font-semibold text-slate-900 text-lg">{agency.name || 'RankVed'}</h1>
             <p className="text-xs text-slate-500">AI Platform</p>
           </div>
         </div>

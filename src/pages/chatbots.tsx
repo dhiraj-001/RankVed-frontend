@@ -12,6 +12,8 @@ import { formatDateTime } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useChatbotActions } from '@/hooks/use-chatbot-actions';
 import { useToast } from '@/hooks/use-toast';
+import { Switch } from '@/components/ui/switch';
+import { Menu } from '@headlessui/react';
 
 export default function Chatbots() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -46,13 +48,14 @@ export default function Chatbots() {
     borderRadius: 16,
     shadowStyle: 'soft'
   });
+  const [filter, setFilter] = useState<'all' | 'active' | 'paused'>('all');
 
   const { data: chatbots, isLoading, refetch } = useChatbots();
   const updateChatbot = useUpdateChatbot();
   const { handleCreateChatbot, handleDeleteChatbot, createChatbot } = useChatbotActions({ setShowCreateDialog, setNewChatbot });
   const { toast } = useToast();
 
-  const [activeTogglingId, setActiveTogglingId] = useState<string | null>(null);
+  // const [activeTogglingId, setActiveTogglingId] = useState<string | null>(null);
 
   // Edit functionality
   const handleEdit = (chatbot: any) => {
@@ -91,35 +94,40 @@ export default function Chatbots() {
   };
 
   // Set active functionality
-  const handleToggleActive = async (chatbot: any) => {
-    setActiveTogglingId(chatbot.id);
-    await updateChatbot.mutateAsync({
-      id: chatbot.id,
-      data: { isActive: !chatbot.isActive },
-    });
-    setActiveTogglingId(null);
-    refetch();
-  };
+  // const handleToggleActive = async (chatbot: any) => {
+  //   setActiveTogglingId(chatbot.id);
+  //   await updateChatbot.mutateAsync({
+  //     id: chatbot.id,
+  //     data: { isActive: !chatbot.isActive },
+  //   });
+  //   setActiveTogglingId(null);
+  //   refetch();
+  // };
 
   // After create, refetch
   useEffect(() => {
     if (!showCreateDialog) refetch();
   }, [showCreateDialog, refetch]);
 
-  const filteredChatbots = chatbots?.filter(chatbot =>
-    chatbot.name.toLowerCase().includes(searchTerm.toLowerCase())
-  ) || [];
+  // Filtered chatbots
+  const filteredChatbots = chatbots?.filter((cb: any) => {
+    if (filter === 'all') return true;
+    if (filter === 'active') return cb.isActive;
+    if (filter === 'paused') return !cb.isActive;
+    return true;
+  }) || [];
 
 
   return (
     <div className="flex-1 bg-gradient-to-br from-slate-50 to-white min-h-screen">
       {/* Header */}
-      <header className="bg-white/80 border-b border-slate-200 px-4 sm:px-6 py-4 sticky top-0 z-10 backdrop-blur-md">
-        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div>
-            <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Chatbots</h2>
-            <p className="text-slate-600 mt-1 text-sm sm:text-base">Create and manage your AI chatbots</p>
-          </div>
+      <header className="backdrop-blur-md bg-white/80 border-b border-slate-200 px-6 py-5 sticky top-0 z-20 shadow-md flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">Chatbots</h2>
+          <p className="text-slate-600 mt-1 text-base font-normal">Manage your chatbots and their settings</p>
+        </div>
+        <div className="flex items-center gap-2">
+          
           <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
             <DialogTrigger asChild>
               <Button className="rounded-lg px-5 py-2 shadow-sm font-semibold text-base">
@@ -236,10 +244,46 @@ export default function Chatbots() {
               className="pl-10 rounded-lg border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
             />
           </div>
-          <Button variant="outline" className="rounded-lg px-4 py-2 text-base">
-            <Filter className="h-4 w-4 mr-2" />
-            Filter
-          </Button>
+          {/* Filter Button */}
+          <Menu as="div" className="relative inline-block text-left">
+            <Menu.Button className="inline-flex items-center px-4 py-2 bg-white border border-slate-300 rounded-lg shadow-sm hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+              <Filter className="h-5 w-5 mr-2 text-blue-600" />
+              <span className="font-medium text-slate-700">{filter === 'all' ? 'All' : filter === 'active' ? 'Active' : 'Paused'}</span>
+              <svg className="ml-2 h-4 w-4 text-slate-400" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clipRule="evenodd" /></svg>
+            </Menu.Button>
+            <Menu.Items className="absolute right-0 mt-2 w-40 origin-top-right bg-white border border-slate-200 divide-y divide-slate-100 rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
+              <Menu.Item>
+                {({ active }: { active: boolean }) => (
+                  <button
+                    className={`w-full text-left px-4 py-2 text-sm rounded ${filter === 'all' ? 'bg-blue-100 text-blue-700' : active ? 'bg-slate-100' : ''}`}
+                    onClick={() => setFilter('all')}
+                  >
+                    All
+                  </button>
+                )}
+              </Menu.Item>
+              <Menu.Item>
+                {({ active }: { active: boolean }) => (
+                  <button
+                    className={`w-full text-left px-4 py-2 text-sm rounded ${filter === 'active' ? 'bg-green-100 text-green-700' : active ? 'bg-slate-100' : ''}`}
+                    onClick={() => setFilter('active')}
+                  >
+                    Active
+                  </button>
+                )}
+              </Menu.Item>
+              <Menu.Item>
+                {({ active }: { active: boolean }) => (
+                  <button
+                    className={`w-full text-left px-4 py-2 text-sm rounded ${filter === 'paused' ? 'bg-gray-200 text-gray-700' : active ? 'bg-slate-100' : ''}`}
+                    onClick={() => setFilter('paused')}
+                  >
+                    Paused
+                  </button>
+                )}
+              </Menu.Item>
+            </Menu.Items>
+          </Menu>
         </div>
 
         {/* Chatbots Grid */}
@@ -316,45 +360,17 @@ export default function Chatbots() {
                   </div>
                   <div className="flex flex-wrap items-center gap-2 pt-4">
                     {/* Toggle Active Button */}
-                    {chatbot.isActive ? (
-                      <Button
-                        variant="default"
-                        size="sm"
-                        onClick={() => handleToggleActive(chatbot)}
-                        className="rounded-md px-3 py-1.5 text-xs font-medium bg-blue-600 text-white"
-                        aria-label="Set inactive chatbot"
-                        disabled={activeTogglingId === chatbot.id}
-                      >
-                        {activeTogglingId === chatbot.id ? (
-                          <svg className="animate-spin h-4 w-4 mr-1 inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                          </svg>
-                        ) : (
-                          <Bot className="h-4 w-4 mr-1" />
-                        )}
-                        Pause
-                      </Button>
-                    ) : (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleToggleActive(chatbot)}
-                        aria-label="Set active chatbot"
-                        className="rounded-md px-3 py-1.5 text-xs font-medium bg-blue-600 text-white"
-                        disabled={activeTogglingId === chatbot.id}
-                      >
-                        {activeTogglingId === chatbot.id ? (
-                          <svg className="animate-spin h-4 w-4 mr-1 inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                          </svg>
-                        ) : (
-                          <Bot className="h-4 w-4 mr-1" />
-                        )}
-                        Set Active
-                      </Button>
-                    )}
+                    <div className="flex items-center gap-2">
+                      <Switch
+                        checked={chatbot.isActive}
+                        onCheckedChange={checked => {
+                          updateChatbot.mutateAsync({ id: chatbot.id, data: { isActive: checked } });
+                        }}
+                        className="data-[state=checked]:bg-green-600 data-[state=unchecked]:bg-gray-300"
+                        aria-label={chatbot.isActive ? 'Deactivate chatbot' : 'Activate chatbot'}
+                      />
+                      
+                    </div>
                     <Button variant="outline" size="sm" onClick={() => handleEdit(chatbot)} aria-label="Edit chatbot" className="rounded-md px-3 py-1.5 text-xs font-medium">
                       <Edit className="h-4 w-4 mr-1" />
                       Edit
@@ -421,38 +437,16 @@ export default function Chatbots() {
               />
             </div>
             <div className="border-t border-slate-100 pt-6 flex items-center space-x-2 mt-2">
-              <Button
-                variant={editChatbot?.isActive ? "default" : "outline"}
-                onClick={() => setEditChatbot((prev: any) => ({ ...prev, isActive: !prev.isActive }))}
-                className={`rounded-full w-10 h-6 flex items-center justify-center transition-colors duration-300 ${editChatbot?.isActive ? 'bg-green-500 text-white' : 'bg-gray-300 text-gray-700'}`}
+              
+            </div>
+            <div className="flex items-center gap-2 mt-4">
+              <Switch
+                checked={editChatbot?.isActive}
+                onCheckedChange={checked => setEditChatbot((prev: any) => ({ ...prev, isActive: checked }))}
+                className="data-[state=checked]:bg-green-600 data-[state=unchecked]:bg-gray-300"
                 aria-label={editChatbot?.isActive ? 'Deactivate chatbot' : 'Activate chatbot'}
-              >
-                <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                </svg>
-              </Button>
-              <Label
-                htmlFor="edit-active"
-                className={`ml-2 font-medium transition-colors duration-300 flex items-center select-none
-                  ${editChatbot?.isActive ? 'text-green-600' : 'text-gray-500'}
-                `}
-              >
-                {editChatbot?.isActive ? (
-                  <>
-                    <svg className="h-4 w-4 mr-1 text-green-500" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                    </svg>
-                    Active
-                  </>
-                ) : (
-                  <>
-                    <svg className="h-4 w-4 mr-1 text-gray-400" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M18 12H6" />
-                    </svg>
-                    Paused
-                  </>
-                )}
-              </Label>
+              />
+              <span className={`ml-2 font-medium transition-colors duration-300 flex items-center select-none ${editChatbot?.isActive ? 'text-green-600' : 'text-gray-500'}`}>{editChatbot?.isActive ? 'Active' : 'Paused'}</span>
             </div>
             <div className="flex justify-end space-x-2 pt-4">
               <Button variant="outline" onClick={() => setShowEditDialog(false)} aria-label="Cancel edit" className="rounded-lg px-5 py-2">

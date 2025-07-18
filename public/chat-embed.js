@@ -46,19 +46,6 @@
   let bubble = null;
   let chatWindow = null;
   let configLoaded = false;
-
-  // Sound effect for open/close
-  function playOpenCloseSound() {
-    try {
-      const audio = new Audio('https://rank-ved-frontend-rfam.vercel.app/openclose.mp3');
-      audio.currentTime = 0;
-      audio.play();
-    } catch (e) {
-      console.log(e)
-    }
-  }
-
-  // Fetch chatbot config from backend
   async function fetchChatbotConfig() {
     if (!config.chatbotId) {
       console.warn('[RankVed Chat] chatbotId missing at fetchChatbotConfig. window.CHATBOT_CONFIG:', window.CHATBOT_CONFIG);
@@ -116,6 +103,19 @@
       showError('Failed to load chatbot config.');
     }
   }
+  // Sound effect for open/close
+  function playOpenCloseSound() {
+    try {
+      const audio = new Audio('https://rank-ved-frontend-rfam.vercel.app/openclose.mp3');
+      audio.currentTime = 0;
+      audio.play();
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
+  // Fetch chatbot config from backend
+ 
 
   function showError(msg) {
     // Remove bubble if present
@@ -168,7 +168,7 @@
       transition: box-shadow 0.2s; border: none; outline: none; font-family: inherit; margin: 0; padding: 0;
     `);
     // Prefer chatWidgetIcon for the bubble, fallback to chatBubbleIcon, then default
-    const iconSrc = config.chatWidgetIcon || config.chatBubbleIcon || config.bubbleIcon;
+    const iconSrc = config.chatBubbleIcon || config.chatWidgetIcon || config.bubbleIcon;
     bubble.innerHTML = iconSrc ?
       `<img src="${iconSrc}" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover; pointer-events: none;" alt="Chat Icon">` :
       `<svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M20 2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h4l4 4 4-4h4c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>`;
@@ -190,14 +190,14 @@
     win.setAttribute('id', 'rankved-chat-window');
     win.setAttribute('data-rankved-widget', 'true');
     win.setAttribute('style', `
-      position: fixed; bottom: 100px; right: 24px; width: 380px; height: 600px; max-height: 80vh;
+      position: fixed; bottom: 24px; right: 24px; width: 380px; height: 600px; max-height: 80vh;
       border-radius: ${a.borderRadius}px; background: ${a.backgroundColor}; box-shadow: ${a.boxShadow}; z-index: 2147483646;
       display: flex; flex-direction: column; overflow: hidden; font-family: inherit; border: 1px solid ${a.inputBorder};
       margin: 0; padding: 0; opacity: 1; transform: scale(1) translateY(0);
       color: ${a.textColor};
     `);
     // Prefer chatWidgetIcon for the header, fallback to chatWindowAvatar, then default SVG
-    let headerIcon = config.chatWidgetIcon || config.chatWindowAvatar;
+    let headerIcon = config.chatWidgetIcon || config.chatWindowAvatar || config.chatBubbleIcon || config.bubbleIcon;
     let headerIconHTML = '';
     if (headerIcon) {
       headerIconHTML = `<img src="${headerIcon}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; background: #fff2; border: 2px solid #fff3;">`;
@@ -223,7 +223,7 @@
       <div style="padding: 14px 14px 10px 14px; border-top: 1px solid ${a.inputBorder}; background: ${a.inputBg}; border-bottom-left-radius: ${a.borderRadius}px; border-bottom-right-radius: ${a.borderRadius}px;">
         <div style="display: flex; gap: 8px; align-items: center;">
           <input id="rankved-input" placeholder="${config.inputPlaceholder || config.placeholder || 'Type your message...'}" style="flex: 1; border: 1px solid ${a.inputBorder}; border-radius: 12px; padding: 10px 14px; font-size: 15px; outline: none; background: ${a.inputBg}; color: ${a.inputText}; height: 38px; box-shadow: 0 1px 2px rgba(0,0,0,0.04);">
-          <button id="rankved-send-btn" style="width: 38px; height: 38px; border-radius: 12px; background: ${a.primaryColor}; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+          <button id="rankved-send-btn" style="width: 38px; padding:0; height: 38px; border-radius: 12px; background: ${a.primaryColor}; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center;">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M2,21L23,12L2,3V10L17,12L2,14V21Z"/></svg>
           </button>
         </div>
@@ -252,7 +252,7 @@
       messageDiv.setAttribute('style', `margin-bottom: 14px; display: flex; justify-content: flex-start; align-items: flex-start; gap: 8px;`);
       const avatarDiv = document.createElement('div');
       // Use the same fallback logic as header: chatWidgetIcon, then chatWindowAvatar, then default SVG
-      let botIcon = config.chatWidgetIcon || config.chatWindowAvatar;
+      let botIcon = config.chatWindowAvatar || config.chatWidgetIcon;
       if (botIcon) {
         avatarDiv.innerHTML = `<img src="${botIcon}" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover; background: #fff2; border: 2px solid #fff3;">`;
       } else {
@@ -338,8 +338,14 @@
           questionFlowState.userInputs[node.id] = option.text;
           questionFlowState.currentNodeId = node.id;
           if (option.action === 'collect-lead') {
-            addMessage('Thank you! Please provide your contact information so we can help you better.', 'bot');
-            optionsDiv.remove();
+            if (config.leadCollectionEnabled) {
+              addMessage('Thank you! Please provide your contact information so we can help you better.', 'bot');
+              optionsDiv.remove();
+              renderLeadForm();
+            } else {
+              addMessage('Is there anything we can help you with?', 'bot');
+              optionsDiv.remove();
+            }
             return;
           }
           if (option.action === 'end-chat') {
@@ -457,7 +463,7 @@
       inputDiv.appendChild(sendBtn);
       messagesContainer.appendChild(inputDiv);
       messagesContainer.scrollTop = messagesContainer.scrollHeight;
-    } else if (node.type === 'contact-form') {
+    } else if (node.type === 'contact-form' && leadCollectionEnabled) {
       const inputDiv = document.createElement('div');
       inputDiv.id = 'rankved-flow-input';
       inputDiv.style.margin = '8px 0';
@@ -567,6 +573,7 @@
 
   // Open chat window with animation
   async function openChat() {
+    console.log("hello")
     playOpenCloseSound();
     if (isOpen) return;
     if (!configLoaded) {
@@ -575,9 +582,13 @@
     }
     chatWindow = createChatWindow();
     document.body.appendChild(chatWindow);
+    if (bubble) bubble.style.display = 'none'; 
+    
+    // Hide bubble when chat is open
     isOpen = true;
     // --- Show question flow if it exists, otherwise show welcome message ---
-    console.log('[RankVed Chat] openChat: questionFlowEnabled:', config.questionFlowEnabled, 'questionFlow:', config.questionFlow);
+    console.log('[RankVed Chat] openChat: questionFlowEnabled:', config.questionFlowEnabled, 'questionFlow:', config.questionFlow, bubble.style);
+    console.log()
     if (config.questionFlowEnabled && config.questionFlow && Array.isArray(config.questionFlow.nodes) && config.questionFlow.nodes.length > 0) {
       resetQuestionFlow();
       const startNode = config.questionFlow.nodes.find(n => n.id === 'start') || config.questionFlow.nodes[0];
@@ -589,7 +600,10 @@
       addMessage(config.welcomeMessage || 'Hello! How can I help you today?', 'bot');
       showSuggestions();
     }
-    chatWindow.querySelector('#rankved-close-btn').onclick = closeChat;
+    chatWindow.querySelector('#rankved-close-btn').onclick = () => {
+      closeChat();
+      if (bubble) bubble.style.display = 'flex'; // Show bubble when chat is closed
+    };
     chatWindow.querySelector('#rankved-send-btn').onclick = sendMessage;
     chatWindow.querySelector('#rankved-input').onkeydown = function(e) {
       if (e.key === 'Enter') sendMessage();
@@ -604,7 +618,8 @@
       setTimeout(() => {
         chatWindow.remove();
         chatWindow = null;
-    isOpen = false;
+        isOpen = false;
+        if (bubble) bubble.style.display = 'flex';
       }, 250);
     }
   }
@@ -668,8 +683,7 @@
       removeLoadingMessage(); // Remove loading indicator
       if (res.ok) {
         const data = await res.json();
-        if (data.type === 'form' || data.shouldCollectLead) {
-          // Show lead collection form
+        if ((data.type === 'form' || data.shouldCollectLead) && config.leadCollectionEnabled) {
           renderLeadForm();
         } else {
           addMessage(data.message || '...', 'bot');
@@ -809,5 +823,18 @@
   } else {
     init();
   }
+
+  // Expose a global re-initialization function for SPA/React usage
+  window.initRankVedChat = function() {
+    // Remove existing bubble and chat window if present
+    if (bubble && bubble.parentNode) bubble.parentNode.removeChild(bubble);
+    if (chatWindow && chatWindow.parentNode) chatWindow.parentNode.removeChild(chatWindow);
+    isOpen = false;
+    bubble = null;
+    chatWindow = null;
+    configLoaded = false;
+    // Re-initialize
+    init();
+  };
 
 })();

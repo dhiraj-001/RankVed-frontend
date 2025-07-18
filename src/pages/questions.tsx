@@ -526,12 +526,12 @@ const [showDeleteDialog, setShowDeleteDialog] = useState<{ open: boolean; nodeId
                   {questionFlowEnabled ? (
                     <>
                       <span className="w-2 h-2 rounded-full bg-green-400 inline-block mr-2"></span>
-                      Disable 
+                      Question flow Enabled 
                     </>
                   ) : (
                     <>
                       <span className="w-2 h-2 rounded-full bg-gray-400 inline-block mr-2"></span>
-                      Enable 
+                      Question flow Disabled 
                     </>
                   )}
                 </Button>
@@ -544,6 +544,7 @@ const [showDeleteDialog, setShowDeleteDialog] = useState<{ open: boolean; nodeId
                   <TooltipTrigger asChild>
                     <Button variant="ghost" onClick={startFlowTest} className="rounded-full p-2 bg-green-50 border-green-200 text-green-700 hover:bg-green-100 shadow">
                       <Play className="h-5 w-5" />
+                      Test Flow
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>Test Flow</TooltipContent>
@@ -978,6 +979,9 @@ const [showDeleteDialog, setShowDeleteDialog] = useState<{ open: boolean; nodeId
             <p className="text-sm text-slate-600">
               Test how your question flow works in practice. This simulates the actual chat experience.
             </p>
+            <div className="p-3 bg-yellow-50 border border-yellow-200 rounded mt-3 text-sm text-yellow-800">
+              <strong>Note:</strong> AI responses cannot be generated in this flow tester. To check AI-powered responses, use the Chatbot Preview in the Appearance tab.
+            </div>
           </DialogHeader>
           
           <div className="flex-1 flex min-h-0">

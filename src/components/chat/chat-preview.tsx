@@ -55,7 +55,7 @@ export function ChatPreview({ chatbot }: ChatPreviewProps) {
           style={{ backgroundColor: primaryColor, borderTopLeftRadius: borderRadius, borderTopRightRadius: borderRadius }}
         >
           <Avatar className="h-8 w-8 border-2 border-white shadow-md">
-            <AvatarImage src={chatbot?.chatWindowAvatar || undefined} />
+            <AvatarImage src={chatbot?.chatWidgetIcon || undefined} />
             <AvatarFallback className="bg-white/20">
               <Bot className="h-4 w-4 text-white" />
             </AvatarFallback>

@@ -12,6 +12,7 @@ import { useUpdateChatbot } from '@/hooks/use-chatbots';
 import {  compressAndConvertToDataURI } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { useEffect } from 'react';
+import { Switch } from '@/components/ui/switch';
 
 export default function Settings() {
   const { activeChatbot } = useApp();
@@ -107,7 +108,12 @@ export default function Settings() {
     try {
       await updateChatbot.mutateAsync({
         id: activeChatbot.id,
-        data: settings,
+        data: {
+          ...settings,
+          // If your backend expects snake_case, map it here:
+          // enable_notification_sound: settings.enableNotificationSound,
+          enableNotificationSound: settings.enableNotificationSound,
+        },
       });
       
       toast({
@@ -123,30 +129,30 @@ export default function Settings() {
     }
   };
 
-  const handleFileUpload = async (field: string, file: File) => {
-    try {
-      // Compress and convert image (same as appearance page)
-      const dataUri = await compressAndConvertToDataURI(file, 128, 128, 0.7);
-      // Check size after compression (base64 length * 3/4 for bytes)
-      const base64Length = dataUri.split(',')[1]?.length || 0;
-      const byteSize = Math.floor(base64Length * 3 / 4);
-      if (byteSize > 1024 * 1024) { // 1MB limit
-        toast({
-          title: 'Error',
-          description: 'Image is too large after compression. Please upload an image under 1MB.',
-          variant: 'destructive',
-        });
-        return;
-      }
-      setSettings(prev => ({ ...prev, [field]: dataUri }));
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to upload or compress file. Please try again.',
-        variant: 'destructive',
-      });
-    }
-  };
+  // const handleFileUpload = async (field: string, file: File) => {
+  //   try {
+  //     // Compress and convert image (same as appearance page)
+  //     const dataUri = await compressAndConvertToDataURI(file, 128, 128, 0.7);
+  //     // Check size after compression (base64 length * 3/4 for bytes)
+  //     const base64Length = dataUri.split(',')[1]?.length || 0;
+  //     const byteSize = Math.floor(base64Length * 3 / 4);
+  //     if (byteSize > 1024 * 1024) { // 1MB limit
+  //       toast({
+  //         title: 'Error',
+  //         description: 'Image is too large after compression. Please upload an image under 1MB.',
+  //         variant: 'destructive',
+  //       });
+  //       return;
+  //     }
+  //     setSettings(prev => ({ ...prev, [field]: dataUri }));
+  //   } catch (error) {
+  //     toast({
+  //       title: 'Error',
+  //       description: 'Failed to upload or compress file. Please try again.',
+  //       variant: 'destructive',
+  //     });
+  //   }
+  // };
 
   if (!activeChatbot) {
     return (
@@ -158,6 +164,8 @@ export default function Settings() {
       </div>
     );
   }
+
+
 
   return (
     <div className="flex-1 bg-white">
@@ -297,17 +305,21 @@ export default function Settings() {
                     className="border-gray-300 focus:ring-blue-500 focus:border-blue-500 rounded-md"
                   />
                 </div>
-                <div className="flex items-center space-x-3">
-                  <Button
-                    variant={settings.enableNotificationSound ? 'default' : 'outline'}
-                    onClick={() => setSettings(prev => ({ ...prev, enableNotificationSound: !prev.enableNotificationSound }))}
-                    className="flex-1"
-                  >
-                    <MessageSquare className="h-4 w-4 mr-2" />
-                    {settings.enableNotificationSound ? 'Enable Sound' : 'Disable Sound'}
-                  </Button>
+                <div className="flex items-center justify-between w-full py-3">
+                  <div>
+                    <label htmlFor="enableSound" className="block text-sm font-medium text-slate-700">
+                      Enable Sound
+                    </label>
+                    <p className="text-xs text-slate-500">Play a sound when you open Chatbot.</p>
+                  </div>
+                  <Switch
+                    id="enableSound"
+                    checked={settings.enableNotificationSound}
+                    onCheckedChange={checked => setSettings(prev => ({ ...prev, enableNotificationSound: checked }))}
+                    className="data-[state=checked]:bg-blue-600"
+                  />
                 </div>
-                <div className="space-y-1">
+                {/* <div className="space-y-1">
                   <Label>Chat Window Avatar</Label>
                   <div className="flex items-center space-x-4">
                     {settings.chatWindowAvatar && (
@@ -327,8 +339,8 @@ export default function Settings() {
                       className="border-gray-300 rounded-md"
                     />
                   </div>
-                </div>
-                <div className="space-y-1">
+                </div> */}
+                {/* <div className="space-y-1">
                   <Label>Chat Bubble Icon</Label>
                   <div className="flex items-center space-x-4">
                     {settings.chatBubbleIcon && (
@@ -348,7 +360,7 @@ export default function Settings() {
                       className="border-gray-300 rounded-md"
                     />
                   </div>
-                </div>
+                </div> */}
               </CardContent>
             </Card>
           </TabsContent>
@@ -362,15 +374,19 @@ export default function Settings() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="flex items-center space-x-3">
-                  <Button
-                    variant={settings.leadCollectionEnabled ? 'default' : 'outline'}
-                    onClick={() => setSettings(prev => ({ ...prev, leadCollectionEnabled: !prev.leadCollectionEnabled }))}
-                    className="flex-1"
-                  >
-                    <MessageSquare className="h-4 w-4 mr-2" />
-                    {settings.leadCollectionEnabled ? 'Enable Lead Collection' : 'Disable Lead Collection'}
-                  </Button>
+                <div className="flex items-center justify-between w-full py-3">
+                  <div>
+                    <label htmlFor="leadCollectionEnabled" className="block text-sm font-medium text-slate-700">
+                      Enable Lead Collection
+                    </label>
+                    <p className="text-xs text-slate-500">Collect visitor contact info after a set number of messages.</p>
+                  </div>
+                  <Switch
+                    id="leadCollectionEnabled"
+                    checked={settings.leadCollectionEnabled}
+                    onCheckedChange={checked => setSettings(prev => ({ ...prev, leadCollectionEnabled: checked }))}
+                    className="data-[state=checked]:bg-green-600 data-[state=unchecked]:bg-gray-300"
+                  />
                 </div>
 
                 {settings.leadCollectionEnabled && (

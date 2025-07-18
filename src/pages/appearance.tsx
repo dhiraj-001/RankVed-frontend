@@ -1,12 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
-import { Save, Palette, Eye, Code } from 'lucide-react';
+import { Save, Palette, Eye } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+// import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ChatPreview } from '@/components/chat/chat-preview';
 import { useApp } from '@/contexts/app-context';
 import { useUpdateChatbot, useChatbot } from '@/hooks/use-chatbots';
@@ -118,9 +118,9 @@ export default function Appearance() {
     inputPlaceholder: appearance.inputPlaceholder,
     borderRadius: appearance.borderRadius,
     shadowStyle: appearance.shadowStyle,
-    chatWindowAvatar: appearance.chatWindowAvatar,
     chatBubbleIcon: appearance.chatBubbleIcon,
     chatWidgetIcon: appearance.chatWidgetIcon,
+    chatWindowAvatar: appearance.chatWindowAvatar,
     chatWidgetName: appearance.chatWidgetName,
     poweredByText: user?.agencyName ? `Powered by ${user.agencyName}` : 'Powered by Chatbot',
     poweredByLink: activeChatbot?.poweredByLink || 'https://your-website.com',
@@ -145,28 +145,28 @@ export default function Appearance() {
   };
 
   // Generate live embed code
-  const embedCode = `<script>
-  window.chatbotConfig = ${JSON.stringify({
-    chatbotId: previewChatbot.id,
-    primaryColor: previewChatbot.primaryColor,
-    borderRadius: previewChatbot.borderRadius,
-    chatWindowAvatar: previewChatbot.chatWindowAvatar,
-    chatBubbleIcon: previewChatbot.chatBubbleIcon,
-    chatWidgetIcon: previewChatbot.chatWidgetIcon,
-    chatWidgetName: previewChatbot.chatWidgetName,
-    poweredByText: previewChatbot.poweredByText,
-    poweredByLink: previewChatbot.poweredByLink,
-    welcomeMessage: previewChatbot.welcomeMessage,
-    inputPlaceholder: previewChatbot.inputPlaceholder,
-    shadowStyle: previewChatbot.shadowStyle,
-    chatWindowStyle: previewChatbot.chatWindowStyle,
-    chatWindowTheme: previewChatbot.chatWindowTheme,
-    // ...add more as needed
-  }, null, 2)};
-</script>
-<script src='https://your-cdn/chatbot.js'></script>`;
+//   const embedCode = `<script>
+//   window.chatbotConfig = ${JSON.stringify({
+//     chatbotId: previewChatbot.id,
+//     primaryColor: previewChatbot.primaryColor,
+//     borderRadius: previewChatbot.borderRadius,
+//     chatWindowAvatar: previewChatbot.chatWindowAvatar,
+//     chatBubbleIcon: previewChatbot.chatBubbleIcon,
+//     chatWidgetIcon: previewChatbot.chatWidgetIcon,
+//     chatWidgetName: previewChatbot.chatWidgetName,
+//     poweredByText: previewChatbot.poweredByText,
+//     poweredByLink: previewChatbot.poweredByLink,
+//     welcomeMessage: previewChatbot.welcomeMessage,
+//     inputPlaceholder: previewChatbot.inputPlaceholder,
+//     shadowStyle: previewChatbot.shadowStyle,
+//     chatWindowStyle: previewChatbot.chatWindowStyle,
+//     chatWindowTheme: previewChatbot.chatWindowTheme,
+//     // ...add more as needed
+//   }, null, 2)};
+// </script>
+// <script src='https://your-cdn/chatbot.js'></script>`;
 
-  const [newSuggestion, setNewSuggestion] = useState('');
+  // const [newSuggestion, setNewSuggestion] = useState('');
   const previewRef = useRef<HTMLDivElement>(null);
   const [highlightPreview, setHighlightPreview] = useState(false);
 
@@ -230,24 +230,24 @@ export default function Appearance() {
     }
   };
 
-  const addSuggestionButton = () => {
-    console.log('addSuggestionButton called', newSuggestion);
-    if (newSuggestion.trim()) {
-      setAppearance(prev => ({
-        ...prev,
-        suggestionButtons: [...prev.suggestionButtons, newSuggestion.trim()]
-      }));
-      setNewSuggestion('');
-    }
-  };
+  // const addSuggestionButton = () => {
+  //   console.log('addSuggestionButton called', newSuggestion);
+  //   if (newSuggestion.trim()) {
+  //     setAppearance(prev => ({
+  //       ...prev,
+  //       suggestionButtons: [...prev.suggestionButtons, newSuggestion.trim()]
+  //     }));
+  //     setNewSuggestion('');
+  //   }
+  // };
 
-  const removeSuggestionButton = (index: number) => {
-    console.log('removeSuggestionButton called', index);
-    setAppearance(prev => ({
-      ...prev,
-      suggestionButtons: prev.suggestionButtons.filter((_: string, i: number) => i !== index)
-    }));
-  };
+  // const removeSuggestionButton = (index: number) => {
+  //   console.log('removeSuggestionButton called', index);
+  //   setAppearance(prev => ({
+  //     ...prev,
+  //     suggestionButtons: prev.suggestionButtons.filter((_: string, i: number) => i !== index)
+  //   }));
+  // };
 
   return (
     <div className="flex-1 bg-slate-50 min-h-screen">
@@ -397,7 +397,7 @@ export default function Appearance() {
                   </Card>
 
                   {/* Quick Replies */}
-                  <Card className="shadow-sm border-slate-200">
+                  {/* <Card className="shadow-sm border-slate-200">
                     <CardHeader>
                       <CardTitle className="text-lg font-semibold">Quick Reply Buttons</CardTitle>
                       <p className="text-sm text-slate-500">Add quick replies for faster user engagement</p>
@@ -456,7 +456,7 @@ export default function Appearance() {
                         )}
                       </div>
                     </CardContent>
-                  </Card>
+                  </Card> */}
 
                   {/* Text Customization */}
                   <Card className="shadow-sm border-slate-200">
@@ -558,14 +558,14 @@ export default function Appearance() {
               </CardContent>
             </Card>
           </div>
-          <Card className="shadow-sm border-slate-200">
+          {/* <Card className="shadow-sm border-slate-200">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-lg font-semibold"><Code className="h-5 w-5" /> Embed Code</CardTitle>
             </CardHeader>
             <CardContent>
               <Textarea value={embedCode} readOnly className="font-mono text-xs min-h-[180px] bg-slate-50" />
             </CardContent>
-          </Card>
+          </Card> */}
         </div>
       </div>
     </div>

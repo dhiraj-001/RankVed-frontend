@@ -463,7 +463,7 @@
       inputDiv.appendChild(sendBtn);
       messagesContainer.appendChild(inputDiv);
       messagesContainer.scrollTop = messagesContainer.scrollHeight;
-    } else if (node.type === 'contact-form' && leadCollectionEnabled) {
+    } else if (node.type === 'contact-form' && config.leadCollectionEnabled) {
       const inputDiv = document.createElement('div');
       inputDiv.id = 'rankved-flow-input';
       inputDiv.style.margin = '8px 0';

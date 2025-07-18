@@ -85,7 +85,7 @@
           }
         }
         // Debug log for question flow
-        console.log('[RankVed Chat] After config fetch: questionFlowEnabled:', config.questionFlowEnabled, 'questionFlow:', config.questionFlow);
+        // console.log('[RankVed Chat] After config fetch: questionFlowEnabled:', config.questionFlowEnabled, 'questionFlow:', config.questionFlow);
         // If no flow, add a default for testing
         if (!config.questionFlow || !Array.isArray(config.questionFlow.nodes) || config.questionFlow.nodes.length === 0) {
           config.questionFlowEnabled = true;
@@ -573,7 +573,7 @@
 
   // Open chat window with animation
   async function openChat() {
-    console.log("hello")
+    // console.log("hello")
     playOpenCloseSound();
     if (isOpen) return;
     if (!configLoaded) {
@@ -587,8 +587,8 @@
     // Hide bubble when chat is open
     isOpen = true;
     // --- Show question flow if it exists, otherwise show welcome message ---
-    console.log('[RankVed Chat] openChat: questionFlowEnabled:', config.questionFlowEnabled, 'questionFlow:', config.questionFlow, bubble.style);
-    console.log()
+    // console.log('[RankVed Chat] openChat: questionFlowEnabled:', config.questionFlowEnabled, 'questionFlow:', config.questionFlow, bubble.style);
+    // console.log()
     if (config.questionFlowEnabled && config.questionFlow && Array.isArray(config.questionFlow.nodes) && config.questionFlow.nodes.length > 0) {
       resetQuestionFlow();
       const startNode = config.questionFlow.nodes.find(n => n.id === 'start') || config.questionFlow.nodes[0];

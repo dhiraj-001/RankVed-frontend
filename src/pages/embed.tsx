@@ -49,28 +49,25 @@ const ChatWidget = ({ chatbotId, style }) => {
   const containerIdRef = useRef('chatbot-widget-container-' + Math.random().toString(36).substr(2, 9));
 
   useEffect(() => {
-    // Always inject script
+    window.CHATBOT_CONFIG = {
+      chatbotId,
+      apiUrl: backendUrl
+    };
+
     const script = document.createElement('script');
     script.src = '${frontendUrl}/chat-embed.js';
-    script.onload = function() {
-      if (window.ChatBotPro) {
-        window.ChatBotPro.init({ chatbotId, containerId: containerIdRef.current });
-      }
-    };
     document.head.appendChild(script);
 
-    // Always inject CSS
     const link = document.createElement('link');
     link.rel = 'stylesheet';
     link.href = '${frontendUrl}/chat-embed.css';
     document.head.appendChild(link);
 
-    // Cleanup: remove the container div, script, and link on unmount
     return () => {
-      const container = document.getElementById(containerIdRef.current);
-      if (container) container.remove();
       script.remove();
       link.remove();
+      // Optionally delete window.CHATBOT_CONFIG
+      delete window.CHATBOT_CONFIG;
     };
   }, [chatbotId]);
 

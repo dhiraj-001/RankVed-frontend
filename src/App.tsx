@@ -59,8 +59,16 @@ function App() {
               </AppLayout>
               </SignedIn>
               <SignedOut>
-            <SignIn/>
-          </SignedOut>
+        <div style={{
+          minHeight: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          background: "linear-gradient(to bottom right, #f8fafc, #e0e7ef)"
+        }}>
+          <SignIn />
+        </div>
+      </SignedOut>
             </TooltipProvider>
           </AppProvider>
         </QueryClientProvider>

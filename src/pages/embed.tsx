@@ -51,7 +51,7 @@ const ChatWidget = ({ chatbotId, style }) => {
   useEffect(() => {
     window.CHATBOT_CONFIG = {
       chatbotId,
-      apiUrl: ${backendUrl}
+      apiUrl: '${backendUrl}'
     };
 
     const script = document.createElement('script');

@@ -18,6 +18,7 @@ import {
   User,
   Shield
 } from 'lucide-react';
+import { useClerk, useUser } from '@clerk/clerk-react';
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: BarChart3 },
@@ -29,13 +30,15 @@ const navigation = [
   { name: 'Training Data', href: '/training', icon: Brain },
   { name: 'Leads', href: '/leads', icon: Users },
   { name: 'Embed Code', href: '/embed', icon: Code },
-  { name: 'Profile', href: '/profile', icon: User },
+  // { name: 'Profile', href: '/profile', icon: User },
 ];
 
 export function Sidebar() {
   const [location] = useLocation();
   const { activeChatbot, setActiveChatbot } = useApp();
   const { data: chatbots } = useChatbots();
+  const { signOut } = useClerk();
+  const { user } = useUser();
 
   return (
     <aside className="w-64 bg-white border-r border-slate-200 flex flex-col">
@@ -114,14 +117,12 @@ export function Sidebar() {
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-slate-900 truncate">
-              User
-            </p>
+
             <p className="text-xs text-slate-500 truncate">
-              user@example.com
+              {user?.primaryEmailAddress?.emailAddress || 'user@example.com'}
             </p>
           </div>
-          <Button variant="ghost" size="sm" className="text-slate-400 hover:text-slate-600" title="Sign out" aria-label="Sign out">
+          <Button variant="ghost" size="sm"  onClick={() => signOut()} className="text-slate-400 hover:text-slate-600" title="Sign out" aria-label="Sign out">
             <LogOut className="h-4 w-4" />
           </Button>
         </div>

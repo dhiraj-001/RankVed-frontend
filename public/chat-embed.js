@@ -174,7 +174,11 @@
       `<svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M20 2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h4l4 4 4-4h4c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>`;
     bubble.title = config.chatWidgetName || config.name || config.title || 'ChatBot';
     bubble.onclick = function() {
-      openChat();
+      if (isOpen) {
+        closeChat();
+      } else {
+        openChat();
+      }
     };
     return bubble;
   }

@@ -14,13 +14,12 @@ import Questions from "@/pages/questions";
 import Training from "@/pages/training";
 import Leads from "@/pages/leads";
 import Embed from "@/pages/embed";
-import Profile from "@/pages/profile";
 import Onboarding from "@/pages/onboarding";
 import ChatEmbed from "@/pages/chat-embed";
 import ChatWidget from "@/pages/chat-widget";
 import ChatStandalone from "@/pages/chat-standalone";
 import NotFound from "@/pages/not-found";
-
+import { SignedIn, SignedOut, SignIn } from '@clerk/clerk-react';
 function Router() {
   return (
     <Switch>
@@ -35,7 +34,7 @@ function Router() {
       <Route path="/training" component={Training} />
       <Route path="/leads" component={Leads} />
       <Route path="/embed" component={Embed} />
-      <Route path="/profile" component={Profile} />
+      {/* <Route path="/profile" component={Profile} /> */}
       <Route path="/chat-embed/:chatbotId?" component={ChatEmbed} />
       <Route path="/chat-widget/:chatbotId" component={ChatWidget} />
       <Route path="/chat/:chatbotId" component={ChatStandalone} />
@@ -52,10 +51,16 @@ function App() {
           <AppProvider>
             <TooltipProvider>
               <Toaster />
+             <SignedIn>
+
              
               <AppLayout>
                 <Router />
               </AppLayout>
+              </SignedIn>
+              <SignedOut>
+            <SignIn/>
+          </SignedOut>
             </TooltipProvider>
           </AppProvider>
         </QueryClientProvider>

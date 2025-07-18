@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useApp } from '@/contexts/app-context';
 import { useUpdateChatbot } from '@/hooks/use-chatbots';
-import {  compressAndConvertToDataURI } from '@/lib/utils';
+// import {  compressAndConvertToDataURI } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { useEffect } from 'react';
 import { Switch } from '@/components/ui/switch';

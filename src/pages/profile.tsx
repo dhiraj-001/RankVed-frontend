@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Save, User, Building, Bell, Palette, X, Info } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
+import { Building,  X } from 'lucide-react';
+// import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { fileToDataURI, compressAndConvertToDataURI } from '@/lib/utils';
+import {  compressAndConvertToDataURI } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { useUser } from '@clerk/clerk-react';
 

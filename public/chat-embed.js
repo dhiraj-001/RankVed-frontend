@@ -107,6 +107,7 @@
   }
   // Sound effect for open/close
   function playOpenCloseSound() {
+    console.log(config.enableNotificationSound)
     if (!config.enableNotificationSound) return;
     try {
       const audio = new Audio('https://rank-ved-frontend-rfam.vercel.app/openclose.mp3');
@@ -297,13 +298,13 @@
     if (!messagesContainer) return;
     const messageDiv = document.createElement('div');
     if (sender === 'user') {
-      messageDiv.setAttribute('style', `margin-bottom: 8px; display: flex; justify-content: flex-end;`);
+      messageDiv.setAttribute('style', `margin-bottom: 2px; display: flex; justify-content: flex-end;`);
       const contentDiv = document.createElement('div');
-      contentDiv.setAttribute('style', `max-width: 80%; padding: 8px 12px; border-radius: 14px; font-size: 13px; background: ${a.userMsgBg}; color: ${a.userMsgText}; box-shadow: 0 2px 6px rgba(0,0,0,0.10); transition: all 0.2s ease-in-out;`);
+      contentDiv.setAttribute('style', `max-width: 80%; padding: 3px 12px; border-radius: 14px; font-size: 13px; background: ${a.userMsgBg}; color: ${a.userMsgText}; box-shadow: 0 2px 6px rgba(0,0,0,0.10); transition: all 0.2s ease-in-out;`);
       contentDiv.textContent = content;
       messageDiv.appendChild(contentDiv);
     } else {
-      messageDiv.setAttribute('style', `margin-bottom: 8px; display: flex; justify-content: flex-start; align-items: flex-start; gap: 6px;`);
+      messageDiv.setAttribute('style', `margin-bottom: 2px; display: flex; justify-content: flex-start; align-items: flex-start; gap: 6px;`);
       const avatarDiv = document.createElement('div');
       // Use the same fallback logic as header: chatWidgetIcon, then chatWindowAvatar, then default SVG
       let botIcon = config.chatWindowAvatar || config.chatWidgetIcon;
@@ -314,7 +315,7 @@
       }
       messageDiv.appendChild(avatarDiv);
       const contentDiv = document.createElement('div');
-      contentDiv.setAttribute('style', `max-width: 80%; padding: 8px 12px; border-radius: 14px; font-size: 13px; background: ${a.msgBg}; color: ${a.msgText}; box-shadow: 0 1px 3px rgba(0,0,0,0.08); transition: all 0.2s ease-in-out;`);
+      contentDiv.setAttribute('style', `max-width: 80%; padding: 2px 12px; border-radius: 14px; font-size: 13px; background: ${a.msgBg}; color: ${a.msgText}; box-shadow: 0 1px 3px rgba(0,0,0,0.08); transition: all 0.2s ease-in-out;`);
       contentDiv.textContent = content;
       messageDiv.appendChild(contentDiv);
     }

@@ -270,7 +270,7 @@
 
 #rankved-messages > div {
   font-size: 13px !important;
-  padding: 8px 12px !important;
+  padding: 3px 12px !important;
   border-radius: 14px !important;
 }
 
@@ -290,7 +290,7 @@
 #rankved-suggestions button, #rankved-flow-options button {
   font-size: 13px !important;
   padding: 6px 10px !important;
-  border-radius: 8px !important;
+  border-radius: 12px 12px 12px 12px !important;
 }
 
 @media (max-width: 480px) {
@@ -478,7 +478,7 @@
 /* Flow options styling */
 #rankved-flow-options button {
   transition: all 0.2s ease-in-out !important;
-  border-radius: 8px !important;
+  border-radius: 8px ;
   font-weight: 500 !important;
   margin-bottom: 4px !important;
 }
@@ -607,5 +607,23 @@
     animation: none !important;
     transition: none !important;
     transform: none !important;
+  }
+}
+
+@media (max-width: 600px) {
+  #rankved-chat-window[data-rankved-widget] {
+    position: fixed !important;
+    bottom: 0 !important;
+    right: 24px !important;
+    left: auto !important;
+    top: auto !important;
+    z-index: 2147483647 !important;
+  }
+  #rankved-chat-bubble {
+    position: fixed !important;
+    right: 24px !important;
+    bottom: 24px !important;
+    left: auto !important;
+    z-index: 2147483647 !important;
   }
 }

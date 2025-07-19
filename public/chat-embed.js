@@ -298,24 +298,25 @@
     if (!messagesContainer) return;
     const messageDiv = document.createElement('div');
     if (sender === 'user') {
-      messageDiv.setAttribute('style', `margin-bottom: 2px; display: flex; justify-content: flex-end;`);
+      messageDiv.setAttribute('style', `margin-bottom: 3px; display: flex; justify-content: flex-end;`);
       const contentDiv = document.createElement('div');
-      contentDiv.setAttribute('style', `max-width: 80%; padding: 3px 12px; border-radius: 14px; font-size: 13px; background: ${a.userMsgBg}; color: ${a.userMsgText}; box-shadow: 0 2px 6px rgba(0,0,0,0.10); transition: all 0.2s ease-in-out;`);
+      // Sharp bottom-right corner for user
+      contentDiv.setAttribute('style', `max-width: 60%; padding: 5px 10px; border-radius: 14px 14px 4px 14px; font-size: 13px; background: ${a.userMsgBg}; color: ${a.userMsgText}; box-shadow: 0 2px 6px rgba(0,0,0,0.10); transition: all 0.2s ease-in-out;`);
       contentDiv.textContent = content;
       messageDiv.appendChild(contentDiv);
     } else {
-      messageDiv.setAttribute('style', `margin-bottom: 2px; display: flex; justify-content: flex-start; align-items: flex-start; gap: 6px;`);
+      messageDiv.setAttribute('style', `margin-bottom: 3px; display: flex; justify-content: flex-start; align-items: flex-start; gap: 5px;`);
       const avatarDiv = document.createElement('div');
-      // Use the same fallback logic as header: chatWidgetIcon, then chatWindowAvatar, then default SVG
       let botIcon = config.chatWindowAvatar || config.chatWidgetIcon;
       if (botIcon) {
-        avatarDiv.innerHTML = `<img src="${botIcon}" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover; background: rgba(255,255,255,0.2); border: 2px solid rgba(255,255,255,0.2); box-shadow: 0 1px 3px rgba(0,0,0,0.1);">`;
+        avatarDiv.innerHTML = `<img src="${botIcon}" style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover; background: rgba(255,255,255,0.2); border: 2px solid rgba(255,255,255,0.2); box-shadow: 0 1px 3px rgba(0,0,0,0.1);">`;
       } else {
-        avatarDiv.innerHTML = `<span style=\"display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background: ${a.primaryColor}; border: 2px solid rgba(255,255,255,0.2); box-shadow: 0 1px 3px rgba(0,0,0,0.1);\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"white\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"3\" y=\"11\" width=\"18\" height=\"7\" rx=\"2\"/><path d=\"M8 11V7a4 4 0 0 1 8 0v4\"/></svg></span>`;
+        avatarDiv.innerHTML = `<span style=\"display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; background: ${a.primaryColor}; border: 2px solid rgba(255,255,255,0.2); box-shadow: 0 1px 3px rgba(0,0,0,0.1);\"><svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"white\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"3\" y=\"11\" width=\"18\" height=\"7\" rx=\"2\"/><path d=\"M8 11V7a4 4 0 0 1 8 0v4\"/></svg></span>`;
       }
       messageDiv.appendChild(avatarDiv);
       const contentDiv = document.createElement('div');
-      contentDiv.setAttribute('style', `max-width: 80%; padding: 2px 12px; border-radius: 14px; font-size: 13px; background: ${a.msgBg}; color: ${a.msgText}; box-shadow: 0 1px 3px rgba(0,0,0,0.08); transition: all 0.2s ease-in-out;`);
+      // Sharp bottom-left corner for bot
+      contentDiv.setAttribute('style', `max-width: 60%; padding: 5px 10px; border-radius: 14px 14px 14px 4px; font-size: 13px; background: ${a.msgBg}; color: ${a.msgText}; box-shadow: 0 1px 3px rgba(0,0,0,0.08); transition: all 0.2s ease-in-out;`);
       contentDiv.textContent = content;
       messageDiv.appendChild(contentDiv);
     }
@@ -375,17 +376,19 @@
     if (node.type === 'multiple-choice' && node.options && node.options.length > 0) {
       const optionsDiv = document.createElement('div');
       optionsDiv.id = 'rankved-flow-options';
-      optionsDiv.style.margin = '8px 0';
+      optionsDiv.style.margin = '4px 0';
       optionsDiv.style.display = 'flex';
       optionsDiv.style.flexDirection = 'column';
-      optionsDiv.style.gap = '6px';
+      optionsDiv.style.gap = '3px';
       node.options.forEach(option => {
         const btn = document.createElement('button');
         btn.textContent = option.text;
         btn.style.background = getAppearance().primaryColor;
         btn.style.color = '#fff';
         btn.style.border = 'none';
-        btn.style.borderRadius = '6px';
+        btn.style.width = '60%';
+        btn.style.alignSelf = 'flex-start';
+        btn.style.borderRadius = '14px 14px 4px 14px';
         btn.style.padding = '8px 12px';
         btn.style.fontSize = '14px';
         btn.style.cursor = 'pointer';

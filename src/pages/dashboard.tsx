@@ -95,6 +95,31 @@ export default function Dashboard() {
   useEffect(() => {
     if (!showCreateDialog) {
       setEditMode(false);
+      setNewChatbot({
+        name: '',
+        aiSystemPrompt: '',
+        welcomeMessage: '',
+        isActive: true,
+        inputPlaceholder: 'Type your message...',
+        primaryColor: '#6366F1',
+        chatWindowAvatar: '',
+        chatBubbleIcon: '',
+        chatWidgetIcon: '',
+        chatWidgetName: '',
+        poweredByText: '',
+        poweredByLink: '',
+        suggestionButtons: '',
+        suggestionTiming: 'initial',
+        suggestionPersistence: 'until_clicked',
+        suggestionTimeout: 30000,
+        leadCollectionEnabled: true,
+        leadCollectionAfterMessages: 3,
+        leadCollectionMessage: 'To help you better, may I have your name and contact information!',
+        chatWindowStyle: 'modern',
+        chatWindowTheme: 'light',
+        borderRadius: 16,
+        shadowStyle: 'soft'
+      });
     }
   }, [showCreateDialog]);
 

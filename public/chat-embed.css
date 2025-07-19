@@ -245,6 +245,69 @@
 #rankved-chat-window[data-rankved-widget] {
   font-family: 'Inter', 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif !important;
   transition: all 0.3s ease-in-out;
+  width: 320px !important;
+  height: 440px !important;
+  min-width: 220px !important;
+  min-height: 220px !important;
+}
+
+#rankved-chat-bubble {
+  width: 48px !important;
+  height: 48px !important;
+  min-width: 32px !important;
+  min-height: 32px !important;
+  padding: 0 !important;
+}
+
+#rankved-chat-window[data-rankved-widget] > div:first-child {
+  padding: 10px !important;
+}
+
+#rankved-messages {
+  padding: 10px 8px 0 8px !important;
+  gap: 8px !important;
+}
+
+#rankved-messages > div {
+  font-size: 13px !important;
+  padding: 8px 12px !important;
+  border-radius: 14px !important;
+}
+
+#rankved-input {
+  font-size: 13px !important;
+  padding: 4px 8px !important;
+  height: 32px !important;
+  border-radius: 10px !important;
+}
+
+#rankved-send-btn {
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 10px !important;
+}
+
+#rankved-suggestions button, #rankved-flow-options button {
+  font-size: 13px !important;
+  padding: 6px 10px !important;
+  border-radius: 8px !important;
+}
+
+@media (max-width: 480px) {
+  #rankved-chat-window[data-rankved-widget] {
+    width: calc(100vw - 12px) !important;
+    height: calc(100vh - 12px) !important;
+    top: 6px !important;
+    left: 6px !important;
+    right: 6px !important;
+    bottom: 6px !important;
+  }
+  #rankved-messages {
+    padding: 6px 4px 0 4px !important;
+  }
+  #rankved-input {
+    font-size: 14px !important;
+  }
 }
 
 /* Light Theme Styles */

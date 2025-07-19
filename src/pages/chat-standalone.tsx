@@ -86,6 +86,9 @@ export default function ChatStandalone() {
   useEffect(() => {
     console.log('Chatbot config:', chatbot);
     console.log('Messages length:', messages.length);
+    if (chatbot) {
+      console.log('[Frontend] chatbot.questionFlow:', chatbot.questionFlow);
+    }
     if (chatbot && messages.length === 0) {
       const welcomeMessage: Message = {
         id: 'welcome',

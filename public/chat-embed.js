@@ -209,7 +209,7 @@
     bubble.setAttribute('id', 'rankved-chat-bubble');
     bubble.setAttribute('data-rankved-widget', 'true');
     bubble.setAttribute('style', `
-      position: fixed; bottom: 24px; right: 24px; width: 60px; height: 60px; border-radius: ${a.borderRadius * 2}px;
+      position: fixed; bottom: 16px; right: 16px; width: 48px; height: 48px; border-radius: ${a.borderRadius * 2}px;
       background: ${a.primaryColor}; box-shadow: ${a.boxShadow};
       display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 2147483647;
       transition: box-shadow 0.2s; border: none; outline: none; font-family: inherit; margin: 0; padding: 0;
@@ -243,7 +243,7 @@
     win.setAttribute('data-shadow', a.shadowStyle);
     
     win.setAttribute('style', `
-      position: fixed; bottom: 24px; right: 24px; width: 380px; height: 600px; max-height: 80vh;
+      position: fixed; bottom: 16px; right: 16px; width: 320px; height: 440px; max-height: 80vh;
       border-radius: ${a.borderRadius}px; z-index: 2147483646;
       display: flex; flex-direction: column; overflow: hidden; font-family: inherit;
       margin: 0; padding: 0; opacity: 1; transform: scale(1) translateY(0);
@@ -261,28 +261,28 @@
     // Online status
     const onlineStatus = `<span style="display: flex; align-items: center; gap: 4px; font-size: 12px; margin-left: 4px;"><span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 4px rgba(34, 197, 94, 0.5);"></span><span style="color: rgba(209, 250, 229, 0.9);">Online</span></span>`;
     win.innerHTML = `
-      <div style="background: ${a.primaryColor}; color: ${a.headerText}; padding: 16px; display: flex; align-items: center; justify-content: space-between; border-radius: ${a.borderRadius}px ${a.borderRadius}px 0 0; position: relative; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
-        <div style="display: flex; align-items: center; gap: 10px; min-width: 0; position: relative; z-index: 2;">
+      <div style="background: ${a.primaryColor}; color: ${a.headerText}; padding: 10px; display: flex; align-items: center; justify-content: space-between; border-radius: ${a.borderRadius}px ${a.borderRadius}px 0 0; position: relative; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
+        <div style="display: flex; align-items: center; gap: 8px; min-width: 0; position: relative; z-index: 2;">
           ${headerIconHTML}
-          <div style="display: flex; flex-direction: column; gap:5px; min-width: 0;">
-            <span style="font-size: 16px; font-weight: 600; line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: 0 1px 2px rgba(0,0,0,0.1);">${config.chatWidgetName || config.name || config.title || 'ChatBot'}</span>
+          <div style="display: flex; flex-direction: column; gap:3px; min-width: 0;">
+            <span style="font-size: 14px; font-weight: 600; line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: 0 1px 2px rgba(0,0,0,0.1);">${config.chatWidgetName || config.name || config.title || 'ChatBot'}</span>
             ${onlineStatus}
           </div>
         </div>
-        <button id="rankved-close-btn" style="background: none; border: none; color: ${a.headerText}; font-size: 24px; cursor: pointer; position: relative; z-index: 2; transition: all 0.2s ease-in-out; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-weight: 300;">×</button>
+        <button id="rankved-close-btn" style="background: none; border: none; color: ${a.headerText}; font-size: 20px; cursor: pointer; position: relative; z-index: 2; transition: all 0.2s ease-in-out; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 300;">×</button>
       </div>
-      <div id="rankved-messages" style="flex: 1; overflow-y: auto; padding: 18px 14px 0 14px; color: ${a.msgText}; display: flex; flex-direction: column; gap: 14px; background: ${a.backgroundColor}; border-bottom-left-radius: ${a.borderRadius}px; border-bottom-right-radius: ${a.borderRadius}px;">
+      <div id="rankved-messages" style="flex: 1; overflow-y: auto; padding: 10px 8px 0 8px; color: ${a.msgText}; display: flex; flex-direction: column; gap: 8px; background: ${a.backgroundColor}; border-bottom-left-radius: ${a.borderRadius}px; border-bottom-right-radius: ${a.borderRadius}px;">
         <!-- Welcome message removed; will be added by JS only -->
       </div>
-      <div style="padding: 8px 14px 6px 14px; border-top: 2px solid ${a.inputBorder}; border-bottom-left-radius: ${a.borderRadius}px; border-bottom-right-radius: ${a.borderRadius}px; position: relative; overflow: hidden; background: ${a.inputBg}; box-shadow: ${a.theme === 'dark' ? '0 2px 8px rgba(30,41,59,0.12)' : '0 2px 8px rgba(100,116,139,0.08)'};">
-        <div style="display: flex; gap: 8px; align-items: center; position: relative; z-index: 2;">
-                      <input id="rankved-input" placeholder="${config.inputPlaceholder || config.placeholder || 'Type your message...'}" style="flex: 1; border: 1px solid ${a.inputBorder}; border-radius: 12px; padding: 5px 10px; font-size: 15px; outline: none; color: ${a.inputText}; height: 40px; box-shadow: inset 0 1px 2px rgba(0,0,0,0.04); transition: all 0.2s ease-in-out; background: ${a.theme === 'dark' ? 'rgba(30, 41, 59, 0.8)' : 'rgba(255, 255, 255, 0.9)'};">
-                      <button id="rankved-send-btn" style="width: 40px; padding:0; height: 40px; border-radius: 12px; background: ${a.primaryColor}; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease-in-out; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M2,21L23,12L2,3V10L17,12L2,14V21Z"/></svg>
+      <div style="padding: 6px 8px 4px 8px; border-top: 2px solid ${a.inputBorder}; border-bottom-left-radius: ${a.borderRadius}px; border-bottom-right-radius: ${a.borderRadius}px; position: relative; overflow: hidden; background: ${a.inputBg}; box-shadow: ${a.theme === 'dark' ? '0 2px 8px rgba(30,41,59,0.12)' : '0 2px 8px rgba(100,116,139,0.08)'};">
+        <div style="display: flex; gap: 6px; align-items: center; position: relative; z-index: 2;">
+                      <input id="rankved-input" placeholder="${config.inputPlaceholder || config.placeholder || 'Type your message...'}" style="flex: 1; border: 1px solid ${a.inputBorder}; border-radius: 10px; padding: 4px 8px; font-size: 13px; outline: none; color: ${a.inputText}; height: 32px; box-shadow: inset 0 1px 2px rgba(0,0,0,0.04); transition: all 0.2s ease-in-out; background: ${a.theme === 'dark' ? 'rgba(30, 41, 59, 0.8)' : 'rgba(255, 255, 255, 0.9)'};">
+                      <button id="rankved-send-btn" style="width: 32px; padding:0; height: 32px; border-radius: 10px; background: ${a.primaryColor}; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease-in-out; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M2,21L23,12L2,3V10L17,12L2,14V21Z"/></svg>
           </button>
         </div>
-        <div id="rankved-suggestions" style="margin-top: 10px; display: flex; flex-wrap: wrap; gap: 8px;"></div>
-        <div style="text-align: center; padding: 4px 0 0 0; font-size: 12px; color: ${a.theme === 'dark' ? '#94a3b8' : '#64748b'}; background: none; position: relative; z-index: 2;">
+        <div id="rankved-suggestions" style="margin-top: 6px; display: flex; flex-wrap: wrap; gap: 6px;"></div>
+        <div style="text-align: center; padding: 2px 0 0 0; font-size: 11px; color: ${a.theme === 'dark' ? '#94a3b8' : '#64748b'}; background: none; position: relative; z-index: 2;">
           ${config.poweredByText ? `<span>${config.poweredByLink ? `<a href="${config.poweredByLink}" target="_blank" style="color: ${a.primaryColor}; text-decoration: none; transition: all 0.2s ease-in-out;">${config.poweredByText}</a>` : config.poweredByText}</span>` : `Powered by <a href="https://rankved.com" target="_blank" style="color: ${a.primaryColor}; text-decoration: none; transition: all 0.2s ease-in-out;">RankVed</a>`}
         </div>
       </div>
@@ -297,13 +297,13 @@
     if (!messagesContainer) return;
     const messageDiv = document.createElement('div');
     if (sender === 'user') {
-      messageDiv.setAttribute('style', `margin-bottom: 14px; display: flex; justify-content: flex-end;`);
+      messageDiv.setAttribute('style', `margin-bottom: 8px; display: flex; justify-content: flex-end;`);
       const contentDiv = document.createElement('div');
-      contentDiv.setAttribute('style', `max-width: 80%; padding: 12px 16px; border-radius: 18px; font-size: 14px; background: ${a.userMsgBg}; color: ${a.userMsgText}; box-shadow: 0 4px 12px rgba(0,0,0,0.15); transition: all 0.2s ease-in-out;`);
+      contentDiv.setAttribute('style', `max-width: 80%; padding: 8px 12px; border-radius: 14px; font-size: 13px; background: ${a.userMsgBg}; color: ${a.userMsgText}; box-shadow: 0 2px 6px rgba(0,0,0,0.10); transition: all 0.2s ease-in-out;`);
       contentDiv.textContent = content;
       messageDiv.appendChild(contentDiv);
     } else {
-      messageDiv.setAttribute('style', `margin-bottom: 14px; display: flex; justify-content: flex-start; align-items: flex-start; gap: 8px;`);
+      messageDiv.setAttribute('style', `margin-bottom: 8px; display: flex; justify-content: flex-start; align-items: flex-start; gap: 6px;`);
       const avatarDiv = document.createElement('div');
       // Use the same fallback logic as header: chatWidgetIcon, then chatWindowAvatar, then default SVG
       let botIcon = config.chatWindowAvatar || config.chatWidgetIcon;
@@ -314,7 +314,7 @@
       }
       messageDiv.appendChild(avatarDiv);
       const contentDiv = document.createElement('div');
-      contentDiv.setAttribute('style', `max-width: 80%; padding: 12px 16px; border-radius: 18px; font-size: 14px; background: ${a.msgBg}; color: ${a.msgText}; box-shadow: 0 2px 8px rgba(0,0,0,0.08); transition: all 0.2s ease-in-out;`);
+      contentDiv.setAttribute('style', `max-width: 80%; padding: 8px 12px; border-radius: 14px; font-size: 13px; background: ${a.msgBg}; color: ${a.msgText}; box-shadow: 0 1px 3px rgba(0,0,0,0.08); transition: all 0.2s ease-in-out;`);
       contentDiv.textContent = content;
       messageDiv.appendChild(contentDiv);
     }

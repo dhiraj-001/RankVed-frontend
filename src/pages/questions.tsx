@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Save, Plus, Edit, Trash2, GitBranch, MessageSquare, HelpCircle, FileText, RotateCcw, Building2, ShoppingCart, Heart, Home, Play, ArrowRight, Loader2, Sparkles, Target, ChevronDown, ChevronUp } from 'lucide-react';
+import { Save, Plus, Edit, Trash2, GitBranch, MessageSquare, HelpCircle, FileText, RotateCcw, Building2, ShoppingCart, Heart, Home, Play, ArrowRight, Loader2, Sparkles, Target, ChevronDown, ChevronUp, Copy } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -73,6 +73,7 @@ const [showDeleteDialog, setShowDeleteDialog] = useState<{ open: boolean; nodeId
   const [showAddTemplateDialog, setShowAddTemplateDialog] = useState(false);
   const [templateJson, setTemplateJson] = useState('');
   const [addTemplateLoading, setAddTemplateLoading] = useState(false);
+  const [showExampleDialog, setShowExampleDialog] = useState(false);
 
   // Add state for minimizing action buttons
   const [showActionButtons, setShowActionButtons] = useState(true);
@@ -602,6 +603,26 @@ const [showDeleteDialog, setShowDeleteDialog] = useState<{ open: boolean; nodeId
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>Add Question</TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="outline" onClick={() => setShowAddTemplateDialog(true)} className="border-gray-300 text-gray-700 hover:bg-gray-50 rounded-lg transition-all duration-200">
+                      <FileText className="h-4 w-4 mr-2" />
+                      <span className="hidden sm:inline">Add Custom Flow (JSON)</span>
+                      <span className="sm:hidden">Custom JSON</span>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Paste custom question flow JSON</TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="outline" onClick={() => setShowExampleDialog(true)} className="border-gray-300 text-blue-700 hover:bg-blue-50 rounded-lg transition-all duration-200">
+                      <Copy className="h-4 w-4 mr-2" />
+                      <span className="hidden sm:inline">Show Example Format</span>
+                      <span className="sm:hidden">Example</span>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Show example JSON format</TooltipContent>
                 </Tooltip>
               </div>
             )}
@@ -1307,6 +1328,94 @@ const [showDeleteDialog, setShowDeleteDialog] = useState<{ open: boolean; nodeId
               {addTemplateLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
               Add Template
             </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Example Format Dialog */}
+      <Dialog open={showExampleDialog} onOpenChange={setShowExampleDialog}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Custom Question Flow Example Format</DialogTitle>
+          </DialogHeader>
+          <div className="mb-4 text-slate-600 text-sm">
+            Copy and modify this template to create your own custom flow.
+          </div>
+          <div className="relative bg-slate-100 rounded-lg p-4 font-mono text-xs text-slate-800 overflow-x-auto">
+            <button
+              className="absolute top-2 right-2 text-blue-500 hover:text-blue-700 text-xs px-2 py-1 rounded focus:outline-none focus:ring-2 focus:ring-blue-300"
+              onClick={() => navigator.clipboard.writeText(`{
+  "name": "My Custom Flow",
+  "welcome": "Welcome to my chatbot! How can I help you?",
+  "nodes": [
+    {
+      "id": "start",
+      "type": "multiple-choice",
+      "question": "What would you like to do?",
+      "options": [
+        { "text": "Option 1", "nextId": "node2" },
+        { "text": "Option 2", "nextId": "node3" }
+      ]
+    },
+    {
+      "id": "node2",
+      "type": "statement",
+      "question": "You chose option 1!",
+      "nextId": "end"
+    },
+    {
+      "id": "node3",
+      "type": "open-ended",
+      "question": "Please type your question.",
+      "aiHandling": true,
+      "nextId": "end"
+    },
+    {
+      "id": "end",
+      "type": "statement",
+      "question": "Thank you for chatting!"
+    }
+  ]
+}`)}
+              title="Copy example JSON"
+            >
+              Copy
+            </button>
+            <pre className="whitespace-pre-wrap break-all">{`
+{
+  "name": "My Custom Flow",
+  "welcome": "Welcome to my chatbot! How can I help you?",
+  "nodes": [
+    {
+      "id": "start",
+      "type": "multiple-choice",
+      "question": "What would you like to do?",
+      "options": [
+        { "text": "Option 1", "nextId": "node2" },
+        { "text": "Option 2", "nextId": "node3" }
+      ]
+    },
+    {
+      "id": "node2",
+      "type": "statement",
+      "question": "You chose option 1!",
+      "nextId": "end"
+    },
+    {
+      "id": "node3",
+      "type": "open-ended",
+      "question": "Please type your question.",
+      "aiHandling": true,
+      "nextId": "end"
+    },
+    {
+      "id": "end",
+      "type": "statement",
+      "question": "Thank you for chatting!"
+    }
+  ]
+}
+`}</pre>
           </div>
         </DialogContent>
       </Dialog>

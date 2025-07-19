@@ -309,10 +309,14 @@ export default function Chatbots() {
                         className="w-12 h-12 rounded-xl flex items-center justify-center bg-gradient-to-br from-blue-100 to-indigo-100 group-hover:scale-105 transition-transform"
                         style={{ backgroundColor: `${(chatbot as any).primaryColor || '#6366F1'}20` }}
                       >
-                        <Bot
-                          className="h-6 w-6"
-                          style={{ color: (chatbot as any).primaryColor || '#6366F1' }}
-                        />
+                        {typeof chatbot.chatWidgetIcon === 'string' && chatbot.chatWidgetIcon.trim() !== '' ? (
+                          <img src={chatbot.chatWidgetIcon} alt="Chatbot Icon" className="w-8 h-8 rounded-full object-cover" />
+                        ) : (
+                          <Bot
+                            className="h-6 w-6"
+                            style={{ color: (chatbot as any).primaryColor || '#6366F1' }}
+                          />
+                        )}
                       </div>
                       <div>
                         <CardTitle className="text-lg font-semibold text-slate-900 group-hover:text-blue-700 transition-colors">{chatbot.name}</CardTitle>

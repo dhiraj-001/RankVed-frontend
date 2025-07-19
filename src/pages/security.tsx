@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Shield, Globe, Plus, X, Save, AlertTriangle, Lock, CheckCircle, Settings } from 'lucide-react';
+import { Shield, Globe, Plus, X, Save, AlertTriangle, Lock, CheckCircle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,7 +9,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useApp } from '@/contexts/app-context';
 import { useUpdateChatbot, useChatbot } from '@/hooks/use-chatbots';
 import { useToast } from '@/hooks/use-toast';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { TooltipProvider } from '@/components/ui/tooltip';
 
 export default function Security() {
   const { activeChatbot } = useApp();

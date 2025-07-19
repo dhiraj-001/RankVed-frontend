@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams } from 'wouter';
-import { Send, Bot, X, Loader2, Paperclip, Mail, Phone, User } from 'lucide-react';
+import { Send, Bot, X, Loader2,  Mail, Phone, User } from 'lucide-react';
 import {  useMutation } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -307,7 +307,7 @@ export default function ChatStandalone() {
       {/* Chat Messages */}
       <ScrollArea className="flex-1 bg-gradient-to-br from-blue-50/60 via-slate-50 to-blue-100 px-2 md:px-0">
         <div className="p-4 md:p-8 space-y-6 max-w-4xl mx-auto">
-          {messages.map((message, idx) => (
+          {messages.map((message) => (
             <div
               key={message.id}
               className={cn(

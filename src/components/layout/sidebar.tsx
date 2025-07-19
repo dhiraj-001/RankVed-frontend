@@ -205,13 +205,13 @@ export function Sidebar({}: SidebarProps) {
       {/* Desktop Sidebar */}
       {!isMobile && (
         <aside className={cn(
-          "bg-gradient-to-br from-blue-100 via-white to-blue-50 border-r-2 border-purple-200 flex flex-col transition-all duration-500 ease-in-out flex-shrink-0 shadow-lg",
-          isCollapsed ? 'w-18' : 'w-64'
+          "bg-gradient-to-br from-blue-100 via-white to-blue-50 border-r-2 border-purple-200 flex flex-col transition-all duration-500 ease-in-out flex-shrink-0 shadow-lg h-full",
+          isCollapsed ? 'w-16' : 'w-56'
         )}>
           {/* Sidebar Toggle Button */}
           <div className={cn(
-            "border-b border-slate-200 flex items-center transition-all duration-500 ease-in-out", 
-            isCollapsed ? "p-3 justify-center" : "p-4 justify-end"
+            "border-b border-slate-200 flex items-center transition-all duration-500 ease-in-out",
+            isCollapsed ? "p-2.5 justify-center" : "p-4 justify-end"
           )}>
             <button
               className={cn(
@@ -222,13 +222,13 @@ export function Sidebar({}: SidebarProps) {
               aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
             >
               <div className="transition-transform duration-500 ease-in-out">
-                {isCollapsed ? <ChevronRight className="h-5 w-5 text-blue-500" /> : <ChevronLeft className="h-5 w-5 text-blue-500" />}
+                {isCollapsed ? <ChevronRight className="h-4 w-4 text-blue-500" /> : <ChevronLeft className="h-4 w-4 text-blue-500" />}
               </div>
             </button>
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 p-4">
+          <nav className="flex-1 p-3 overflow-y-auto scrollbar-none">
             <ul className="space-y-2">
               {navigation.map((item, index) => {
                 const isActive = location.startsWith(item.href);
@@ -238,9 +238,9 @@ export function Sidebar({}: SidebarProps) {
                     <Link
                       href={item.href}
                       className={cn(
-                        'flex items-center space-x-3 px-3 py-3 rounded-lg font-medium transition-all duration-300 ease-in-out cursor-pointer group relative transform hover:scale-105 hover:shadow-md',
+                        'flex items-center space-x-3 px-3 py-2.5 rounded-md font-medium text-sm transition-all duration-300 ease-in-out cursor-pointer group relative transform hover:scale-105',
                         isActive
-                          ? 'bg-gradient-to-r from-blue-500/10 to-purple-500/10 text-blue-600 shadow-sm border border-blue-200/50'
+                          ? 'bg-gradient-to-r from-blue-500/10 to-purple-500/10 text-blue-600 border border-blue-200/50'
                           : 'text-slate-600 hover:bg-gradient-to-r hover:from-slate-100 hover:to-blue-50 hover:text-slate-900'
                       )}
                       title={isCollapsed ? item.name : undefined}
@@ -249,7 +249,7 @@ export function Sidebar({}: SidebarProps) {
                         <Icon className="h-4 w-4 flex-shrink-0" />
                       </div>
                       {!isCollapsed && (
-                        <span className="transition-all duration-300 ease-in-out opacity-100 transform translate-x-0">
+                        <span className="transition-all duration-300 ease-in-out opacity-100 transform translate-x-0 text-sm">
                           {item.name}
                         </span>
                       )}
@@ -267,13 +267,13 @@ export function Sidebar({}: SidebarProps) {
           </nav>
 
           {/* User Profile and Sign Out */}
-          <div className="p-4 border-t border-slate-200 transition-all duration-500 ease-in-out">
+          <div className="p-3 border-t border-slate-200 transition-all duration-500 ease-in-out">
             <Button 
               variant="ghost" 
               size="sm"  
               onClick={() => signOut()} 
               className={cn(
-                "w-full text-blue-500 hover:text-slate-600 hover:bg-gradient-to-r hover:from-red-50 hover:to-red-100 transition-all duration-300 ease-in-out transform hover:scale-105 hover:shadow-md group relative",
+                "w-full text-blue-500 hover:text-slate-600 hover:bg-gradient-to-r hover:from-red-50 hover:to-red-100 transition-all duration-300 ease-in-out group relative text-sm py-2.5",
                 isCollapsed ? "justify-center" : "justify-start"
               )}
               title={isCollapsed ? "Sign out" : undefined}
@@ -283,7 +283,7 @@ export function Sidebar({}: SidebarProps) {
                 <LogOut className="h-4 w-4" />
               </div>
               {!isCollapsed && (
-                <span className="ml-2 transition-all duration-300 ease-in-out opacity-100 transform translate-x-0">
+                <span className="ml-2 transition-all duration-300 ease-in-out opacity-100 transform translate-x-0 text-sm">
                   Sign Out
                 </span>
               )}

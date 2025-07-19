@@ -1,7 +1,6 @@
 import { Bot, MessageCircle, Users, TrendingUp, Download, Plus, Trash, Edit, Eye, ChevronDown, ChevronUp } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { ChatPreview } from '@/components/chat/chat-preview';
 import { useDashboardStats } from '@/hooks/use-leads';
 import { useChatbots } from '@/hooks/use-chatbots';
@@ -140,9 +139,6 @@ export default function Dashboard() {
       color: 'amber',
     },
   ];
-
-  const cardBase = "rounded-2xl shadow-md border border-slate-100 bg-white hover:shadow-xl transition-shadow duration-200 group";
-  const cardHover = "before:absolute before:left-0 before:top-0 before:bottom-0 before:w-1.5 before:rounded-l-3xl before:bg-blue-500";
 
   // Export leads as CSV
   const exportLeads = () => {

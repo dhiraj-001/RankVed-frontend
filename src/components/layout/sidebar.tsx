@@ -1,9 +1,5 @@
 import { Link, useLocation } from 'wouter';
 import { cn } from '@/lib/utils';
-import { useApp } from '@/contexts/app-context';
-import { useChatbots } from '@/hooks/use-chatbots';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { 
   Bot, 
@@ -19,7 +15,7 @@ import {
   Shield,
   ChevronLeft, ChevronRight
 } from 'lucide-react';
-import { useClerk, useUser } from '@clerk/clerk-react';
+import { useClerk } from '@clerk/clerk-react';
 import { useEffect, useState } from 'react';
 
 // Add CSS animations for sidebar
@@ -75,7 +71,6 @@ interface SidebarProps {
 export function Sidebar({}: SidebarProps) {
   const [location] = useLocation();
   const { signOut } = useClerk();
-  const { user } = useUser();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Copy, Code, Eye, ExternalLink, AlertTriangle, CheckCircle, Bot, Globe, Settings, Zap, Monitor, Smartphone } from 'lucide-react';
+import { Copy, Code, Eye, ExternalLink, AlertTriangle, CheckCircle, Bot,Zap } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';

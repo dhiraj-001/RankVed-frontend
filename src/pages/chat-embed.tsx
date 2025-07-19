@@ -63,17 +63,6 @@ export default function ChatEmbed() {
     enabled: !!chatbotId,
   });
 
-  // Domain validation
-  const [domainAllowed, setDomainAllowed] = useState(true);
-  useEffect(() => {
-    if (chatbot && Array.isArray(chatbot.allowedDomains) && chatbot.allowedDomains.length > 0) {
-      const currentDomain = window.location.hostname.replace(/^www\./, '');
-      setDomainAllowed(chatbot.allowedDomains.some(d => currentDomain.endsWith(d)));
-    } else {
-      setDomainAllowed(true); // Allow if no restrictions
-    }
-  }, [chatbot]);
-
   // Send message to AI
   const sendMessage = useMutation({
     mutationFn: async ({ message }: { message: string }) => {
@@ -286,14 +275,6 @@ export default function ChatEmbed() {
     return (
       <div className="fixed bottom-6 right-6 z-50">
         <div className="w-14 h-14 bg-slate-300 rounded-full animate-pulse"></div>
-      </div>
-    );
-  }
-
-  if (!domainAllowed) {
-    return (
-      <div className="fixed bottom-6 right-6 z-50 bg-white border border-red-300 rounded-lg p-4 shadow-lg text-red-600 text-sm font-semibold">
-        This chatbot is not allowed on this domain.
       </div>
     );
   }

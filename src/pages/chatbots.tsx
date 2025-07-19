@@ -171,39 +171,16 @@ export default function Chatbots() {
                     className="focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all rounded-lg border-slate-300 hover:border-blue-400"
                   />
                 </div>
-                <div className="border-t border-slate-100 pt-6 flex items-center space-x-2 mt-2">
-                  <Button
-                    variant={newChatbot.isActive ? "default" : "outline"}
-                    onClick={() => setNewChatbot(prev => ({ ...prev, isActive: !prev.isActive }))}
-                    className={`rounded-full w-10 h-6 flex items-center justify-center transition-colors duration-300 ${newChatbot.isActive ? 'bg-green-500 text-white' : 'bg-gray-300 text-gray-700'}`}
+                <div className="border-t border-slate-100 pt-6 flex items-center space-x-3 mt-2">
+                  <Switch
+                    checked={newChatbot.isActive}
+                    onCheckedChange={checked => setNewChatbot(prev => ({ ...prev, isActive: checked }))}
+                    className="data-[state=checked]:bg-green-600 data-[state=unchecked]:bg-gray-300"
                     aria-label={newChatbot.isActive ? 'Deactivate chatbot' : 'Activate chatbot'}
-                  >
-                    <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                    </svg>
-                  </Button>
-                  <Label
-                    htmlFor="active"
-                    className={`ml-2 font-medium transition-colors duration-300 flex items-center select-none
-                      ${newChatbot.isActive ? 'text-green-600' : 'text-gray-500'}
-                    `}
-                  >
-                    {newChatbot.isActive ? (
-                      <>
-                        <svg className="h-4 w-4 mr-1 text-green-500" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                        </svg>
-                        Active
-                      </>
-                    ) : (
-                      <>
-                        <svg className="h-4 w-4 mr-1 text-gray-400" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M18 12H6" />
-                        </svg>
-                        Paused
-                      </>
-                    )}
-                  </Label>
+                  />
+                  <span className={`ml-2 font-medium transition-colors duration-300 flex items-center select-none ${newChatbot.isActive ? 'text-green-600' : 'text-gray-500'}`}>
+                    {newChatbot.isActive ? 'Active' : 'Paused'}
+                  </span>
                 </div>
                 <div className="flex justify-end space-x-2 pt-4">
                   <Button variant="outline" onClick={() => setShowCreateDialog(false)} aria-label="Cancel chatbot creation" className="rounded-lg px-5 py-2">
@@ -363,13 +340,31 @@ export default function Chatbots() {
                     <div className="flex items-center gap-2">
                       <Switch
                         checked={chatbot.isActive}
-                        onCheckedChange={checked => {
-                          updateChatbot.mutateAsync({ id: chatbot.id, data: { isActive: checked } });
+                        onCheckedChange={async checked => {
+                          // Optimistically update UI
+                          const prev = chatbot.isActive;
+                          chatbot.isActive = checked;
+                          // Show toast immediately
+                          toast({
+                            title: checked ? 'Chatbot activated' : 'Chatbot paused',
+                            description: checked ? 'This chatbot is now active.' : 'This chatbot is now paused.',
+                            variant: 'default',
+                          });
+                          try {
+                            await updateChatbot.mutateAsync({ id: chatbot.id, data: { isActive: checked } });
+                          } catch (err) {
+                            // Revert UI if failed
+                            chatbot.isActive = prev;
+                            toast({
+                              title: 'Error',
+                              description: 'Failed to update chatbot status. Please try again.',
+                              variant: 'destructive',
+                            });
+                          }
                         }}
                         className="data-[state=checked]:bg-green-600 data-[state=unchecked]:bg-gray-300"
                         aria-label={chatbot.isActive ? 'Deactivate chatbot' : 'Activate chatbot'}
                       />
-                      
                     </div>
                     <Button variant="outline" size="sm" onClick={() => handleEdit(chatbot)} aria-label="Edit chatbot" className="rounded-md px-3 py-1.5 text-xs font-medium">
                       <Edit className="h-4 w-4 mr-1" />

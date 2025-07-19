@@ -397,9 +397,27 @@ export default function Dashboard() {
             {/* Left Column - Analytics & Chatbots */}
             <div className="lg:col-span-2 space-y-6">
               {/* Toggle for Chatbots List */}
-              <div className="flex items-center gap-2 mt-4 cursor-pointer select-none" onClick={() => setShowChatbots(v => !v)}>
-                <span className="font-semibold text-slate-800 text-lg">Active Chatbots</span>
-                {showChatbots ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+              <div 
+                className={`flex items-center gap-3 mt-4 cursor-pointer select-none p-3 rounded-xl transition-all duration-300 hover:shadow-md ${
+                  showChatbots 
+                    ? 'bg-purple-100 border-2 border-purple-300 shadow-lg' 
+                    : 'bg-white border-2 border-slate-200 hover:border-purple-200'
+                }`} 
+                onClick={() => setShowChatbots(v => !v)}
+              >
+                <div className={`p-2 rounded-lg transition-colors duration-300 ${
+                  showChatbots ? 'bg-purple-500 text-white' : 'bg-slate-100 text-slate-600'
+                }`}>
+                  <Bot className="h-5 w-5" />
+                </div>
+                <span className={`font-bold text-lg transition-colors duration-300 ${
+                  showChatbots ? 'text-purple-800' : 'text-slate-800'
+                }`}>Active Chatbots</span>
+                <div className={`ml-auto p-1 rounded-full transition-all duration-300 ${
+                  showChatbots ? 'bg-purple-500 text-white' : 'bg-slate-200 text-slate-600'
+                }`}>
+                  {showChatbots ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                </div>
               </div>
               <div className={`transition-all duration-700 ease-in-out overflow-hidden ${showChatbots ? 'max-h-[1000px] opacity-100 mt-2' : 'max-h-0 opacity-0 mt-0'}`}>
                 {showChatbots && (
@@ -496,9 +514,27 @@ export default function Dashboard() {
               </div>
 
               {/* Toggle for Leads List */}
-              <div className="flex items-center gap-2 mt-4 cursor-pointer select-none " onClick={() => setShowLeads(v => !v)}>
-                <span className="font-semibold text-slate-800 text-lg">Recent Leads</span>
-                {showLeads ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+              <div 
+                className={`flex items-center gap-3 mt-4 cursor-pointer select-none p-3 rounded-xl transition-all duration-300 hover:shadow-md ${
+                  showLeads 
+                    ? 'bg-blue-100 border-2 border-blue-300 shadow-lg' 
+                    : 'bg-white border-2 border-slate-200 hover:border-blue-200'
+                }`} 
+                onClick={() => setShowLeads(v => !v)}
+              >
+                <div className={`p-2 rounded-lg transition-colors duration-300 ${
+                  showLeads ? 'bg-blue-500 text-white' : 'bg-slate-100 text-slate-600'
+                }`}>
+                  <Users className="h-5 w-5" />
+                </div>
+                <span className={`font-bold text-lg transition-colors duration-300 ${
+                  showLeads ? 'text-blue-800' : 'text-slate-800'
+                }`}>Recent Leads</span>
+                <div className={`ml-auto p-1 rounded-full transition-all duration-300 ${
+                  showLeads ? 'bg-blue-500 text-white' : 'bg-slate-200 text-slate-600'
+                }`}>
+                  {showLeads ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                </div>
               </div>
               <div className={`transition-all duration-700 ease-in-out overflow-hidden ${showLeads ? 'max-h-[1000px] opacity-100 mt-2' : 'max-h-0 opacity-0 mt-0'}`}>
                 {showLeads && (

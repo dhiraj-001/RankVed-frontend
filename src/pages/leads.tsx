@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Download, Search, Users, Phone, Mail, Calendar, Bot } from 'lucide-react';
+import { Download, Search, Users, Phone, Mail, Calendar, Bot, Trash2, CheckSquare, Square } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,12 +12,18 @@ import { formatDateTime } from '@/lib/utils';
 import { useEffect } from 'react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { toast } from '@/hooks/use-toast';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Checkbox } from '@/components/ui/checkbox';
 
 export default function Leads() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedChatbot, setSelectedChatbot] = useState<string>('all');
   const [exporting, setExporting] = useState(false);
   const [expandedContext, setExpandedContext] = useState<string | null>(null);
+  const [selectedLeads, setSelectedLeads] = useState<number[]>([]);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [leadToDelete, setLeadToDelete] = useState<{ id: number; name: string } | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     if (exporting) {
@@ -26,7 +32,7 @@ export default function Leads() {
     }
   }, [exporting]);
   
-  const { data: leads, isLoading } = useLeads(selectedChatbot === 'all' ? undefined : selectedChatbot);
+  const { data: leads, isLoading, refetch } = useLeads(selectedChatbot === 'all' ? undefined : selectedChatbot);
   const { data: chatbots } = useChatbots();
 
   const filteredLeads = leads?.filter(lead =>
@@ -62,22 +68,161 @@ export default function Leads() {
     toast({ title: 'Exported', description: 'Leads exported as CSV', variant: 'default' });
   };
 
+  // Delete functions
+  const handleDeleteLead = async (leadId: number) => {
+    setIsDeleting(true);
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${leadId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        toast({ title: 'Success', description: 'Lead deleted successfully', variant: 'default' });
+        refetch();
+        setSelectedLeads(prev => prev.filter(id => id !== leadId));
+      } else {
+        const error = await response.json();
+        toast({ title: 'Error', description: error.message || 'Failed to delete lead', variant: 'destructive' });
+      }
+    } catch (error) {
+      toast({ title: 'Error', description: 'Failed to delete lead', variant: 'destructive' });
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteDialog(false);
+      setLeadToDelete(null);
+    }
+  };
+
+  const handleDeleteMultipleLeads = async () => {
+    if (selectedLeads.length === 0) return;
+    
+    setIsDeleting(true);
+    try {
+      const deletePromises = selectedLeads.map(leadId =>
+        fetch(`${import.meta.env.VITE_API_URL}/api/leads/${leadId}`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+      );
+
+      const responses = await Promise.all(deletePromises);
+      const failedDeletes = responses.filter(response => !response.ok);
+
+      if (failedDeletes.length === 0) {
+        toast({ 
+          title: 'Success', 
+          description: `${selectedLeads.length} lead${selectedLeads.length > 1 ? 's' : ''} deleted successfully`, 
+          variant: 'default' 
+        });
+        refetch();
+        setSelectedLeads([]);
+      } else {
+        toast({ 
+          title: 'Partial Success', 
+          description: `${selectedLeads.length - failedDeletes.length} leads deleted, ${failedDeletes.length} failed`, 
+          variant: 'destructive' 
+        });
+      }
+    } catch (error) {
+      toast({ title: 'Error', description: 'Failed to delete leads', variant: 'destructive' });
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteDialog(false);
+    }
+  };
+
+  const handleSelectAll = () => {
+    if (selectedLeads.length === filteredLeads.length) {
+      setSelectedLeads([]);
+    } else {
+      setSelectedLeads(filteredLeads.map(lead => Number(lead.id)));
+    }
+  };
+
+  const handleSelectLead = (leadId: number) => {
+    setSelectedLeads(prev => 
+      prev.includes(leadId) 
+        ? prev.filter(id => id !== leadId)
+        : [...prev, leadId]
+    );
+  };
+
   return (
     <TooltipProvider>
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Trash2 className="h-5 w-5 text-red-500" />
+              {leadToDelete ? 'Delete Lead' : 'Delete Multiple Leads'}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            {leadToDelete ? (
+              <p>Are you sure you want to delete <strong>{leadToDelete.name}</strong>? This action cannot be undone.</p>
+            ) : (
+              <p>Are you sure you want to delete <strong>{selectedLeads.length} lead{selectedLeads.length > 1 ? 's' : ''}</strong>? This action cannot be undone.</p>
+            )}
+            <div className="flex justify-end space-x-2">
+              <Button variant="outline" onClick={() => setShowDeleteDialog(false)} disabled={isDeleting}>
+                Cancel
+              </Button>
+              <Button 
+                variant="destructive" 
+                onClick={() => leadToDelete ? handleDeleteLead(leadToDelete.id) : handleDeleteMultipleLeads()}
+                disabled={isDeleting}
+              >
+                {isDeleting ? (
+                  <div className="flex items-center gap-2">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    Deleting...
+                  </div>
+                ) : (
+                  'Delete'
+                )}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Sticky Glassmorphism Header */}
       <header className="backdrop-blur-md bg-gradient-to-br from-blue-50 to-white/80 border-b border-slate-200 px-6 py-5 sticky top-0 z-20 shadow-lg flex items-center justify-between">
         <div>
           <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">Leads</h2>
           <p className="text-slate-600 mt-1 text-base font-normal">Manage and view leads collected through your chatbots</p>
         </div>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button onClick={exportLeads} disabled={!filteredLeads.length || exporting} className="rounded-full p-3 bg-blue-600 hover:bg-blue-700 text-white shadow-lg transition-all">
-              <Download className="h-5 w-5" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>Export Leads</TooltipContent>
-        </Tooltip>
+        <div className="flex items-center gap-2">
+          {selectedLeads.length > 0 && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  onClick={() => setShowDeleteDialog(true)} 
+                  disabled={isDeleting}
+                  variant="destructive" 
+                  className="rounded-full p-3 shadow-lg transition-all bg-blue-100"
+                >
+                  <Trash2 className="h-5 w-5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Delete Selected ({selectedLeads.length})</TooltipContent>
+            </Tooltip>
+          )}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button onClick={exportLeads} disabled={!filteredLeads.length || exporting} className="rounded-full p-3 bg-blue-600 hover:bg-blue-700 text-white shadow-lg transition-all">
+                <Download className="h-5 w-5" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Export Leads</TooltipContent>
+          </Tooltip>
+        </div>
       </header>
 
       <div className="p-6 max-w-7xl mx-auto bg-gradient-to-br from-blue-50 to-white min-h-screen flex-1">
@@ -159,16 +304,49 @@ export default function Leads() {
         {/* Leads Table */}
         <Card className="shadow-lg rounded-2xl border-0">
           <CardHeader className="top-[180px] z-10 bg-white/90 backdrop-blur-md rounded-t-2xl">
-            <CardTitle className="flex items-center gap-2 text-lg font-bold">
-              <Users className="h-5 w-5 text-blue-600" /> Lead Details
-            </CardTitle>
-            <p className="text-sm text-slate-600">{filteredLeads.length} leads found</p>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2 text-lg font-bold">
+                  <Users className="h-5 w-5 text-blue-600" /> Lead Details
+                </CardTitle>
+                <p className="text-sm text-slate-600">{filteredLeads.length} leads found</p>
+              </div>
+              {filteredLeads.length > 0 && (
+                <div className="flex items-center gap-3">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleSelectAll}
+                    className="flex items-center gap-2"
+                  >
+                    {selectedLeads.length === filteredLeads.length ? (
+                      <CheckSquare className="h-4 w-4" />
+                    ) : (
+                      <Square className="h-4 w-4" />
+                    )}
+                    {selectedLeads.length === filteredLeads.length ? 'Deselect All' : 'Select All'}
+                  </Button>
+                  {selectedLeads.length > 0 && (
+                    <Badge variant="destructive" className="px-2 py-1">
+                      {selectedLeads.length} selected
+                    </Badge>
+                  )}
+                </div>
+              )}
+            </div>
           </CardHeader>
           <CardContent className="p-0">
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-slate-200 bg-white/80 sticky top-0 z-10">
+                    <th className="text-left p-4 font-medium text-slate-600">
+                      <Checkbox
+                        checked={selectedLeads.length === filteredLeads.length && filteredLeads.length > 0}
+                        onCheckedChange={handleSelectAll}
+                        className="mr-2"
+                      />
+                    </th>
                     <th className="text-left p-4 font-medium text-slate-600">Contact</th>
                     <th className="text-left p-4 font-medium text-slate-600">Phone</th>
                     <th className="text-left p-4 font-medium text-slate-600">Email</th>
@@ -176,12 +354,14 @@ export default function Leads() {
                     <th className="text-left p-4 font-medium text-slate-600">Source</th>
                     <th className="text-left p-4 font-medium text-slate-600">Date</th>
                     <th className="text-left p-4 font-medium text-slate-600">Context</th>
+                    <th className="text-left p-4 font-medium text-slate-600">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {isLoading ? (
                     Array.from({ length: 5 }).map((_, i) => (
                       <tr key={i} className="border-b border-slate-100">
+                        <td className="p-4"><Skeleton className="h-4 w-6" /></td>
                         <td className="p-4"><Skeleton className="h-4 w-32" /></td>
                         <td className="p-4"><Skeleton className="h-4 w-24" /></td>
                         <td className="p-4"><Skeleton className="h-4 w-36" /></td>
@@ -189,11 +369,12 @@ export default function Leads() {
                         <td className="p-4"><Skeleton className="h-4 w-20" /></td>
                         <td className="p-4"><Skeleton className="h-4 w-28" /></td>
                         <td className="p-4"><Skeleton className="h-4 w-20" /></td>
+                        <td className="p-4"><Skeleton className="h-4 w-16" /></td>
                       </tr>
                     ))
                   ) : filteredLeads.length === 0 ? (
                     <tr>
-                      <td colSpan={7} className="p-12 text-center">
+                      <td colSpan={9} className="p-12 text-center">
                         <Users className="h-12 w-12 text-slate-400 mx-auto mb-4" />
                         <h3 className="text-lg font-medium text-slate-900 mb-2">No leads found</h3>
                         <p className="text-slate-500">
@@ -209,6 +390,12 @@ export default function Leads() {
                       const sourceChatbot = chatbots?.find(c => c.id === lead.chatbotId);
                       return (
                         <tr key={lead.id} className="border-b border-slate-100 hover:bg-blue-50/40 transition-colors">
+                          <td className="p-4">
+                            <Checkbox
+                              checked={selectedLeads.includes(Number(lead.id))}
+                              onCheckedChange={() => handleSelectLead(Number(lead.id))}
+                            />
+                          </td>
                           <td className="p-4">
                             <div className="flex items-center gap-3">
                               <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
@@ -251,6 +438,11 @@ export default function Leads() {
                             </span>
                           </td>
                           <td className="p-4">
+                            <div className="text-sm text-slate-600">
+                              {formatDateTime(lead.createdAt)}
+                            </div>
+                          </td>
+                          <td className="p-4">
                             <Button size="sm" variant="outline" onClick={() => setExpandedContext(expandedContext === lead.id ? null : lead.id)}>
                               {expandedContext === lead.id ? 'Hide' : 'View'}
                             </Button>
@@ -270,6 +462,26 @@ export default function Leads() {
                                   <pre className="whitespace-pre-wrap break-all">{JSON.stringify(lead.conversationContext, null, 2)}</pre>
                                 </div>
                               )}
+                            </div>
+                          </td>
+                          <td className="p-4">
+                            <div className="flex items-center justify-center">
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={() => {
+                                      setLeadToDelete({ id: Number(lead.id), name: lead.name });
+                                      setShowDeleteDialog(true);
+                                    }}
+                                    className="text-red-600 hover:text-red-700 hover:bg-red-50 p-2 h-8 w-8"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>Delete Lead</TooltipContent>
+                              </Tooltip>
                             </div>
                           </td>
                         </tr>

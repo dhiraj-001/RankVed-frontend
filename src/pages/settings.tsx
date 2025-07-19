@@ -569,7 +569,6 @@ export default function Settings() {
                     <SelectContent>
                       <SelectItem value="platform">Platform Default</SelectItem>
                       <SelectItem value="openai">OpenAI</SelectItem>
-                      <SelectItem value="anthropic">Anthropic</SelectItem>
                       <SelectItem value="custom">Custom API</SelectItem>
                     </SelectContent>
                   </Select>

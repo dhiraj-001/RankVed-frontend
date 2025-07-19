@@ -119,13 +119,13 @@ export default function Chatbots() {
 
 
   return (
-    <div className="flex-1 bg-gradient-to-br from-slate-50 to-white min-h-screen">
+    <div className="flex-1 bg-gradient-to-br from-blue-50 to-white min-h-screen">
       {/* Header */}
-      <header className="backdrop-blur-md bg-white/80 border-b border-slate-200 px-6 py-5 sticky top-0 z-20 shadow-md flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
+      <header className="backdrop-blur-md bg-gradient-to-br from-blue-50 to-white/80 border-b border-slate-200 px-6 py-5 sticky top-0 z-20 shadow-lg flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
           <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">Chatbots</h2>
           <p className="text-slate-600 mt-1 text-base font-normal">Manage your chatbots and their settings</p>
-        </div>
+          </div>
         <div className="flex items-center gap-2">
           
           <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>

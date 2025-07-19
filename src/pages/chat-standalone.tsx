@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams } from 'wouter';
-import { Send, Bot, X, Loader2 } from 'lucide-react';
+import { Send, Bot, X, Loader2, Paperclip, Mail, Phone, User } from 'lucide-react';
 import {  useMutation } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -273,67 +273,67 @@ export default function ChatStandalone() {
   }
 
   return (
-    <div className="h-screen bg-white flex flex-col">
+    <div className="h-screen flex flex-col bg-gradient-to-br from-blue-50 to-white relative">
       {/* Chat Header */}
-      <div 
-        className="px-4 py-3 text-white flex items-center justify-between shadow-sm"
-        style={{ backgroundColor: chatbot.primaryColor || '#6366F1' }}
+      <div
+        className="sticky top-0 z-20 backdrop-blur-md bg-white/80 border-b border-slate-200 px-6 py-4 flex items-center justify-between shadow-lg"
+        style={{ background: `linear-gradient(90deg, ${chatbot.primaryColor || '#6366F1'}11 0%, #fff 100%)` }}
       >
-        <div className="flex items-center space-x-3">
-          <Avatar className="h-8 w-8">
-            <AvatarImage src={chatbot.chatWindowAvatar || undefined} />
-            <AvatarFallback className="bg-white/20 text-white">
-              <Bot className="h-4 w-4" />
+        <div className="flex items-center gap-4">
+          <Avatar className="h-12 w-12 shadow-md">
+            <AvatarImage src={chatbot.chatWidgetIcon || undefined} />
+            <AvatarFallback className="bg-white/30 text-slate-700">
+              <Bot className="h-6 w-6" />
             </AvatarFallback>
           </Avatar>
           <div>
-            <h4 className="font-medium text-sm">{chatbot.title || chatbot.name}</h4>
-            <div className="flex items-center space-x-1">
-              <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-              <span className="text-xs opacity-90">Online</span>
+            <h4 className="font-bold text-lg text-slate-900">{chatbot.chatWidgetName || chatbot.name}</h4>
+            <div className="flex items-center gap-2 mt-1">
+              <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+              <span className="text-xs text-slate-500">Online</span>
             </div>
           </div>
         </div>
         <Button
           variant="ghost"
-          size="sm"
+          size="icon"
           onClick={handleClose}
-          className="text-white/80 hover:text-white hover:bg-white/20 p-1"
+          className="text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-full"
         >
-          <X className="h-4 w-4" />
+          <X className="h-5 w-5" />
         </Button>
       </div>
 
       {/* Chat Messages */}
-      <ScrollArea className="flex-1 bg-gray-50">
-        <div className="p-4 space-y-4">
-          {messages.map((message) => (
+      <ScrollArea className="flex-1 bg-gradient-to-br from-blue-50/60 via-slate-50 to-blue-100 px-2 md:px-0">
+        <div className="p-4 md:p-8 space-y-6 max-w-4xl mx-auto">
+          {messages.map((message, idx) => (
             <div
               key={message.id}
               className={cn(
-                "flex items-start space-x-2",
+                "flex items-end group",
                 message.sender === 'user' ? 'justify-end' : 'justify-start'
               )}
             >
               {message.sender === 'bot' && (
-                <Avatar className="h-6 w-6 mt-1">
+                <Avatar className="h-8 w-8 mr-2 shadow-sm">
                   <AvatarImage src={chatbot.chatWindowAvatar || undefined} />
                   <AvatarFallback style={{ backgroundColor: chatbot.primaryColor || '#6366F1' }} className="text-white">
-                    <Bot className="h-3 w-3" />
+                    <Bot className="h-4 w-4" />
                   </AvatarFallback>
                 </Avatar>
               )}
               <div
                 className={cn(
-                  "max-w-[75%] rounded-2xl px-4 py-2 text-sm shadow-sm",
+                  "relative max-w-[80vw] md:max-w-[60%] px-5 py-3 text-base transition-all duration-300",
                   message.sender === 'user'
-                    ? 'text-white rounded-br-sm'
-                    : 'bg-white text-gray-800 rounded-bl-sm border'
+                    ? 'bg-gradient-to-br from-blue-500 to-blue-400 text-white rounded-2xl rounded-br-sm shadow-lg animate-fadeInRight'
+                    : 'bg-white text-slate-900 rounded-2xl rounded-bl-sm shadow-md animate-fadeInLeft'
                 )}
-                style={{
-                  backgroundColor: message.sender === 'user' ? (chatbot.primaryColor || '#6366F1') : undefined
-                }}
+                style={{ backgroundColor: message.sender === 'user' ? (chatbot.primaryColor || '#6366F1') : undefined }}
               >
+                {/* Speech bubble tail */}
+               
                 {message.type === 'options' ? (
                   <div className="space-y-3">
                     <p className="mb-2">{message.content}</p>
@@ -342,7 +342,7 @@ export default function ChatStandalone() {
                         <button
                           key={index}
                           onClick={() => handleOptionClick(option)}
-                          className="block w-full text-left px-3 py-2 text-sm bg-gray-50 text-gray-700 rounded-lg border hover:bg-gray-100 transition-colors"
+                          className="block w-full text-left px-4 py-2 text-base bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors shadow-sm"
                         >
                           {option.text}
                         </button>
@@ -352,41 +352,50 @@ export default function ChatStandalone() {
                 ) : message.type === 'form' ? (
                   <div className="space-y-3">
                     <p className="mb-3">{message.content}</p>
-                    <div className="space-y-3">
-                      <Input
-                        placeholder="Your name"
-                        value={leadForm.name}
-                        onChange={(e) => setLeadForm({ ...leadForm, name: e.target.value })}
-                        className="text-sm"
-                      />
-                      <Input
-                        placeholder="Email address"
-                        type="email"
-                        value={leadForm.email}
-                        onChange={(e) => setLeadForm({ ...leadForm, email: e.target.value })}
-                        className="text-sm"
-                      />
-                      <Input
-                        placeholder="Phone number (optional)"
-                        value={leadForm.phone}
-                        onChange={(e) => setLeadForm({ ...leadForm, phone: e.target.value })}
-                        className="text-sm"
-                      />
+                    <div className="space-y-3 bg-slate-50 rounded-xl p-4 shadow-inner">
+                      <div className="relative">
+                        <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                        <Input
+                          placeholder="Your name"
+                          value={leadForm.name}
+                          onChange={(e) => setLeadForm({ ...leadForm, name: e.target.value })}
+                          className="pl-10 text-base"
+                        />
+                      </div>
+                      <div className="relative">
+                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                        <Input
+                          placeholder="Email address"
+                          type="email"
+                          value={leadForm.email}
+                          onChange={(e) => setLeadForm({ ...leadForm, email: e.target.value })}
+                          className="pl-10 text-base"
+                        />
+                      </div>
+                      <div className="relative">
+                        <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                        <Input
+                          placeholder="Phone number (optional)"
+                          value={leadForm.phone}
+                          onChange={(e) => setLeadForm({ ...leadForm, phone: e.target.value })}
+                          className="pl-10 text-base"
+                        />
+                      </div>
                       <div className="flex items-center space-x-2">
                         <Checkbox
                           id="consent"
                           checked={leadForm.consent}
                           onCheckedChange={(checked) => setLeadForm({ ...leadForm, consent: checked as boolean })}
                         />
-                        <Label htmlFor="consent" className="text-xs text-gray-600">
+                        <Label htmlFor="consent" className="text-xs text-slate-600">
                           I agree to be contacted
                         </Label>
                       </div>
                       <Button
                         onClick={handleLeadSubmit}
                         disabled={!leadForm.name || !leadForm.email || !leadForm.consent || leadMutation.isPending}
-                        className="w-full text-sm flex items-center justify-center"
-                        size="sm"
+                        className="w-full text-base flex items-center justify-center rounded-xl shadow-md"
+                        size="lg"
                         style={{ backgroundColor: chatbot.primaryColor || '#6366F1' }}
                       >
                         {leadMutation.isPending ? (
@@ -399,27 +408,30 @@ export default function ChatStandalone() {
                 ) : (
                   <div className="whitespace-pre-wrap">
                     {message.content.split('\n').map((line, index) => (
-                      <div key={index}>
-                        {line}
-                        {index < message.content.split('\n').length - 1 && <br />}
-                      </div>
+                      <div key={index}>{line}{index < message.content.split('\n').length - 1 && <br />}</div>
                     ))}
                   </div>
                 )}
+                {/* Timestamp */}
+                <div className="text-xs text-slate-400 mt-2 text-right opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                  {message.timestamp instanceof Date ? message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
+                </div>
               </div>
+              {message.sender === 'user' && (
+                <div className="ml-2 h-8 w-8" />
+              )}
             </div>
           ))}
-          
           {isLoading && (
-            <div className="flex justify-start items-start space-x-2">
-              <Avatar className="h-6 w-6 mt-1">
+            <div className="flex justify-start items-end space-x-2 animate-fadeInLeft">
+              <Avatar className="h-8 w-8 mr-2 shadow-sm">
                 <AvatarImage src={chatbot.chatWindowAvatar || undefined} />
                 <AvatarFallback style={{ backgroundColor: chatbot.primaryColor || '#6366F1' }} className="text-white">
-                  <Bot className="h-3 w-3" />
+                  <Bot className="h-4 w-4" />
                 </AvatarFallback>
               </Avatar>
-              <div className="bg-white rounded-2xl rounded-bl-sm px-4 py-2 shadow-sm border">
-                <Loader2 className="h-4 w-4 animate-spin text-gray-500" />
+              <div className="bg-white rounded-2xl rounded-bl-sm px-4 py-2 shadow-md border">
+                <Loader2 className="h-4 w-4 animate-spin text-slate-400" />
               </div>
             </div>
           )}
@@ -428,36 +440,36 @@ export default function ChatStandalone() {
       </ScrollArea>
 
       {/* Chat Input */}
-      <div className="p-4 bg-white border-t">
-        <div className="flex space-x-2">
+      <div className="sticky bottom-0 z-10 px-4 pb-4 pt-2 bg-gradient-to-t from-white/90 to-white/60  shadow-2xl">
+        <div className="flex gap-2 items-center max-w-2xl mx-auto">
           <Input
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
-            placeholder={chatbot.inputPlaceholder || "Type your message..."}
-            className="flex-1 rounded-full"
+            placeholder={chatbot.inputPlaceholder || 'Type your message...'}
+            className="flex-1 rounded-full px-5 py-3 text-base shadow-md bg-white border focus:ring-2 focus:ring-blue-400"
             disabled={isLoading}
           />
           <Button
             onClick={handleSendMessage}
             disabled={!input.trim() || isLoading}
-            size="sm"
-            className="rounded-full px-4"
-            style={{ backgroundColor: chatbot.primaryColor || '#6366F1' }}
+            size="lg"
+            className="rounded-full px-5 py-3 shadow-lg transition-all hover:scale-105"
+            style={{ backgroundColor: chatbot.primaryColor || '#c3c4ef' }}
           >
-            <Send className="h-4 w-4" />
+            <Send className="h-5 w-5 text-white" />
           </Button>
         </div>
       </div>
 
       {/* Powered By */}
       {chatbot.poweredByText && (
-        <div className="px-4 py-2 text-center bg-white border-t">
+        <div className="w-full border-t mt-0 pt-2 pb-3 bg-white/80 text-center text-xs text-slate-400">
           <a
             href={chatbot.poweredByLink || '#'}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-xs text-gray-500 hover:text-gray-700"
+            className="hover:text-blue-600 transition-colors"
           >
             {chatbot.poweredByText}
           </a>

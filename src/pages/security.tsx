@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Shield, Globe, Plus, X, Save, AlertTriangle } from 'lucide-react';
+import { Shield, Globe, Plus, X, Save, AlertTriangle, Lock, CheckCircle, Settings } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -101,12 +101,12 @@ export default function Security() {
 
   if (!activeChatbot) {
     return (
-      <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-slate-50 to-white min-h-screen">
-        <div className="text-center">
-          <Shield className="h-16 w-16 text-blue-200 mx-auto mb-6" />
+      <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-red-50 to-white min-h-screen">
+        <div className="text-center px-4">
+          <Shield className="h-16 w-16 text-red-200 mx-auto mb-6" />
           <h3 className="text-2xl font-bold text-slate-900 mb-2">No Active Chatbot</h3>
           <p className="text-slate-500 mb-4">Please select a chatbot to configure security settings.</p>
-          <Button asChild>
+          <Button asChild className="bg-red-600 hover:bg-red-700 text-white font-semibold px-6 py-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-200">
             <a href="/chatbots">Go to Chatbots</a>
           </Button>
         </div>
@@ -116,110 +116,189 @@ export default function Security() {
 
   return (
     <TooltipProvider>
-      {/* Sticky Glassmorphism Header */}
-      <header className="backdrop-blur-md bg-white/80 border-b border-slate-200 px-6 py-5 sticky top-0 z-20 shadow-md flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <Shield className="h-8 w-8 text-blue-600" />
-          <div>
-            <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">Security Settings</h2>
-            <p className="text-slate-600 mt-1 text-base font-normal">Manage domain restrictions and best practices for <span className="font-semibold">{activeChatbot.name}</span></p>
-          </div>
-        </div>
-      </header>
-
-      <div className="p-6 max-w-3xl mx-auto space-y-8">
-        {/* Domain Restrictions Card */}
-        <Card className="shadow-lg bg-gradient-to-br from-blue-50 to-white border-0 rounded-2xl">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-lg font-bold">
-              <Globe className="h-6 w-6 text-blue-600" /> Domain Restrictions
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div>
-              <Label htmlFor="domain-input">Allowed Domains</Label>
-              <p className="text-sm text-slate-600 mb-3">Restrict your chatbot to work only on specific domains. Leave empty to allow all domains.</p>
-              <div className="flex gap-2">
-                <Input
-                  id="domain-input"
-                  placeholder="example.com"
-                  value={newDomain}
-                  onChange={(e) => setNewDomain(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && addDomain()}
-                  className="rounded-xl border-2 border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all"
-                />
-                <Button onClick={addDomain} variant="outline" className="rounded-full px-4 py-2">
-                  <Plus className="h-4 w-4 mr-2" /> Add
-                </Button>
+      <div className="flex-1 bg-gradient-to-br from-red-50 to-white min-h-screen">
+        {/* Sticky Glassmorphism Header */}
+        <header className="backdrop-blur-md bg-gradient-to-br from-red-50 to-white/80 border-b border-slate-200 px-4 sm:px-6 py-5 sticky top-0 z-20 shadow-lg">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between max-w-7xl mx-auto gap-4">
+            <div className="flex items-center gap-3">
+              <Shield className="h-6 w-6 sm:h-8 sm:w-8 text-red-600" />
+              <div>
+                <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Security Settings</h2>
+                <p className="text-slate-600 mt-1 text-sm sm:text-base">
+                  Manage domain restrictions and best practices for <span className="font-semibold">{activeChatbot.name}</span>
+                </p>
               </div>
             </div>
-            {allowedDomains.length > 0 && (
+            <Button 
+              onClick={handleSave} 
+              disabled={isLoading} 
+              className="bg-red-600 hover:bg-red-700 text-white font-semibold px-4 sm:px-6 py-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 w-full sm:w-auto"
+            >
+              <Save className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+              {isLoading ? 'Saving...' : 'Save Settings'}
+            </Button>
+          </div>
+        </header>
+
+        <div className="p-4 sm:p-6 max-w-4xl mx-auto space-y-6">
+          {/* Domain Restrictions Card */}
+          <Card className="shadow-xl rounded-2xl border-0 bg-gradient-to-br from-blue-50/60 via-white/80 to-blue-100/60 relative overflow-hidden">
+            <div className="absolute left-0 top-0 bottom-0 w-2 bg-blue-400 rounded-l-2xl" />
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2 text-slate-900 font-semibold text-lg">
+                <Globe className="h-5 w-5 text-blue-600" />
+                <span>Domain Restrictions</span>
+              </CardTitle>
+              <p className="text-slate-600 text-sm">Restrict your chatbot to work only on specific domains for enhanced security</p>
+            </CardHeader>
+            <CardContent className="space-y-6">
               <div className="space-y-2">
-                <Label>Current Allowed Domains</Label>
-                <div className="flex flex-wrap gap-2">
-                  {allowedDomains.map((domain) => (
-                    <Badge key={domain} variant="secondary" className="flex items-center gap-1 rounded-full px-3 py-1 text-base bg-blue-100 text-blue-700 animate-fade-in">
-                      <span>{domain}</span>
-                      <button
-                        onClick={() => removeDomain(domain)}
-                        className="ml-1 text-blue-400 hover:text-red-500 transition-colors"
-                        aria-label={`Remove ${domain}`}
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                    </Badge>
-                  ))}
+                <Label htmlFor="domain-input" className="text-slate-700 font-medium">Allowed Domains</Label>
+                <p className="text-xs text-slate-500">Leave empty to allow all domains. Add specific domains to restrict access.</p>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <Input
+                    id="domain-input"
+                    placeholder="example.com"
+                    value={newDomain}
+                    onChange={(e) => setNewDomain(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && addDomain()}
+                    className="border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 rounded-lg transition-all duration-200 hover:border-blue-400 flex-1"
+                  />
+                  <Button 
+                    onClick={addDomain} 
+                    variant="outline" 
+                    className="border-slate-300 hover:border-blue-400 hover:bg-blue-50 text-blue-600 rounded-lg transition-all duration-200 px-4 py-2"
+                  >
+                    <Plus className="h-4 w-4 mr-2" /> Add Domain
+                  </Button>
                 </div>
               </div>
-            )}
-            <Alert className="bg-yellow-50 border-yellow-200 mt-4">
-              <AlertTriangle className="h-5 w-5 text-yellow-600" />
-              <AlertDescription>
-                <strong>Important:</strong> Once you add domains, your chatbot will only work on those specific domains. Make sure to include all domains where you want the chatbot to appear.
-              </AlertDescription>
-            </Alert>
-            <div className="flex justify-end">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button onClick={handleSave} disabled={isLoading} className="rounded-full px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white shadow-lg transition-all">
-                    <Save className="h-5 w-5 mr-2" />
-                    {isLoading ? 'Saving...' : 'Save Settings'}
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Save Security Settings</TooltipContent>
-              </Tooltip>
-            </div>
-          </CardContent>
-        </Card>
+              
+              {allowedDomains.length > 0 && (
+                <div className="space-y-3">
+                  <Label className="text-slate-700 font-medium">Current Allowed Domains ({allowedDomains.length})</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {allowedDomains.map((domain) => (
+                      <Badge 
+                        key={domain} 
+                        variant="secondary" 
+                        className="flex items-center gap-1 rounded-lg px-3 py-2 text-sm bg-blue-100 text-blue-700 border border-blue-200 hover:bg-blue-200 transition-all duration-200"
+                      >
+                        <CheckCircle className="h-3 w-3 text-blue-600" />
+                        <span>{domain}</span>
+                        <button
+                          onClick={() => removeDomain(domain)}
+                          className="ml-1 text-blue-400 hover:text-red-500 transition-colors p-1 rounded"
+                          aria-label={`Remove ${domain}`}
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
 
-        {/* Best Practices Card */}
-        <Card className="shadow bg-white/90 border-0 rounded-2xl">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base font-bold">
-              <Shield className="h-5 w-5 text-green-600" /> Security Best Practices
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="text-sm text-slate-600 space-y-3">
-              <li className="flex items-center gap-2 bg-blue-50 rounded-lg px-3 py-2">
-                <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
-                Use domain restrictions to prevent unauthorized usage of your chatbot on other websites.
-              </li>
-              <li className="flex items-center gap-2 bg-blue-50 rounded-lg px-3 py-2">
-                <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
-                Regularly review your allowed domains and remove any that are no longer needed.
-              </li>
-              <li className="flex items-center gap-2 bg-blue-50 rounded-lg px-3 py-2">
-                <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
-                Consider using subdomains (e.g., www.example.com) if you need more specific control.
-              </li>
-              <li className="flex items-center gap-2 bg-blue-50 rounded-lg px-3 py-2">
-                <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
-                Monitor your chatbot usage through the dashboard to detect any unauthorized access.
-              </li>
-            </ul>
-          </CardContent>
-        </Card>
+              <Alert className="bg-yellow-50 border-yellow-200 rounded-lg">
+                <AlertTriangle className="h-4 w-4 text-yellow-600" />
+                <AlertDescription className="text-sm">
+                  <strong>Important:</strong> Once you add domains, your chatbot will only work on those specific domains. Make sure to include all domains where you want the chatbot to appear.
+                </AlertDescription>
+              </Alert>
+            </CardContent>
+          </Card>
+
+          {/* Security Best Practices Card */}
+          <Card className="shadow-xl rounded-2xl border-0 bg-gradient-to-br from-green-50/60 via-white/80 to-green-100/60 relative overflow-hidden">
+            <div className="absolute left-0 top-0 bottom-0 w-2 bg-green-400 rounded-l-2xl" />
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2 text-slate-900 font-semibold text-lg">
+                <Shield className="h-5 w-5 text-green-600" />
+                <span>Security Best Practices</span>
+              </CardTitle>
+              <p className="text-slate-600 text-sm">Follow these guidelines to keep your chatbot secure</p>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-3">
+                  <div className="flex items-start gap-3 bg-white/60 rounded-lg p-4 border border-green-200">
+                    <div className="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
+                    <div>
+                      <h4 className="font-medium text-slate-900 text-sm">Domain Restrictions</h4>
+                      <p className="text-xs text-slate-600 mt-1">Use domain restrictions to prevent unauthorized usage of your chatbot on other websites.</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3 bg-white/60 rounded-lg p-4 border border-green-200">
+                    <div className="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
+                    <div>
+                      <h4 className="font-medium text-slate-900 text-sm">Regular Reviews</h4>
+                      <p className="text-xs text-slate-600 mt-1">Regularly review your allowed domains and remove any that are no longer needed.</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="space-y-3">
+                  <div className="flex items-start gap-3 bg-white/60 rounded-lg p-4 border border-green-200">
+                    <div className="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
+                    <div>
+                      <h4 className="font-medium text-slate-900 text-sm">Subdomain Control</h4>
+                      <p className="text-xs text-slate-600 mt-1">Consider using subdomains (e.g., www.example.com) if you need more specific control.</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3 bg-white/60 rounded-lg p-4 border border-green-200">
+                    <div className="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
+                    <div>
+                      <h4 className="font-medium text-slate-900 text-sm">Usage Monitoring</h4>
+                      <p className="text-xs text-slate-600 mt-1">Monitor your chatbot usage through the dashboard to detect any unauthorized access.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Security Status Card */}
+          <Card className="shadow-xl rounded-2xl border-0 bg-gradient-to-br from-purple-50/60 via-white/80 to-purple-100/60 relative overflow-hidden">
+            <div className="absolute left-0 top-0 bottom-0 w-2 bg-purple-400 rounded-l-2xl" />
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2 text-slate-900 font-semibold text-lg">
+                <Lock className="h-5 w-5 text-purple-600" />
+                <span>Security Status</span>
+              </CardTitle>
+              <p className="text-slate-600 text-sm">Current security configuration overview</p>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="bg-white/60 rounded-lg p-4 border border-purple-200">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className={`w-3 h-3 rounded-full ${allowedDomains.length > 0 ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
+                    <span className="text-sm font-medium text-slate-900">Domain Restrictions</span>
+                  </div>
+                  <p className="text-xs text-slate-600">
+                    {allowedDomains.length > 0 
+                      ? `${allowedDomains.length} domain(s) configured` 
+                      : 'No restrictions (all domains allowed)'}
+                  </p>
+                </div>
+                <div className="bg-white/60 rounded-lg p-4 border border-purple-200">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                    <span className="text-sm font-medium text-slate-900">Access Control</span>
+                  </div>
+                  <p className="text-xs text-slate-600">Active and monitoring</p>
+                </div>
+                <div className="bg-white/60 rounded-lg p-4 border border-purple-200">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                    <span className="text-sm font-medium text-slate-900">Security Level</span>
+                  </div>
+                  <p className="text-xs text-slate-600">
+                    {allowedDomains.length > 0 ? 'Enhanced' : 'Standard'}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </TooltipProvider>
   );

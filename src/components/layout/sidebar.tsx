@@ -16,10 +16,44 @@ import {
   Code,
   LogOut,
   User,
-  Shield
+  Shield,
+  ChevronLeft, ChevronRight
 } from 'lucide-react';
 import { useClerk, useUser } from '@clerk/clerk-react';
 import { useEffect, useState } from 'react';
+
+// Add CSS animations for sidebar
+const sidebarStyles = `
+  @keyframes slideInFromLeft {
+    from {
+      opacity: 0;
+      transform: translateX(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+  
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .sidebar-item {
+    animation: slideInFromLeft 0.6s ease-out forwards;
+  }
+  
+  .sidebar-item:hover {
+    animation: fadeInUp 0.2s ease-out;
+  }
+`;
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: BarChart3 },
@@ -34,94 +68,106 @@ const navigation = [
   { name: 'Profile', href: '/profile', icon: User },
 ];
 
-export function Sidebar() {
+interface SidebarProps {
+  // No props needed - sidebar handles mobile detection internally
+}
+
+export function Sidebar({}: SidebarProps) {
   const [location] = useLocation();
-  const { activeChatbot, setActiveChatbot } = useApp();
-  const { data: chatbots } = useChatbots();
   const { signOut } = useClerk();
   const { user } = useUser();
-  const [agency, setAgency] = useState<{ name: string; logo: string }>({ name: '', logo: '' });
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
+  // Detect mobile screens
   useEffect(() => {
-    const fetchAgency = async () => {
-      try {
-        const apiUrl = (import.meta as any).env?.VITE_API_URL || 'http://localhost:5000';
-        const userId = 1;
-        const res = await fetch(`${apiUrl}/api/users/${userId}`, { credentials: 'include' });
-        if (!res.ok) return;
-        const data = await res.json();
-        setAgency({ name: data.user?.agencyName || 'RankVed', logo: data.user?.agencyLogo || '' });
-      } catch (e) {
-        setAgency({ name: 'RankVed', logo: '' });
-      }
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768); // md breakpoint
     };
-    fetchAgency();
+
+    // Check on mount
+    checkMobile();
+
+    // Add event listener for resize
+    window.addEventListener('resize', checkMobile);
+
+    // Cleanup
+    return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  return (
-    <aside className="w-64 bg-white border-r border-slate-200 flex flex-col">
-      {/* Permanent Branding */}
-      <div className="p-6 border-b border-slate-200">
-        <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 rounded-lg bg-blue-600 flex items-center justify-center overflow-hidden">
-            {agency.logo ? (
-              <img src={agency.logo} alt="Agency Logo" className="w-10 h-10 object-cover rounded-lg" />
-            ) : (
-              <Bot className="h-6 w-6 text-white" />
-            )}
-          </div>
-          <div>
-            <h1 className="font-semibold text-slate-900 text-lg">{agency.name || 'RankVed'}</h1>
-            <p className="text-xs text-slate-500">AI Platform</p>
-          </div>
-        </div>
-      </div>
+  // Auto-collapse on mobile
+  useEffect(() => {
+    if (isMobile && !isCollapsed) {
+      setIsCollapsed(true);
+    }
+  }, [isMobile, isCollapsed]);
 
-      {/* Active Chatbot Selector */}
-      <div className="p-4 border-b border-slate-200">
-        <label className="block text-xs font-medium text-slate-600 mb-2">
-          Active Chatbot
-        </label>
-        <Select
-          value={activeChatbot?.id || ''}
-          onValueChange={(value) => {
-            const chatbot = chatbots?.find(c => c.id === value);
-            setActiveChatbot(chatbot || null);
-          }}
-        >
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder="Select a chatbot" />
-          </SelectTrigger>
-          <SelectContent>
-            {chatbots?.map((chatbot) => (
-              <SelectItem key={chatbot.id} value={chatbot.id}>
-                {chatbot.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+  const handleToggleCollapse = () => {
+    // On mobile, don't allow expanding
+    if (isMobile) return;
+    setIsCollapsed((v) => !v);
+  };
+
+  return (
+    <>
+      <style>{sidebarStyles}</style>
+      <aside className={cn(
+        "bg-gradient-to-br from-blue-100 via-white to-blue-50 border-r-2 border-purple-200 flex flex-col transition-all duration-500 ease-in-out flex-shrink-0 shadow-lg",
+        isCollapsed ? 'w-18' : 'w-64'
+      )}>
+      {/* Sidebar Toggle Button - Hidden on mobile */}
+      {!isMobile && (
+        <div className={cn(
+          "border-b border-slate-200 flex items-center transition-all duration-500 ease-in-out", 
+          isCollapsed ? "p-3 justify-center" : "p-4 justify-end"
+        )}>
+          <button
+            className={cn(
+              "p-2 rounded-full hover:bg-blue-100 hover:shadow-md transition-all duration-300 ease-in-out transform hover:scale-105",
+              isCollapsed ? "w-full" : ""
+            )}
+            onClick={handleToggleCollapse}
+            aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          >
+            <div className="transition-transform duration-500 ease-in-out">
+              {isCollapsed ? <ChevronRight className="h-5 w-5 text-blue-500" /> : <ChevronLeft className="h-5 w-5 text-blue-500" />}
+            </div>
+          </button>
+        </div>
+      )}
 
       {/* Navigation */}
       <nav className="flex-1 p-4">
-        <ul className="space-y-1">
-          {navigation.map((item) => {
+        <ul className="space-y-2">
+          {navigation.map((item, index) => {
             const isActive = location.startsWith(item.href);
             const Icon = item.icon;
-            
             return (
-              <li key={item.name}>
+              <li key={item.name} className="sidebar-item" style={{ animationDelay: `${index * 100}ms` }}>
                 <Link
                   href={item.href}
                   className={cn(
-                    'flex items-center space-x-3 px-3 py-2 rounded-lg font-medium transition-colors cursor-pointer',
+                    'flex items-center space-x-3 px-3 py-3 rounded-lg font-medium transition-all duration-300 ease-in-out cursor-pointer group relative transform hover:scale-105 hover:shadow-md',
                     isActive
-                      ? 'bg-primary/10 text-primary'
-                      : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                      ? 'bg-gradient-to-r from-blue-500/10 to-purple-500/10 text-blue-600 shadow-sm border border-blue-200/50'
+                      : 'text-slate-600 hover:bg-gradient-to-r hover:from-slate-100 hover:to-blue-50 hover:text-slate-900'
                   )}
+                  title={isCollapsed ? item.name : undefined}
                 >
-                  <Icon className="h-4 w-4" />
-                  <span>{item.name}</span>
+                  <div className="transition-transform duration-300 ease-in-out group-hover:scale-110">
+                    <Icon className="h-4 w-4 flex-shrink-0" />
+                  </div>
+                  {!isCollapsed && (
+                    <span className="transition-all duration-300 ease-in-out opacity-100 transform translate-x-0">
+                      {item.name}
+                    </span>
+                  )}
+                  {/* Tooltip for collapsed state */}
+                  {isCollapsed && (
+                    <div className="absolute left-full ml-2 px-3 py-2 bg-slate-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300 ease-in-out pointer-events-none whitespace-nowrap z-50 shadow-lg transform scale-95 group-hover:scale-100">
+                      {item.name}
+                    </div>
+                  )}
                 </Link>
               </li>
             );
@@ -129,26 +175,37 @@ export function Sidebar() {
         </ul>
       </nav>
 
-      {/* User Profile */}
-      <div className="p-4 border-t border-slate-200">
-        <div className="flex items-center space-x-3">
-          <Avatar className="h-8 w-8">
-            <AvatarImage src="https://via.placeholder.com/50" alt="User" />
-            <AvatarFallback>
-              <User className="h-4 w-4" />
-            </AvatarFallback>
-          </Avatar>
-          <div className="flex-1 min-w-0">
-
-            <p className="text-xs text-slate-500 truncate">
-              {user?.primaryEmailAddress?.emailAddress || 'user@example.com'}
-            </p>
-          </div>
-          <Button variant="ghost" size="sm"  onClick={() => signOut()} className="text-slate-400 hover:text-slate-600" title="Sign out" aria-label="Sign out">
+      {/* User Profile and Sign Out */}
+      <div className="p-4 border-t border-slate-200 transition-all duration-500 ease-in-out">
+        {/* Sign Out Button - Always visible */}
+        <Button 
+          variant="ghost" 
+          size="sm"  
+          onClick={() => signOut()} 
+          className={cn(
+            "w-full text-blue-500 hover:text-slate-600 hover:bg-gradient-to-r hover:from-red-50 hover:to-red-100 transition-all duration-300 ease-in-out transform hover:scale-105 hover:shadow-md group relative",
+            isCollapsed ? "justify-center" : "justify-start"
+          )}
+          title={isCollapsed ? "Sign out" : undefined}
+          aria-label="Sign out"
+        >
+          <div className="transition-transform duration-300 ease-in-out group-hover:scale-110">
             <LogOut className="h-4 w-4" />
-          </Button>
-        </div>
+          </div>
+          {!isCollapsed && (
+            <span className="ml-2 transition-all duration-300 ease-in-out opacity-100 transform translate-x-0">
+              Sign Out
+            </span>
+          )}
+          {/* Tooltip for collapsed state */}
+          {isCollapsed && (
+            <div className="absolute left-full ml-2 px-3 py-2 bg-slate-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300 ease-in-out pointer-events-none whitespace-nowrap z-50 shadow-lg transform scale-95 group-hover:scale-100">
+              Sign Out
+            </div>
+          )}
+        </Button>
       </div>
-    </aside>
+      </aside>
+    </>
   );
 }

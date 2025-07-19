@@ -1,4 +1,4 @@
-(function() {
+(function () {
   'use strict';
 
   // Inject scoped animation styles
@@ -7,23 +7,18 @@
     const style = document.createElement('style');
     style.id = 'rankved-chat-anim-style';
     style.textContent = `
-      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
-      html, body {
-        font-family: 'Inter', system-ui, sans-serif !important;
-        background: #f8fafc;
-      }
       @keyframes rankved-bubble-pop {
         0% { transform: scale(0.5); opacity: 0; }
         80% { transform: scale(1.1); opacity: 1; }
         100% { transform: scale(1); opacity: 1; }
       }
       @keyframes rankved-window-in {
-        0% { transform: scale(0.95) translateY(40px); opacity: 0; }
+        0% { transform: scale(0.8) translateY(40px); opacity: 0; }
         100% { transform: scale(1) translateY(0); opacity: 1; }
       }
       @keyframes rankved-window-out {
         0% { transform: scale(1) translateY(0); opacity: 1; }
-        100% { transform: scale(0.95) translateY(40px); opacity: 0; }
+        100% { transform: scale(0.8) translateY(40px); opacity: 0; }
       }
       @keyframes rankved-dot-bounce {
         0% { transform: translateY(0); }
@@ -31,124 +26,12 @@
       }
       #rankved-chat-bubble[data-rankved-widget] {
         animation: rankved-bubble-pop 0.5s cubic-bezier(.5,1.8,.5,1) 0.1s both;
-        box-shadow: 0 4px 24px rgba(60,72,88,0.12);
-        border: 1.5px solid #e0e7ef;
-        background: linear-gradient(135deg, #6366F1 60%, #818cf8 100%);
-      }
-      #rankved-chat-bubble[data-rankved-widget]:hover {
-        box-shadow: 0 8px 32px rgba(60,72,88,0.18);
-        filter: brightness(1.05);
       }
       #rankved-chat-window[data-rankved-widget] {
         animation: rankved-window-in 0.35s cubic-bezier(.5,1.8,.5,1) 0s both;
-        box-shadow: 0 8px 40px rgba(60,72,88,0.18);
-        border: 1.5px solid #e0e7ef;
-        background: #fff;
       }
       #rankved-chat-window[data-rankved-closing] {
         animation: rankved-window-out 0.25s cubic-bezier(.5,1.8,.5,1) 0s both;
-      }
-      #rankved-chat-window [id^=rankved-] input,
-      #rankved-chat-window [id^=rankved-] textarea {
-        font-family: 'Inter', system-ui, sans-serif !important;
-        background: #f8fafc;
-        border: 1.5px solid #e0e7ef;
-        transition: border 0.2s, box-shadow 0.2s;
-      }
-      #rankved-chat-window [id^=rankved-] input:focus,
-      #rankved-chat-window [id^=rankved-] textarea:focus {
-        border: 1.5px solid #6366F1;
-        box-shadow: 0 0 0 2px #6366F133;
-      }
-      #rankved-chat-window button {
-        transition: background 0.2s, box-shadow 0.2s, color 0.2s;
-      }
-      #rankved-chat-window button:hover {
-        filter: brightness(1.08);
-        box-shadow: 0 2px 8px rgba(60,72,88,0.10);
-      }
-      #rankved-chat-window [id^=rankved-] .rankved-typing-dots span {
-        background: #6366F1;
-      }
-      #rankved-chat-window [id^=rankved-] .rankved-typing-dots span:nth-child(2) {
-        background: #818cf8;
-      }
-      #rankved-chat-window [id^=rankved-] .rankved-typing-dots span:nth-child(3) {
-        background: #a5b4fc;
-      }
-      #rankved-chat-window [id^=rankved-] [id^=rankved-suggestions] button {
-        background: #f1f5f9;
-        color: #6366F1;
-        border: 1.5px solid #e0e7ef;
-        border-radius: 8px;
-        padding: 7px 16px;
-        font-size: 14px;
-        margin: 0;
-        transition: background 0.2s, color 0.2s;
-      }
-      #rankved-chat-window [id^=rankved-] [id^=rankved-suggestions] button:hover {
-        background: #6366F1;
-        color: #fff;
-      }
-      #rankved-chat-window [id^=rankved-messages] > div {
-        font-family: 'Inter', system-ui, sans-serif !important;
-      }
-      #rankved-chat-window [id^=rankved-messages] > div > div {
-        border-radius: 16px;
-        box-shadow: 0 1px 4px rgba(60,72,88,0.06);
-      }
-      #rankved-chat-window [id^=rankved-messages] > div[style*='flex-end'] > div {
-        background: linear-gradient(135deg, #6366F1 60%, #818cf8 100%);
-        color: #fff;
-      }
-      #rankved-chat-window [id^=rankved-messages] > div[style*='flex-start'] > div {
-        background: #f8fafc;
-        color: #333;
-      }
-      #rankved-chat-window [id^=rankved-flow-input] input,
-      #rankved-chat-window [id^=rankved-flow-input] button {
-        border-radius: 10px;
-      }
-      #rankved-chat-window [id^=rankved-flow-input] button {
-        background: #6366F1;
-        color: #fff;
-        font-weight: 600;
-        border: none;
-        box-shadow: 0 1px 4px rgba(60,72,88,0.08);
-      }
-      #rankved-chat-window [id^=rankved-flow-input] button:hover {
-        background: #4f46e5;
-      }
-      #rankved-chat-window [id^=rankved-flow-input] input {
-        background: #f8fafc;
-        border: 1.5px solid #e0e7ef;
-      }
-      #rankved-chat-window [id^=rankved-flow-input] input:focus {
-        border: 1.5px solid #6366F1;
-        box-shadow: 0 0 0 2px #6366F133;
-      }
-      #rankved-chat-window [id^=rankved-flow-input] label {
-        font-size: 13px;
-        color: #6366F1;
-        margin-bottom: 2px;
-      }
-      #rankved-chat-window [id^=rankved-flow-input] {
-        background: #f8fafc;
-        border-radius: 12px;
-        padding: 12px 10px;
-        margin-bottom: 8px;
-      }
-      #rankved-chat-window [id^=rankved-loading-message] {
-        background: #f1f5f9;
-        border-radius: 12px;
-      }
-      #rankved-chat-window [id^=rankved-loading-message] .rankved-typing-dots span {
-        background: #6366F1;
-      }
-      #rankved-chat-window [id^=rankved-close-btn]:hover {
-        color: #818cf8;
-        background: #f1f5f9;
-        border-radius: 50%;
       }
     `;
     document.head.appendChild(style);
@@ -206,10 +89,12 @@
         // If no flow, add a default for testing
         if (!config.questionFlow || !Array.isArray(config.questionFlow.nodes) || config.questionFlow.nodes.length === 0) {
           config.questionFlowEnabled = true;
-          config.questionFlow = { nodes: [
-            { id: 'start', type: 'statement', question: 'This is a default flow. How can I help you?', nextId: 'end' },
-            { id: 'end', type: 'statement', question: 'Thank you for using the chatbot!' }
-          ] };
+          config.questionFlow = {
+            nodes: [
+              { id: 'start', type: 'statement', question: 'This is a default flow. How can I help you?', nextId: 'end' },
+              { id: 'end', type: 'statement', question: 'Thank you for using the chatbot!' }
+            ]
+          };
           console.log('[RankVed Chat] No question flow found. Injected default flow:', config.questionFlow);
         }
         configLoaded = true;
@@ -222,6 +107,7 @@
   }
   // Sound effect for open/close
   function playOpenCloseSound() {
+    if (!config.enableNotificationSound) return;
     try {
       const audio = new Audio('https://rank-ved-frontend-rfam.vercel.app/openclose.mp3');
       audio.currentTime = 0;
@@ -232,7 +118,7 @@
   }
 
   // Fetch chatbot config from backend
- 
+
 
   function showError(msg) {
     // Remove bubble if present
@@ -245,30 +131,74 @@
     setTimeout(() => err.remove(), 8000);
   }
 
-  // Helper: Get appearance values from config with fallback
+  // Helper: Get appearance values from config with fallback (matching chat preview)
   function getAppearance() {
     const theme = config.chatWindowTheme || config.theme || 'light';
     const borderRadius = Number(config.borderRadius) || 12;
     const shadowStyle = config.shadowStyle || 'soft';
+    const chatWindowStyle = config.chatWindowStyle || 'modern';
     let primaryColor = config.primaryColor || '#6366F1';
     if (!/^#([0-9A-F]{3}){1,2}$/i.test(primaryColor)) primaryColor = '#6366F1';
-    const backgroundColor = theme === 'dark' ? '#18181b' : '#fff';
+    
+    // Enhanced background colors based on theme and style (matching preview)
+    let backgroundColor = theme === 'dark'
+      ? 'linear-gradient(135deg, #1e293b 0%, #334155 50%, #475569 100%)'
+      : 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #f1f5f9 100%)';
+    
+    // Style-specific backgrounds (matching preview exactly)
+    if (chatWindowStyle === 'modern') {
+      backgroundColor = theme === 'dark'
+        ? 'linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(51, 65, 85, 0.8) 100%)'
+        : 'linear-gradient(135deg, rgb(252 243 255 / 90%) 0%, rgb(229 242 255 / 80%) 100%)';
+    } else if (chatWindowStyle === 'classic') {
+      backgroundColor = theme === 'dark' ? '#1e293b' : '#ffffff';
+    } else if (chatWindowStyle === 'minimal') {
+      backgroundColor = theme === 'dark' ? 'rgba(30, 41, 59, 0.95)' : 'rgba(255, 255, 255, 0.95)';
+    } else if (chatWindowStyle === 'floating') {
+      backgroundColor = theme === 'dark' ? 'rgba(30, 41, 59, 0.98)' : 'rgba(255, 255, 255, 0.98)';
+    }
+    
+    // Enhanced shadow styles (matching preview exactly)
     let boxShadow = '0 10px 40px rgba(0,0,0,0.15)';
-    if (shadowStyle === 'minimal') boxShadow = '0 2px 8px rgba(0,0,0,0.08)';
-    if (shadowStyle === 'strong') boxShadow = '0 20px 60px rgba(0,0,0,0.25)';
+    if (shadowStyle === 'none') boxShadow = 'none';
+    else if (shadowStyle === 'soft') boxShadow = '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)';
+    else if (shadowStyle === 'medium') boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)';
+    else if (shadowStyle === 'strong') boxShadow = '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)';
+    
     const textColor = theme === 'dark' ? '#fff' : '#333';
     const headerBg = primaryColor;
     const headerText = '#fff';
-    const inputBg = theme === 'dark' ? '#23232a' : '#fff';
+    
+    // Enhanced input backgrounds (matching preview)
+    let inputBg = theme === 'dark' 
+      ? 'linear-gradient(250deg, #0e1a50 0%, #18181b 100%)'
+      : 'linear-gradient(170deg, #e7ebff -1%, #c7c5ff 100%)';
+    
+    if (chatWindowStyle === 'minimal') {
+      inputBg = theme === 'dark' ? 'rgba(51, 65, 85, 0.8)' : 'rgba(255, 255, 255, 0.9)';
+    } else if (chatWindowStyle === 'floating') {
+      inputBg = theme === 'dark' ? 'rgba(51, 65, 85, 0.9)' : 'rgba(255, 255, 255, 0.95)';
+    }
+    
     const inputText = theme === 'dark' ? '#fff' : '#333';
-    const inputBorder = theme === 'dark' ? '#333' : '#e2e8f0';
-    const msgBg = theme === 'dark' ? '#23232a' : '#fff';
+    const inputBorder = theme === 'dark' ? '#6a739f' : '#d7adec';
+    
+    // Enhanced message backgrounds (matching preview exactly)
+    let msgBg = theme === 'dark' ? '#23232a' : '#fff';
+    if (chatWindowStyle === 'minimal') {
+      msgBg = theme === 'dark' ? 'rgba(51, 65, 85, 0.6)' : 'rgba(255, 255, 255, 0.8)';
+    } else if (chatWindowStyle === 'floating') {
+      msgBg = theme === 'dark' ? 'rgba(51, 65, 85, 0.7)' : 'rgba(255, 255, 255, 0.9)';
+    }
+    
     const msgText = theme === 'dark' ? '#fff' : '#333';
     const userMsgBg = primaryColor;
     const userMsgText = '#fff';
+    
     return {
       theme, borderRadius, shadowStyle, primaryColor, backgroundColor, boxShadow, textColor,
-      headerBg, headerText, inputBg, inputText, inputBorder, msgBg, msgText, userMsgBg, userMsgText
+      headerBg, headerText, inputBg, inputText, inputBorder, msgBg, msgText, userMsgBg, userMsgText,
+      chatWindowStyle
     };
   }
 
@@ -290,7 +220,7 @@
       `<img src="${iconSrc}" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover; pointer-events: none;" alt="Chat Icon">` :
       `<svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M20 2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h4l4 4 4-4h4c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>`;
     bubble.title = config.chatWidgetName || config.name || config.title || 'ChatBot';
-    bubble.onclick = function() {
+    bubble.onclick = function () {
       if (isOpen) {
         closeChat();
       } else {
@@ -306,47 +236,54 @@
     const win = document.createElement('div');
     win.setAttribute('id', 'rankved-chat-window');
     win.setAttribute('data-rankved-widget', 'true');
+    
+    // Apply theme, style, and shadow attributes for CSS targeting
+    win.setAttribute('data-theme', a.theme);
+    win.setAttribute('data-style', config.chatWindowStyle || 'modern');
+    win.setAttribute('data-shadow', a.shadowStyle);
+    
     win.setAttribute('style', `
       position: fixed; bottom: 24px; right: 24px; width: 380px; height: 600px; max-height: 80vh;
-      border-radius: ${a.borderRadius}px; background: ${a.backgroundColor}; box-shadow: ${a.boxShadow}; z-index: 2147483646;
-      display: flex; flex-direction: column; overflow: hidden; font-family: inherit; border: 1px solid ${a.inputBorder};
+      border-radius: ${a.borderRadius}px; z-index: 2147483646;
+      display: flex; flex-direction: column; overflow: hidden; font-family: inherit;
       margin: 0; padding: 0; opacity: 1; transform: scale(1) translateY(0);
-      color: ${a.textColor};
+      color: ${a.textColor}; background: ${a.backgroundColor}; box-shadow: ${a.boxShadow};
+      border: 1px solid ${a.inputBorder};
     `);
     // Prefer chatWidgetIcon for the header, fallback to chatWindowAvatar, then default SVG
     let headerIcon = config.chatWidgetIcon || config.chatWindowAvatar || config.chatBubbleIcon || config.bubbleIcon;
     let headerIconHTML = '';
     if (headerIcon) {
-      headerIconHTML = `<img src="${headerIcon}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; background: #fff2; border: 2px solid #fff3;">`;
+      headerIconHTML = `<img src="${headerIcon}" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover; background: rgba(255,255,255,0.2); border: 2px solid rgba(255,255,255,0.3); box-shadow: 0 2px 8px rgba(0,0,0,0.15);">`;
     } else {
-      headerIconHTML = `<span style="display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 50%; background: #fff2; border: 2px solid #fff3;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="7" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span>`;
+      headerIconHTML = `<span style="display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,0.2); border: 2px solid rgba(255,255,255,0.3); box-shadow: 0 2px 8px rgba(0,0,0,0.15);"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="7" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span>`;
     }
     // Online status
-    const onlineStatus = `<span style="display: flex; align-items: center; gap: 4px; font-size: 12px; margin-left: 4px;"><span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 4px #22c55e88;"></span><span style="color: #d1fae5;">Online</span></span>`;
+    const onlineStatus = `<span style="display: flex; align-items: center; gap: 4px; font-size: 12px; margin-left: 4px;"><span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 4px rgba(34, 197, 94, 0.5);"></span><span style="color: rgba(209, 250, 229, 0.9);">Online</span></span>`;
     win.innerHTML = `
-      <div style="background: ${a.primaryColor}; color: ${a.headerText}; padding: 14px; display: flex; align-items: center; justify-content: space-between; border-radius: ${a.borderRadius}px ${a.borderRadius}px 0 0;">
-        <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
+      <div style="background: ${a.primaryColor}; color: ${a.headerText}; padding: 16px; display: flex; align-items: center; justify-content: space-between; border-radius: ${a.borderRadius}px ${a.borderRadius}px 0 0; position: relative; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
+        <div style="display: flex; align-items: center; gap: 10px; min-width: 0; position: relative; z-index: 2;">
           ${headerIconHTML}
-          <div style="display: flex; flex-direction: column; min-width: 0;">
-            <span style="font-size: 16px; font-weight: 600; line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${config.chatWidgetName || config.name || config.title || 'ChatBot'}</span>
+          <div style="display: flex; flex-direction: column; gap:5px; min-width: 0;">
+            <span style="font-size: 16px; font-weight: 600; line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: 0 1px 2px rgba(0,0,0,0.1);">${config.chatWidgetName || config.name || config.title || 'ChatBot'}</span>
             ${onlineStatus}
           </div>
         </div>
-        <button id="rankved-close-btn" style="background: none; border: none; color: ${a.headerText}; font-size: 22px; cursor: pointer;">×</button>
+        <button id="rankved-close-btn" style="background: none; border: none; color: ${a.headerText}; font-size: 24px; cursor: pointer; position: relative; z-index: 2; transition: all 0.2s ease-in-out; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-weight: 300;">×</button>
       </div>
-      <div id="rankved-messages" style="flex: 1; overflow-y: auto; padding: 18px 14px 0 14px; background: ${a.msgBg}; color: ${a.msgText}; display: flex; flex-direction: column; gap: 14px; border-bottom-left-radius: ${a.borderRadius}px; border-bottom-right-radius: ${a.borderRadius}px;">
+      <div id="rankved-messages" style="flex: 1; overflow-y: auto; padding: 18px 14px 0 14px; color: ${a.msgText}; display: flex; flex-direction: column; gap: 14px; background: ${a.backgroundColor}; border-bottom-left-radius: ${a.borderRadius}px; border-bottom-right-radius: ${a.borderRadius}px;">
         <!-- Welcome message removed; will be added by JS only -->
       </div>
-      <div style="padding: 14px 14px 10px 14px; border-top: 1px solid ${a.inputBorder}; background: ${a.inputBg}; border-bottom-left-radius: ${a.borderRadius}px; border-bottom-right-radius: ${a.borderRadius}px;">
-        <div style="display: flex; gap: 8px; align-items: center;">
-          <input id="rankved-input" placeholder="${config.inputPlaceholder || config.placeholder || 'Type your message...'}" style="flex: 1; border: 1px solid ${a.inputBorder}; border-radius: 12px; padding: 10px 14px; font-size: 15px; outline: none; background: ${a.inputBg}; color: ${a.inputText}; height: 38px; box-shadow: 0 1px 2px rgba(0,0,0,0.04);">
-          <button id="rankved-send-btn" style="width: 38px; padding:0; height: 38px; border-radius: 12px; background: ${a.primaryColor}; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+      <div style="padding: 8px 14px 6px 14px; border-top: 2px solid ${a.inputBorder}; border-bottom-left-radius: ${a.borderRadius}px; border-bottom-right-radius: ${a.borderRadius}px; position: relative; overflow: hidden; background: ${a.inputBg}; box-shadow: ${a.theme === 'dark' ? '0 2px 8px rgba(30,41,59,0.12)' : '0 2px 8px rgba(100,116,139,0.08)'};">
+        <div style="display: flex; gap: 8px; align-items: center; position: relative; z-index: 2;">
+                      <input id="rankved-input" placeholder="${config.inputPlaceholder || config.placeholder || 'Type your message...'}" style="flex: 1; border: 1px solid ${a.inputBorder}; border-radius: 12px; padding: 5px 10px; font-size: 15px; outline: none; color: ${a.inputText}; height: 40px; box-shadow: inset 0 1px 2px rgba(0,0,0,0.04); transition: all 0.2s ease-in-out; background: ${a.theme === 'dark' ? 'rgba(30, 41, 59, 0.8)' : 'rgba(255, 255, 255, 0.9)'};">
+                      <button id="rankved-send-btn" style="width: 40px; padding:0; height: 40px; border-radius: 12px; background: ${a.primaryColor}; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease-in-out; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M2,21L23,12L2,3V10L17,12L2,14V21Z"/></svg>
           </button>
         </div>
         <div id="rankved-suggestions" style="margin-top: 10px; display: flex; flex-wrap: wrap; gap: 8px;"></div>
-        <div style="text-align: center; padding: 8px 0 0 0; font-size: 12px; color: ${a.theme === 'dark' ? '#aaa' : '#666'}; background: none;">
-          ${config.poweredByText ? `<span>${config.poweredByLink ? `<a href="${config.poweredByLink}" target="_blank" style="color: ${a.primaryColor}; text-decoration: none;">${config.poweredByText}</a>` : config.poweredByText}</span>` : `Powered by <a href="https://rankved.com" target="_blank" style="color: ${a.primaryColor}; text-decoration: none;">RankVed</a>`}
+        <div style="text-align: center; padding: 4px 0 0 0; font-size: 12px; color: ${a.theme === 'dark' ? '#94a3b8' : '#64748b'}; background: none; position: relative; z-index: 2;">
+          ${config.poweredByText ? `<span>${config.poweredByLink ? `<a href="${config.poweredByLink}" target="_blank" style="color: ${a.primaryColor}; text-decoration: none; transition: all 0.2s ease-in-out;">${config.poweredByText}</a>` : config.poweredByText}</span>` : `Powered by <a href="https://rankved.com" target="_blank" style="color: ${a.primaryColor}; text-decoration: none; transition: all 0.2s ease-in-out;">RankVed</a>`}
         </div>
       </div>
     `;
@@ -362,7 +299,7 @@
     if (sender === 'user') {
       messageDiv.setAttribute('style', `margin-bottom: 14px; display: flex; justify-content: flex-end;`);
       const contentDiv = document.createElement('div');
-      contentDiv.setAttribute('style', `max-width: 80%; padding: 10px 16px; border-radius: 18px; font-size: 14px; background: ${a.userMsgBg}; color: ${a.userMsgText};`);
+      contentDiv.setAttribute('style', `max-width: 80%; padding: 12px 16px; border-radius: 18px; font-size: 14px; background: ${a.userMsgBg}; color: ${a.userMsgText}; box-shadow: 0 4px 12px rgba(0,0,0,0.15); transition: all 0.2s ease-in-out;`);
       contentDiv.textContent = content;
       messageDiv.appendChild(contentDiv);
     } else {
@@ -371,13 +308,13 @@
       // Use the same fallback logic as header: chatWidgetIcon, then chatWindowAvatar, then default SVG
       let botIcon = config.chatWindowAvatar || config.chatWidgetIcon;
       if (botIcon) {
-        avatarDiv.innerHTML = `<img src="${botIcon}" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover; background: #fff2; border: 2px solid #fff3;">`;
+        avatarDiv.innerHTML = `<img src="${botIcon}" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover; background: rgba(255,255,255,0.2); border: 2px solid rgba(255,255,255,0.2); box-shadow: 0 1px 3px rgba(0,0,0,0.1);">`;
       } else {
-        avatarDiv.innerHTML = `<span style=\"display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background: #fff2; border: 2px solid #fff3;\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#6366F1\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"3\" y=\"11\" width=\"18\" height=\"7\" rx=\"2\"/><path d=\"M8 11V7a4 4 0 0 1 8 0v4\"/></svg></span>`;
+        avatarDiv.innerHTML = `<span style=\"display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background: ${a.primaryColor}; border: 2px solid rgba(255,255,255,0.2); box-shadow: 0 1px 3px rgba(0,0,0,0.1);\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"white\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"3\" y=\"11\" width=\"18\" height=\"7\" rx=\"2\"/><path d=\"M8 11V7a4 4 0 0 1 8 0v4\"/></svg></span>`;
       }
       messageDiv.appendChild(avatarDiv);
       const contentDiv = document.createElement('div');
-      contentDiv.setAttribute('style', `max-width: 80%; padding: 10px 16px; border-radius: 12px; font-size: 14px; background: ${a.msgBg}; color: ${a.msgText}; box-shadow: 0 1px 2px rgba(0,0,0,0.08);`);
+      contentDiv.setAttribute('style', `max-width: 80%; padding: 12px 16px; border-radius: 18px; font-size: 14px; background: ${a.msgBg}; color: ${a.msgText}; box-shadow: 0 2px 8px rgba(0,0,0,0.08); transition: all 0.2s ease-in-out;`);
       contentDiv.textContent = content;
       messageDiv.appendChild(contentDiv);
     }
@@ -396,7 +333,7 @@
         const btn = document.createElement('button');
         btn.textContent = text;
         btn.setAttribute('style', `background: ${getAppearance().primaryColor}; color: #fff; border: none; border-radius: 6px; padding: 6px 12px; font-size: 13px; cursor: pointer; margin: 0;`);
-        btn.onclick = function() {
+        btn.onclick = function () {
           addMessage(text, 'user');
           if (config.suggestionPersistence !== 'always_visible') btn.style.display = 'none';
         };
@@ -410,6 +347,7 @@
     currentNodeId: null,
     history: [],
     userInputs: {},
+    awaitingOpenEnded: null, // New state variable for open-ended node
   };
 
   function resetQuestionFlow() {
@@ -417,10 +355,11 @@
       currentNodeId: null,
       history: [],
       userInputs: {},
+      awaitingOpenEnded: null,
     };
   }
 
-   function renderQuestionNode(node) {
+  function renderQuestionNode(node) {
     const messagesContainer = document.getElementById('rankved-messages');
     if (!messagesContainer || !node) return;
     addMessage(node.question, 'bot');
@@ -449,7 +388,7 @@
         btn.style.padding = '8px 12px';
         btn.style.fontSize = '14px';
         btn.style.cursor = 'pointer';
-        btn.onclick = function() {
+        btn.onclick = function () {
           addMessage(option.text, 'user');
           // Track user input
           questionFlowState.userInputs[node.id] = option.text;
@@ -484,102 +423,9 @@
       messagesContainer.appendChild(optionsDiv);
       messagesContainer.scrollTop = messagesContainer.scrollHeight;
     } else if (node.type === 'open-ended') {
-      const inputDiv = document.createElement('div');
-      inputDiv.id = 'rankved-flow-input';
-      inputDiv.style.margin = '8px 0';
-      inputDiv.style.display = 'flex';
-      inputDiv.style.gap = '6px';
-      const input = document.createElement('input');
-      input.type = 'text';
-      input.placeholder = 'Type your answer...';
-      input.style.flex = '1';
-      input.style.padding = '8px 12px';
-      input.style.borderRadius = '6px';
-      input.style.border = '1px solid #e2e8f0';
-      input.style.fontSize = '14px';
-      const sendBtn = document.createElement('button');
-      sendBtn.textContent = 'Send';
-      sendBtn.style.background = getAppearance().primaryColor;
-      sendBtn.style.color = '#fff';
-      sendBtn.style.border = 'none';
-      sendBtn.style.borderRadius = '6px';
-      sendBtn.style.padding = '8px 16px';
-      sendBtn.style.fontSize = '14px';
-      sendBtn.style.cursor = 'pointer';
-      sendBtn.onclick = function() {
-        if (!input.value.trim()) return;
-        addMessage(input.value, 'user');
-        // Track user input
-        questionFlowState.userInputs[node.id] = input.value;
-        questionFlowState.currentNodeId = node.id;
-        input.disabled = true;
-        sendBtn.disabled = true;
-        // Simulate AI handling if enabled
-        if (node.aiHandling) {
-          setTimeout(() => {
-            addMessage(`I understand you're asking about: "${input.value}". Let me help you with that. Is there anything specific you'd like to know more about?`, 'bot');
-            // Show follow-up options
-            const followUpDiv = document.createElement('div');
-            followUpDiv.id = 'rankved-flow-options';
-            followUpDiv.style.margin = '8px 0';
-            followUpDiv.style.display = 'flex';
-            followUpDiv.style.flexDirection = 'column';
-            followUpDiv.style.gap = '6px';
-            [
-              { text: 'Tell me more', nextId: node.nextId },
-              { text: 'Contact support', action: 'collect-lead' },
-              { text: 'End chat', action: 'end-chat' }
-            ].forEach(opt => {
-              const btn = document.createElement('button');
-              btn.textContent = opt.text;
-              btn.style.background = getAppearance().primaryColor;
-              btn.style.color = '#fff';
-              btn.style.border = 'none';
-              btn.style.borderRadius = '6px';
-              btn.style.padding = '8px 12px';
-              btn.style.fontSize = '14px';
-              btn.style.cursor = 'pointer';
-              btn.onclick = function() {
-                addMessage(opt.text, 'user');
-                // Track user input for follow-up
-                questionFlowState.userInputs[node.id + '_followup'] = opt.text;
-                questionFlowState.currentNodeId = node.id;
-                if (opt.action === 'collect-lead') {
-                  addMessage('Thank you! Please provide your contact information so we can help you better.', 'bot');
-                  followUpDiv.remove();
-                  return;
-                }
-                if (opt.action === 'end-chat') {
-                  addMessage('Thank you for using our service! Have a great day!', 'bot');
-                  followUpDiv.remove();
-                  return;
-                }
-                if (opt.nextId) {
-                  followUpDiv.remove();
-                  const nextNode = config.questionFlow.nodes.find(n => n.id === opt.nextId);
-                  if (nextNode) {
-                    questionFlowState.currentNodeId = nextNode.id;
-                    setTimeout(() => renderQuestionNode(nextNode), 500);
-                  }
-                }
-              };
-              followUpDiv.appendChild(btn);
-            });
-            messagesContainer.appendChild(followUpDiv);
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
-          }, 1000);
-        } else if (node.nextId) {
-          const nextNode = config.questionFlow.nodes.find(n => n.id === node.nextId);
-          if (nextNode) {
-            questionFlowState.currentNodeId = nextNode.id;
-            setTimeout(() => renderQuestionNode(nextNode), 500);
-          }
-        }
-      };
-      inputDiv.appendChild(input);
-      inputDiv.appendChild(sendBtn);
-      messagesContainer.appendChild(inputDiv);
-      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      // Instead of rendering a custom input, set a flag to use the main chat input
+      questionFlowState.awaitingOpenEnded = node;
+      // Optionally, visually indicate to the user to answer below (could highlight input, etc.)
     } else if (node.type === 'contact-form' && config.leadCollectionEnabled) {
       const inputDiv = document.createElement('div');
       inputDiv.id = 'rankved-flow-input';
@@ -632,7 +478,7 @@
       sendBtn.style.padding = '8px 16px';
       sendBtn.style.fontSize = '14px';
       sendBtn.style.cursor = 'pointer';
-      sendBtn.onclick = async function() {
+      sendBtn.onclick = async function () {
         if (!nameInput.value.trim() || !emailInput.value.trim() || !phoneInput.value.trim() || !consentCheckbox.checked) return;
         addMessage(`Name: ${nameInput.value}, Email: ${emailInput.value}, Phone: ${phoneInput.value}, Consent: Yes`, 'user');
         sendBtn.disabled = true;
@@ -640,7 +486,7 @@
         try {
           let apiUrl =
             (typeof window !== 'undefined' && window.VITE_API_URL) ? window.VITE_API_URL
-            : (config.apiUrl || (window.CHATBOT_CONFIG && window.CHATBOT_CONFIG.apiUrl) || window.location.origin);
+              : (config.apiUrl || (window.CHATBOT_CONFIG && window.CHATBOT_CONFIG.apiUrl) || window.location.origin);
           const chatbotId = config.chatbotId || (window.CHATBOT_CONFIG && window.CHATBOT_CONFIG.chatbotId);
           if (!chatbotId) {
             addMessage('Chatbot ID is missing. Please refresh the page.', 'bot');
@@ -699,8 +545,8 @@
     }
     chatWindow = createChatWindow();
     document.body.appendChild(chatWindow);
-    if (bubble) bubble.style.display = 'none'; 
-    
+    if (bubble) bubble.style.display = 'none';
+
     // Hide bubble when chat is open
     isOpen = true;
     // --- Show question flow if it exists, otherwise show welcome message ---
@@ -722,7 +568,7 @@
       if (bubble) bubble.style.display = 'flex'; // Show bubble when chat is closed
     };
     chatWindow.querySelector('#rankved-send-btn').onclick = sendMessage;
-    chatWindow.querySelector('#rankved-input').onkeydown = function(e) {
+    chatWindow.querySelector('#rankved-input').onkeydown = function (e) {
       if (e.key === 'Enter') sendMessage();
     };
   }
@@ -778,6 +624,103 @@
     if (!config.chatbotId) {
       console.error('[RankVed Chat] chatbotId is missing at sendMessage. window.CHATBOT_CONFIG:', window.CHATBOT_CONFIG, 'config:', config);
       addMessage('Chatbot ID is missing. Please refresh the page.', 'bot');
+      return;
+    }
+    // If waiting for open-ended node answer, handle it here
+    if (questionFlowState.awaitingOpenEnded) {
+      const node = questionFlowState.awaitingOpenEnded;
+      addMessage(text, 'user');
+      questionFlowState.userInputs[node.id] = text;
+      questionFlowState.currentNodeId = node.id;
+      input.value = '';
+      questionFlowState.awaitingOpenEnded = null;
+      showLoadingMessage();
+      // Send to backend for AI response
+      let context = {
+        messageCount: (questionFlowState.history?.length || 0) + 1,
+        manualMessageCount: (questionFlowState.history?.length || 0) + 1,
+        isFlowBased: true,
+        usingSuggestions: false,
+        flowState: questionFlowState,
+      };
+      try {
+        const res = await fetch(`${config.apiUrl || ''}/api/chat/${config.chatbotId}/message`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: text, context })
+        });
+        removeLoadingMessage();
+        if (res.ok) {
+          const data = await res.json();
+          addMessage(data.message || '...', 'bot');
+          // After AI response, show follow-up options if aiHandling is set
+          if (node.aiHandling) {
+            setTimeout(() => {
+              // Show follow-up options
+              const followUpDiv = document.createElement('div');
+              followUpDiv.id = 'rankved-flow-options';
+              followUpDiv.style.margin = '8px 0';
+              followUpDiv.style.display = 'flex';
+              followUpDiv.style.flexDirection = 'column';
+              followUpDiv.style.gap = '6px';
+              [
+                { text: 'Tell me more', nextId: node.nextId },
+                { text: 'Contact support', action: 'collect-lead' },
+                { text: 'End chat', action: 'end-chat' }
+              ].forEach(opt => {
+                const btn = document.createElement('button');
+                btn.textContent = opt.text;
+                btn.style.background = getAppearance().primaryColor;
+                btn.style.color = '#fff';
+                btn.style.border = 'none';
+                btn.style.borderRadius = '6px';
+                btn.style.padding = '8px 12px';
+                btn.style.fontSize = '14px';
+                btn.style.cursor = 'pointer';
+                btn.onclick = function () {
+                  addMessage(opt.text, 'user');
+                  questionFlowState.userInputs[node.id + '_followup'] = opt.text;
+                  questionFlowState.currentNodeId = node.id;
+                  if (opt.action === 'collect-lead') {
+                    addMessage('Thank you! Please provide your contact information so we can help you better.', 'bot');
+                    followUpDiv.remove();
+                    renderLeadForm();
+                    return;
+                  }
+                  if (opt.action === 'end-chat') {
+                    addMessage('Thank you for using our service! Have a great day!', 'bot');
+                    followUpDiv.remove();
+                    return;
+                  }
+                  if (opt.nextId) {
+                    followUpDiv.remove();
+                    const nextNode = config.questionFlow.nodes.find(n => n.id === opt.nextId);
+                    if (nextNode) {
+                      questionFlowState.currentNodeId = nextNode.id;
+                      setTimeout(() => renderQuestionNode(nextNode), 500);
+                    }
+                  }
+                };
+                followUpDiv.appendChild(btn);
+              });
+              const messagesContainer = document.getElementById('rankved-messages');
+              messagesContainer.appendChild(followUpDiv);
+              messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }, 500);
+          } else if (node.nextId) {
+            const nextNode = config.questionFlow.nodes.find(n => n.id === node.nextId);
+            if (nextNode) {
+              questionFlowState.currentNodeId = nextNode.id;
+              setTimeout(() => renderQuestionNode(nextNode), 500);
+            }
+          }
+        } else {
+          addMessage('Sorry, there was a problem. Please try again.', 'bot');
+        }
+      } catch (e) {
+        removeLoadingMessage();
+        addMessage('Sorry, there was a problem. Please try again.', 'bot');
+      }
       return;
     }
     addMessage(text, 'user');
@@ -870,7 +813,7 @@
     sendBtn.style.padding = '8px 16px';
     sendBtn.style.fontSize = '14px';
     sendBtn.style.cursor = 'pointer';
-    sendBtn.onclick = async function() {
+    sendBtn.onclick = async function () {
       if (!nameInput.value.trim() || !emailInput.value.trim() || !phoneInput.value.trim() || !consentCheckbox.checked) return;
       addMessage(`Name: ${nameInput.value}, Email: ${emailInput.value}, Phone: ${phoneInput.value}, Consent: Yes`, 'user');
       sendBtn.disabled = true;
@@ -942,7 +885,7 @@
   }
 
   // Expose a global re-initialization function for SPA/React usage
-  window.initRankVedChat = function() {
+  window.initRankVedChat = function () {
     // Remove existing bubble and chat window if present
     if (bubble && bubble.parentNode) bubble.parentNode.removeChild(bubble);
     if (chatWindow && chatWindow.parentNode) chatWindow.parentNode.removeChild(chatWindow);

@@ -179,7 +179,7 @@ We serve over 1,000+ companies worldwide and are trusted by industry leaders.`;
 
   if (!activeChatbot) {
     return (
-      <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-slate-50 to-white min-h-screen">
+      <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-blue-50 to-white min-h-screen">
         <div className="text-center">
           <Brain className="h-16 w-16 text-blue-200 mx-auto mb-6" />
           <h3 className="text-2xl font-bold text-slate-900 mb-2">No Active Chatbot</h3>
@@ -195,7 +195,7 @@ We serve over 1,000+ companies worldwide and are trusted by industry leaders.`;
   return (
     <TooltipProvider>
       {/* Sticky Glassmorphism Header */}
-      <header className="backdrop-blur-md bg-white/80 border-b border-slate-200 px-6 py-5 sticky top-0 z-20 shadow-md flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <header className="backdrop-blur-md bg-gradient-to-br from-blue-50 to-white/80 border-b border-slate-200 px-6 py-5 sticky top-0 z-20 shadow-lg flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">Training Data</h2>
           <p className="text-slate-600 mt-1 text-base font-normal">Provide custom training data for "{activeChatbot.name}" to enhance AI responses</p>

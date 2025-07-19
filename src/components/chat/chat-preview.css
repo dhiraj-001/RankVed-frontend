@@ -1,0 +1,22 @@
+/* Hide scrollbar for chat preview message area */
+.scrollbar-none {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE 10+ */
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+/* Enhanced chat preview styling with minimal gradients */
+.rankved-chat-preview {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #f1f5f9 100%);
+}
+
+.rankved-chat-preview[data-theme="dark"] {
+  background: linear-gradient(135deg, #1e293b 0%, #334155 50%, #475569 100%);
+}
+
+/* Hide suggestion buttons in preview */
+#rankved-suggestions {
+  display: none !important;
+} 

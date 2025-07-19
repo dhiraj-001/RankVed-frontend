@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Save, Key, MessageSquare, Webhook } from 'lucide-react';
+import { Save, Key, MessageSquare, Webhook, Users, BarChart3 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,6 +18,7 @@ export default function Settings() {
   const { activeChatbot } = useApp();
   const updateChatbot = useUpdateChatbot();
   const { toast } = useToast();
+  const [activeTab, setActiveTab] = useState('basic');
 
   const [settings, setSettings] = useState({
     // Basic Configuration
@@ -134,7 +135,6 @@ export default function Settings() {
   //     // Compress and convert image (same as appearance page)
   //     const dataUri = await compressAndConvertToDataURI(file, 128, 128, 0.7);
   //     // Check size after compression (base64 length * 3/4 for bytes)
-  //     const base64Length = dataUri.split(',')[1]?.length || 0;
   //     const byteSize = Math.floor(base64Length * 3 / 4);
   //     if (byteSize > 1024 * 1024) { // 1MB limit
   //       toast({
@@ -165,87 +165,107 @@ export default function Settings() {
     );
   }
 
-
+  const tabOptions = [
+    { value: 'basic', label: 'Basic' },
+    { value: 'messaging', label: 'Messaging' },
+    { value: 'leads', label: 'Lead Collection' },
+    { value: 'integrations', label: 'Integrations' },
+    { value: 'ai-provider', label: 'AI Provider' },
+    { value: 'limits', label: 'Limits' },
+  ];
 
   return (
-    <div className="flex-1 bg-white">
+    <div className="flex-1 bg-gradient-to-br from-blue-50 to-white min-h-screen">
       {/* Header */}
-      <header className="border-b border-gray-200 px-8 py-6">
-        <div className="flex items-center justify-between max-w-7xl mx-auto">
+      <header className="backdrop-blur-md bg-gradient-to-br from-blue-50 to-white/80 border-b border-slate-200 px-4 sm:px-6 py-5 sticky top-0 z-20 shadow-lg">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between max-w-7xl mx-auto gap-4">
           <div>
-            <h2 className="text-3xl font-bold text-gray-900">Chatbot Settings</h2>
-            <p className="text-gray-500 mt-1 text-sm">Configure "{activeChatbot.name}" settings and behavior</p>
+            <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Chatbot Settings</h2>
+            <p className="text-slate-600 mt-1 text-sm sm:text-base">Configure "{activeChatbot.name}" settings and behavior</p>
           </div>
           <Button
             onClick={handleSave}
             disabled={updateChatbot.isPending}
-            className="bg-blue-600 hover:bg-blue-700 focus:ring-blue-500 text-white font-semibold px-5 py-2 rounded-md shadow-sm"
+            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 sm:px-5 py-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 w-full sm:w-auto"
           >
-            <Save className="h-5 w-5 mr-2" />
+            <Save className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
             {updateChatbot.isPending ? 'Saving...' : 'Save Changes'}
           </Button>
         </div>
       </header>
 
       {/* Content */}
-      <div className="p-6">
-        <Tabs defaultValue="basic" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-7 border-b border-gray-200">
-          <TabsTrigger
-            value="basic"
-            className="text-gray-700 hover:text-blue-600 focus:text-blue-600 font-medium py-3 px-4"
-          >
-            Basic
-          </TabsTrigger>
-          <TabsTrigger
-            value="messaging"
-            className="text-gray-700 hover:text-blue-600 focus:text-blue-600 font-medium py-3 px-4"
-          >
-            Messaging
-          </TabsTrigger>
-          <TabsTrigger
-            value="leads"
-            className="text-gray-700 hover:text-blue-600 focus:text-blue-600 font-medium py-3 px-4"
-          >
-            Lead Collection
-          </TabsTrigger>
-          <TabsTrigger
-            value="integrations"
-            className="text-gray-700 hover:text-blue-600 focus:text-blue-600 font-medium py-3 px-4"
-          >
-            Integrations
-          </TabsTrigger>
-          {/* <TabsTrigger
-            value="placement"
-            className="text-gray-700 hover:text-blue-600 focus:text-blue-600 font-medium py-3 px-4"
-          >
-            Placement
-          </TabsTrigger> */}
-          <TabsTrigger
-            value="ai-provider"
-            className="text-gray-700 hover:text-blue-600 focus:text-blue-600 font-medium py-3 px-4"
-          >
-            AI Provider
-          </TabsTrigger>
-          <TabsTrigger
-            value="limits"
-            className="text-gray-700 hover:text-blue-600 focus:text-blue-600 font-medium py-3 px-4"
-          >
-            Limits
-          </TabsTrigger>
-        </TabsList>
+      <div className="p-4 sm:p-6 max-w-7xl mx-auto w-full">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          {/* Mobile Dropdown */}
+          <div className="sm:hidden">
+            <Select value={activeTab} onValueChange={setActiveTab}>
+              <SelectTrigger className="w-full bg-white border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 rounded-lg shadow-sm">
+                <SelectValue placeholder="Select a tab" />
+              </SelectTrigger>
+              <SelectContent>
+                {tabOptions.map((tab) => (
+                  <SelectItem key={tab.value} value={tab.value}>
+                    {tab.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Desktop Tabs */}
+          <TabsList className="hidden sm:flex w-full bg-white/80 backdrop-blur-sm border border-slate-200 rounded-xl p-1 shadow-sm">
+            <TabsTrigger
+              value="basic"
+              className="flex-1 text-slate-600 hover:text-blue-600 focus:text-blue-600 font-medium py-3 px-4 rounded-lg data-[state=active]:bg-blue-50 data-[state=active]:text-blue-600 data-[state=active]:shadow-sm transition-all duration-200"
+            >
+              Basic
+            </TabsTrigger>
+            <TabsTrigger
+              value="messaging"
+              className="flex-1 text-slate-600 hover:text-blue-600 focus:text-blue-600 font-medium py-3 px-4 rounded-lg data-[state=active]:bg-blue-50 data-[state=active]:text-blue-600 data-[state=active]:shadow-sm transition-all duration-200"
+            >
+              Messaging
+            </TabsTrigger>
+            <TabsTrigger
+              value="leads"
+              className="flex-1 text-slate-600 hover:text-blue-600 focus:text-blue-600 font-medium py-3 px-4 rounded-lg data-[state=active]:bg-blue-50 data-[state=active]:text-blue-600 data-[state=active]:shadow-sm transition-all duration-200"
+            >
+              Lead Collection
+            </TabsTrigger>
+            <TabsTrigger
+              value="integrations"
+              className="flex-1 text-slate-600 hover:text-blue-600 focus:text-blue-600 font-medium py-3 px-4 rounded-lg data-[state=active]:bg-blue-50 data-[state=active]:text-blue-600 data-[state=active]:shadow-sm transition-all duration-200"
+            >
+              Integrations
+            </TabsTrigger>
+            <TabsTrigger
+              value="ai-provider"
+              className="flex-1 text-slate-600 hover:text-blue-600 focus:text-blue-600 font-medium py-3 px-4 rounded-lg data-[state=active]:bg-blue-50 data-[state=active]:text-blue-600 data-[state=active]:shadow-sm transition-all duration-200"
+            >
+              AI Provider
+            </TabsTrigger>
+            <TabsTrigger
+              value="limits"
+              className="flex-1 text-slate-600 hover:text-blue-600 focus:text-blue-600 font-medium py-3 px-4 rounded-lg data-[state=active]:bg-blue-50 data-[state=active]:text-blue-600 data-[state=active]:shadow-sm transition-all duration-200"
+            >
+              Limits
+            </TabsTrigger>
+          </TabsList>
 
           <TabsContent value="basic" className="space-y-6">
-            <Card className="shadow-sm border border-gray-200 rounded-lg">
+            <Card className="shadow-xl rounded-2xl border-0 bg-gradient-to-br from-blue-50/60 via-white/80 to-blue-100/60 relative overflow-hidden">
+              <div className="absolute left-0 top-0 bottom-0 w-2 bg-blue-400 rounded-l-2xl" />
               <CardHeader>
-                <CardTitle className="flex items-center space-x-2 text-gray-900 font-semibold text-lg">
-                  <MessageSquare className="h-5 w-5" />
+                <CardTitle className="flex items-center space-x-2 text-slate-900 font-semibold text-lg">
+                  <MessageSquare className="h-5 w-5 text-blue-600" />
                   <span>Basic Configuration</span>
                 </CardTitle>
+                <p className="text-slate-600 text-sm">Set up your chatbot's core identity and behavior</p>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="space-y-1">
-                  <Label htmlFor="name" className="text-gray-700 font-medium">
+                <div className="space-y-2">
+                  <Label htmlFor="name" className="text-slate-700 font-medium">
                     Bot Name
                   </Label>
                   <Input
@@ -253,11 +273,11 @@ export default function Settings() {
                     value={settings.name}
                     onChange={(e) => setSettings(prev => ({ ...prev, name: e.target.value }))}
                     placeholder="Customer Support Bot"
-                    className="border-gray-300 focus:ring-blue-500 focus:border-blue-500 rounded-md"
+                    className="border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 rounded-lg transition-all duration-200 hover:border-blue-400"
                   />
                 </div>
-                <div className="space-y-1">
-                  <Label htmlFor="systemPrompt" className="text-gray-700 font-medium">
+                <div className="space-y-2">
+                  <Label htmlFor="systemPrompt" className="text-slate-700 font-medium">
                     AI System Prompt
                   </Label>
                   <Textarea
@@ -266,23 +286,27 @@ export default function Settings() {
                     onChange={(e) => setSettings(prev => ({ ...prev, aiSystemPrompt: e.target.value }))}
                     placeholder="You are a helpful customer service assistant..."
                     rows={4}
-                    className="border-gray-300 focus:ring-blue-500 focus:border-blue-500 rounded-md"
+                    className="border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 rounded-lg transition-all duration-200 hover:border-blue-400 resize-none"
                   />
+                  <p className="text-xs text-slate-500">Define how your AI assistant should behave and respond to users</p>
                 </div>
               </CardContent>
             </Card>
           </TabsContent>
 
-
-
           <TabsContent value="messaging" className="space-y-6">
-            <Card className="shadow-sm border border-gray-200 rounded-lg">
+            <Card className="shadow-xl rounded-2xl border-0 bg-gradient-to-br from-purple-50/60 via-white/80 to-purple-100/60 relative overflow-hidden">
+              <div className="absolute left-0 top-0 bottom-0 w-2 bg-purple-400 rounded-l-2xl" />
               <CardHeader>
-                <CardTitle className="text-gray-900 font-semibold text-lg">Messaging &amp; Notifications</CardTitle>
+                <CardTitle className="flex items-center space-x-2 text-slate-900 font-semibold text-lg">
+                  <MessageSquare className="h-5 w-5 text-purple-600" />
+                  <span>Messaging & Notifications</span>
+                </CardTitle>
+                <p className="text-slate-600 text-sm">Configure how your chatbot communicates with users</p>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="space-y-1">
-                  <Label htmlFor="welcomeMessage" className="text-gray-700 font-medium">
+                <div className="space-y-2">
+                  <Label htmlFor="welcomeMessage" className="text-slate-700 font-medium">
                     Welcome Message
                   </Label>
                   <Input
@@ -290,11 +314,11 @@ export default function Settings() {
                     value={settings.welcomeMessage}
                     onChange={(e) => setSettings(prev => ({ ...prev, welcomeMessage: e.target.value }))}
                     placeholder="Hello! How can I help you today?"
-                    className="border-gray-300 focus:ring-blue-500 focus:border-blue-500 rounded-md"
+                    className="border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 rounded-lg transition-all duration-200 hover:border-blue-400"
                   />
                 </div>
-                <div className="space-y-1">
-                  <Label htmlFor="messageDelay" className="text-gray-700 font-medium">
+                <div className="space-y-2">
+                  <Label htmlFor="messageDelay" className="text-slate-700 font-medium">
                     Initial Message Delay (ms)
                   </Label>
                   <Input
@@ -302,15 +326,16 @@ export default function Settings() {
                     type="number"
                     value={settings.initialMessageDelay}
                     onChange={(e) => setSettings(prev => ({ ...prev, initialMessageDelay: parseInt(e.target.value) }))}
-                    className="border-gray-300 focus:ring-blue-500 focus:border-blue-500 rounded-md"
+                    className="border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 rounded-lg transition-all duration-200 hover:border-blue-400"
                   />
+                  <p className="text-xs text-slate-500">Delay before showing the welcome message (in milliseconds)</p>
                 </div>
-                <div className="flex items-center justify-between w-full py-3">
+                <div className="flex items-center justify-between w-full py-4 px-4 bg-white/60 rounded-lg border border-slate-200">
                   <div>
                     <label htmlFor="enableSound" className="block text-sm font-medium text-slate-700">
                       Enable Sound
                     </label>
-                    <p className="text-xs text-slate-500">Play a sound when you open Chatbot.</p>
+                    <p className="text-xs text-slate-500">Play a sound when users open the chatbot</p>
                   </div>
                   <Switch
                     id="enableSound"
@@ -319,67 +344,27 @@ export default function Settings() {
                     className="data-[state=checked]:bg-blue-600"
                   />
                 </div>
-                {/* <div className="space-y-1">
-                  <Label>Chat Window Avatar</Label>
-                  <div className="flex items-center space-x-4">
-                    {settings.chatWindowAvatar && (
-                      <img
-                        src={settings.chatWindowAvatar}
-                        alt="Avatar"
-                        className="w-12 h-12 rounded-full object-cover border border-gray-300"
-                      />
-                    )}
-                    <Input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) handleFileUpload('chatWindowAvatar', file);
-                      }}
-                      className="border-gray-300 rounded-md"
-                    />
-                  </div>
-                </div> */}
-                {/* <div className="space-y-1">
-                  <Label>Chat Bubble Icon</Label>
-                  <div className="flex items-center space-x-4">
-                    {settings.chatBubbleIcon && (
-                      <img
-                        src={settings.chatBubbleIcon}
-                        alt="Bubble Icon"
-                        className="w-8 h-8 rounded object-cover border border-gray-300"
-                      />
-                    )}
-                    <Input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) handleFileUpload('chatBubbleIcon', file);
-                      }}
-                      className="border-gray-300 rounded-md"
-                    />
-                  </div>
-                </div> */}
               </CardContent>
             </Card>
           </TabsContent>
 
           <TabsContent value="leads" className="space-y-6">
-            <Card className="shadow-sm border border-gray-200 rounded-lg">
+            <Card className="shadow-xl rounded-2xl border-0 bg-gradient-to-br from-green-50/60 via-white/80 to-green-100/60 relative overflow-hidden">
+              <div className="absolute left-0 top-0 bottom-0 w-2 bg-green-400 rounded-l-2xl" />
               <CardHeader>
-                <CardTitle className="flex items-center space-x-2 text-gray-900 font-semibold text-lg">
-                  <MessageSquare className="h-5 w-5" />
+                <CardTitle className="flex items-center space-x-2 text-slate-900 font-semibold text-lg">
+                  <Users className="h-5 w-5 text-green-600" />
                   <span>Lead Collection Settings</span>
                 </CardTitle>
+                <p className="text-slate-600 text-sm">Configure how and when to collect visitor contact information</p>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="flex items-center justify-between w-full py-3">
+                <div className="flex items-center justify-between w-full py-4 px-4 bg-white/60 rounded-lg border border-slate-200">
                   <div>
                     <label htmlFor="leadCollectionEnabled" className="block text-sm font-medium text-slate-700">
                       Enable Lead Collection
                     </label>
-                    <p className="text-xs text-slate-500">Collect visitor contact info after a set number of messages.</p>
+                    <p className="text-xs text-slate-500">Collect visitor contact info after a set number of messages</p>
                   </div>
                   <Switch
                     id="leadCollectionEnabled"
@@ -391,8 +376,8 @@ export default function Settings() {
 
                 {settings.leadCollectionEnabled && (
                   <>
-                    <div className="space-y-1">
-                      <Label htmlFor="leadCollectionAfterMessages" className="text-gray-700 font-medium">
+                    <div className="space-y-2">
+                      <Label htmlFor="leadCollectionAfterMessages" className="text-slate-700 font-medium">
                         Collect leads after (number of messages)
                       </Label>
                       <Input
@@ -402,15 +387,15 @@ export default function Settings() {
                         max="20"
                         value={settings.leadCollectionAfterMessages}
                         onChange={(e) => setSettings(prev => ({ ...prev, leadCollectionAfterMessages: parseInt(e.target.value) || 3 }))}
-                        className="border-gray-300 focus:ring-blue-500 focus:border-blue-500 rounded-md"
+                        className="border-slate-300 focus:ring-2 focus:ring-green-500 focus:border-green-500 rounded-lg transition-all duration-200 hover:border-green-400"
                       />
-                      <p className="text-sm text-gray-500">
+                      <p className="text-xs text-slate-500">
                         The chatbot will ask for contact information after this many messages
                       </p>
                     </div>
 
-                    <div className="space-y-1">
-                      <Label htmlFor="leadCollectionMessage" className="text-gray-700 font-medium">
+                    <div className="space-y-2">
+                      <Label htmlFor="leadCollectionMessage" className="text-slate-700 font-medium">
                         Lead collection message
                       </Label>
                       <Textarea
@@ -419,9 +404,9 @@ export default function Settings() {
                         onChange={(e) => setSettings(prev => ({ ...prev, leadCollectionMessage: e.target.value }))}
                         placeholder="To help you better, may I have your name and contact information?"
                         rows={3}
-                        className="border-gray-300 focus:ring-blue-500 focus:border-blue-500 rounded-md"
+                        className="border-slate-300 focus:ring-2 focus:ring-green-500 focus:border-green-500 rounded-lg transition-all duration-200 hover:border-green-400 resize-none"
                       />
-                      <p className="text-sm text-gray-500">
+                      <p className="text-xs text-slate-500">
                         This message will be shown when requesting visitor contact information
                       </p>
                     </div>
@@ -432,16 +417,18 @@ export default function Settings() {
           </TabsContent>
 
           <TabsContent value="integrations" className="space-y-6">
-            <Card className="shadow-sm border border-gray-200 rounded-lg">
+            <Card className="shadow-xl rounded-2xl border-0 bg-gradient-to-br from-orange-50/60 via-white/80 to-orange-100/60 relative overflow-hidden">
+              <div className="absolute left-0 top-0 bottom-0 w-2 bg-orange-400 rounded-l-2xl" />
               <CardHeader>
-                <CardTitle className="flex items-center space-x-2 text-gray-900 font-semibold text-lg">
-                  <Webhook className="h-5 w-5" />
+                <CardTitle className="flex items-center space-x-2 text-slate-900 font-semibold text-lg">
+                  <Webhook className="h-5 w-5 text-orange-600" />
                   <span>Integrations</span>
                 </CardTitle>
+                <p className="text-slate-600 text-sm">Connect your chatbot with external services and customize branding</p>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="space-y-1">
-                  <Label htmlFor="webhookUrl" className="text-gray-700 font-medium">
+                <div className="space-y-2">
+                  <Label htmlFor="webhookUrl" className="text-slate-700 font-medium">
                     Leads Webhook URL
                   </Label>
                   <Input
@@ -449,18 +436,19 @@ export default function Settings() {
                     value={settings.leadsWebhookUrl}
                     onChange={(e) => setSettings(prev => ({ ...prev, leadsWebhookUrl: e.target.value }))}
                     placeholder="https://your-site.com/webhook/leads"
-                    className="border-gray-300 focus:ring-blue-500 focus:border-blue-500 rounded-md"
+                    className="border-slate-300 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 rounded-lg transition-all duration-200 hover:border-orange-400"
                   />
+                  <p className="text-xs text-slate-500">Receive lead data via webhook when visitors submit contact information</p>
                 </div>
-                <div className="space-y-1">
-                  <Label htmlFor="businessType" className="text-gray-700 font-medium">
+                <div className="space-y-2">
+                  <Label htmlFor="businessType" className="text-slate-700 font-medium">
                     Business Type
                   </Label>
                   <Select
                     value={settings.businessType}
                     onValueChange={(value) => setSettings(prev => ({ ...prev, businessType: value }))}
                   >
-                    <SelectTrigger className="border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500" />
+                    <SelectTrigger className="border-slate-300 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 rounded-lg transition-all duration-200 hover:border-orange-400" />
                     <SelectContent>
                       <SelectItem value="general">General</SelectItem>
                       <SelectItem value="ecommerce">E-commerce</SelectItem>
@@ -470,9 +458,10 @@ export default function Settings() {
                       <SelectItem value="education">Education</SelectItem>
                     </SelectContent>
                   </Select>
+                  <p className="text-xs text-slate-500">Helps customize the chatbot's behavior for your industry</p>
                 </div>
-                <div className="space-y-1">
-                  <Label htmlFor="poweredBy" className="text-gray-700 font-medium">
+                <div className="space-y-2">
+                  <Label htmlFor="poweredBy" className="text-slate-700 font-medium">
                     Powered By Text
                   </Label>
                   <Input
@@ -480,11 +469,11 @@ export default function Settings() {
                     value={settings.poweredByText}
                     onChange={(e) => setSettings(prev => ({ ...prev, poweredByText: e.target.value }))}
                     placeholder="Powered by ChatBot Pro"
-                    className="border-gray-300 focus:ring-blue-500 focus:border-blue-500 rounded-md"
+                    className="border-slate-300 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 rounded-lg transition-all duration-200 hover:border-orange-400"
                   />
                 </div>
-                <div className="space-y-1">
-                  <Label htmlFor="poweredByLink" className="text-gray-700 font-medium">
+                <div className="space-y-2">
+                  <Label htmlFor="poweredByLink" className="text-slate-700 font-medium">
                     Powered By Link
                   </Label>
                   <Input
@@ -492,7 +481,7 @@ export default function Settings() {
                     value={settings.poweredByLink}
                     onChange={(e) => setSettings(prev => ({ ...prev, poweredByLink: e.target.value }))}
                     placeholder="https://chatbotpro.com"
-                    className="border-gray-300 focus:ring-blue-500 focus:border-blue-500 rounded-md"
+                    className="border-slate-300 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 rounded-lg transition-all duration-200 hover:border-orange-400"
                   />
                 </div>
               </CardContent>
@@ -558,45 +547,48 @@ export default function Settings() {
           </TabsContent> */}
 
           <TabsContent value="ai-provider" className="space-y-6">
-            <Card className="shadow-sm border border-gray-200 rounded-lg">
+            <Card className="shadow-xl rounded-2xl border-0 bg-gradient-to-br from-indigo-50/60 via-white/80 to-indigo-100/60 relative overflow-hidden">
+              <div className="absolute left-0 top-0 bottom-0 w-2 bg-indigo-400 rounded-l-2xl" />
               <CardHeader>
-                <CardTitle className="flex items-center space-x-2 text-gray-900 font-semibold text-lg">
-                  <Key className="h-5 w-5" />
+                <CardTitle className="flex items-center space-x-2 text-slate-900 font-semibold text-lg">
+                  <Key className="h-5 w-5 text-indigo-600" />
                   <span>AI Provider</span>
                 </CardTitle>
+                <p className="text-slate-600 text-sm">Configure your AI provider and API settings</p>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="space-y-1">
-                  <Label htmlFor="aiProvider" className="text-gray-700 font-medium">
+                <div className="space-y-2">
+                  <Label htmlFor="aiProvider" className="text-slate-700 font-medium">
                     AI Provider
                   </Label>
                   <Select
                     value={settings.aiProvider}
                     onValueChange={(value) => setSettings(prev => ({ ...prev, aiProvider: value }))}
                   >
-                    <SelectTrigger className="border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
-                      <SelectValue placeholder="Select AI Provider" />
-                    </SelectTrigger>
+                    <SelectTrigger className="border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 rounded-lg transition-all duration-200 hover:border-indigo-400" />
                     <SelectContent>
-                      <SelectItem value="platform">Platform Default (Gemini)</SelectItem>
-                      <SelectItem value="google">Custom Google AI Key</SelectItem>
-                      <SelectItem value="openai">Custom OpenAI Key</SelectItem>
+                      <SelectItem value="platform">Platform Default</SelectItem>
+                      <SelectItem value="openai">OpenAI</SelectItem>
+                      <SelectItem value="anthropic">Anthropic</SelectItem>
+                      <SelectItem value="custom">Custom API</SelectItem>
                     </SelectContent>
                   </Select>
+                  <p className="text-xs text-slate-500">Choose which AI service to use for generating responses</p>
                 </div>
-                {(settings.aiProvider === 'google' || settings.aiProvider === 'openai') && (
-                  <div className="space-y-1">
-                    <Label htmlFor="apiKey" className="text-gray-700 font-medium">
+                {settings.aiProvider === 'custom' && (
+                  <div className="space-y-2">
+                    <Label htmlFor="customApiKey" className="text-slate-700 font-medium">
                       Custom API Key
                     </Label>
                     <Input
-                      id="apiKey"
+                      id="customApiKey"
                       type="password"
                       value={settings.customApiKey}
                       onChange={(e) => setSettings(prev => ({ ...prev, customApiKey: e.target.value }))}
-                      placeholder="Enter your API key"
-                      className="border-gray-300 focus:ring-blue-500 focus:border-blue-500 rounded-md"
+                      placeholder="sk-..."
+                      className="border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 rounded-lg transition-all duration-200 hover:border-indigo-400"
                     />
+                    <p className="text-xs text-slate-500">Your API key for the selected AI provider</p>
                   </div>
                 )}
               </CardContent>
@@ -604,34 +596,43 @@ export default function Settings() {
           </TabsContent>
 
           <TabsContent value="limits" className="space-y-6">
-            <Card className="shadow-sm border border-gray-200 rounded-lg">
+            <Card className="shadow-xl rounded-2xl border-0 bg-gradient-to-br from-red-50/60 via-white/80 to-red-100/60 relative overflow-hidden">
+              <div className="absolute left-0 top-0 bottom-0 w-2 bg-red-400 rounded-l-2xl" />
               <CardHeader>
-                <CardTitle className="text-gray-900 font-semibold text-lg">Usage Limits</CardTitle>
+                <CardTitle className="flex items-center space-x-2 text-slate-900 font-semibold text-lg">
+                  <BarChart3 className="h-5 w-5 text-red-600" />
+                  <span>Usage Limits</span>
+                </CardTitle>
+                <p className="text-slate-600 text-sm">Set conversation limits to control costs and usage</p>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="space-y-1">
-                  <Label htmlFor="dailyLimit" className="text-gray-700 font-medium">
+                <div className="space-y-2">
+                  <Label htmlFor="dailyChatLimit" className="text-slate-700 font-medium">
                     Daily Chat Limit
                   </Label>
                   <Input
-                    id="dailyLimit"
+                    id="dailyChatLimit"
                     type="number"
+                    min="1"
                     value={settings.dailyChatLimit}
-                    onChange={(e) => setSettings(prev => ({ ...prev, dailyChatLimit: parseInt(e.target.value) }))}
-                    className="border-gray-300 focus:ring-blue-500 focus:border-blue-500 rounded-md"
+                    onChange={(e) => setSettings(prev => ({ ...prev, dailyChatLimit: parseInt(e.target.value) || 100 }))}
+                    className="border-slate-300 focus:ring-2 focus:ring-red-500 focus:border-red-500 rounded-lg transition-all duration-200 hover:border-red-400"
                   />
+                  <p className="text-xs text-slate-500">Maximum number of conversations per day</p>
                 </div>
-                <div className="space-y-1">
-                  <Label htmlFor="monthlyLimit" className="text-gray-700 font-medium">
+                <div className="space-y-2">
+                  <Label htmlFor="monthlyChatLimit" className="text-slate-700 font-medium">
                     Monthly Chat Limit
                   </Label>
                   <Input
-                    id="monthlyLimit"
+                    id="monthlyChatLimit"
                     type="number"
+                    min="1"
                     value={settings.monthlyChatLimit}
-                    onChange={(e) => setSettings(prev => ({ ...prev, monthlyChatLimit: parseInt(e.target.value) }))}
-                    className="border-gray-300 focus:ring-blue-500 focus:border-blue-500 rounded-md"
+                    onChange={(e) => setSettings(prev => ({ ...prev, monthlyChatLimit: parseInt(e.target.value) || 1000 }))}
+                    className="border-slate-300 focus:ring-2 focus:ring-red-500 focus:border-red-500 rounded-lg transition-all duration-200 hover:border-red-400"
                   />
+                  <p className="text-xs text-slate-500">Maximum number of conversations per month</p>
                 </div>
               </CardContent>
             </Card>

@@ -65,7 +65,7 @@ export default function Leads() {
   return (
     <TooltipProvider>
       {/* Sticky Glassmorphism Header */}
-      <header className="backdrop-blur-md bg-white/80 border-b border-slate-200 px-6 py-5 sticky top-0 z-20 shadow-md flex items-center justify-between">
+      <header className="backdrop-blur-md bg-gradient-to-br from-blue-50 to-white/80 border-b border-slate-200 px-6 py-5 sticky top-0 z-20 shadow-lg flex items-center justify-between">
         <div>
           <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">Leads</h2>
           <p className="text-slate-600 mt-1 text-base font-normal">Manage and view leads collected through your chatbots</p>
@@ -80,7 +80,7 @@ export default function Leads() {
         </Tooltip>
       </header>
 
-      <div className="p-6 max-w-7xl mx-auto">
+      <div className="p-6 max-w-7xl mx-auto bg-gradient-to-br from-blue-50 to-white min-h-screen flex-1">
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <Card className="shadow-lg bg-gradient-to-br from-blue-50 to-white border-0">

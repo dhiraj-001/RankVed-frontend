@@ -253,7 +253,7 @@ export default function ChatStandalone() {
       if (currentNode) {
         setIsLoading(true);
         try {
-          const response = await chatMutation.mutateAsync({ message: userInput, chatbotId: chatbotId, context });
+          await chatMutation.mutateAsync({ message: userInput, chatbotId: chatbotId, context });
           
         } catch (error) {
           console.error(`[${requestId}] ❌ Question flow API error:`, error);

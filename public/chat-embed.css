@@ -320,8 +320,8 @@
 
 @media (max-width: 480px) {
   #rankved-chat-window[data-rankved-widget] {
-    width: 80vw !important;
-    height: 45vh !important;
+    width: 70vw !important;
+    height: 50vh !important;
     top: 6px !important;
     left: 6px !important;
     right: 6px !important;

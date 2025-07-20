@@ -157,7 +157,7 @@ export default function ChatStandalone() {
   }
 
   function addBotMessage(content: string, type: 'text' | 'options' | 'form' = 'text', options?: any[]) {
-    const messageId = Date.now().toString();
+    const messageId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     
     const message: Message = {
       id: messageId,
@@ -170,8 +170,9 @@ export default function ChatStandalone() {
     setMessages(prev => [...prev, message]);
   }
   function addUserMessage(content: string) {
+    const messageId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const message: Message = {
-      id: Date.now().toString(),
+      id: messageId,
       content,
       sender: 'user',
       timestamp: new Date(),
@@ -238,7 +239,13 @@ export default function ChatStandalone() {
     if (!input.trim() || isLoading || !chatbotId || !chatbot) return;
 
     const requestId = Date.now().toString();
-    
+    console.log(`[${requestId}] 🚀 Chat standalone - Sending message:`, {
+      messageLength: input.length,
+      chatbotId,
+      questionFlowActive,
+      timestamp: new Date().toISOString()
+    });
+
     const userInput = input;
     setInput('');
     addUserMessage(userInput);
@@ -248,13 +255,30 @@ export default function ChatStandalone() {
       : chatbot?.questionFlow?.nodes;
 
     if (questionFlowActive && context.currentNodeId) {
+      console.log(`[${requestId}] 🔄 Processing question flow:`, {
+        currentNodeId: context.currentNodeId,
+        awaitingInput: context.awaitingInput
+      });
       
       const currentNode = flowNodes?.find((n: any) => n.id === context.currentNodeId);
+      console.log(`[${requestId}] 🟦 Current node:`, currentNode);
       if (currentNode) {
+        console.log(`[${requestId}] 🟧 Node type: ${currentNode.type}, aiHandling: ${currentNode.aiHandling}`);
         setIsLoading(true);
         try {
-          await chatMutation.mutateAsync({ message: userInput, chatbotId: chatbotId, context });
+          if (currentNode.type === 'open-ended' && currentNode.aiHandling) {
+            console.log(`[${requestId}] 🤖 Sending custom message to AI backend`);
+          }
+          const response = await chatMutation.mutateAsync({ message: userInput, chatbotId: chatbotId, context });
           
+          console.log(`[${requestId}] ✅ Question flow API response:`, {
+            responseLength: response.message?.length || 0,
+            responseType: response.type,
+            hasContext: !!response.context
+          });
+          
+          addBotMessage(response.message || 'I\'m here to help! How can I assist you?');
+          if (response.context) setContext(response.context);
         } catch (error) {
           console.error(`[${requestId}] ❌ Question flow API error:`, error);
           addBotMessage('Sorry, I\'m having trouble responding right now. Please try again.');
@@ -264,13 +288,22 @@ export default function ChatStandalone() {
       }
       if (currentNode?.nextId) {
         const nextNode = flowNodes?.find((n: any) => n.id === currentNode.nextId);
+        console.log(`[${requestId}] ⏭️ Next node:`, nextNode);
         if (nextNode) setTimeout(() => processQuestionNode(nextNode), 1000);
       }
     } else {
       // Fallback to classic AI chat
+      console.log(`[${requestId}] 🤖 Using classic AI chat (no question flow)`);
       setIsLoading(true);
       try {
+        console.log(`[${requestId}] 📡 Making API call for classic AI chat`);
         const response = await chatMutation.mutateAsync({ message: userInput, chatbotId: chatbotId, context });
+        
+        console.log(`[${requestId}] ✅ Classic AI API response:`, {
+          responseLength: response.message?.length || 0,
+          responseType: response.type,
+          hasContext: !!response.context
+        });
         
         addBotMessage(response.message || 'I\'m here to help! How can I assist you?');
         if (response.context) setContext(response.context);

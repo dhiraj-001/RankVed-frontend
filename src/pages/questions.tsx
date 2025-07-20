@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Save, Plus, Edit, Trash2, GitBranch, MessageSquare, HelpCircle, FileText, RotateCcw, Building2, ShoppingCart, Heart, Home, Play, ArrowRight, Loader2, Sparkles, Target, ChevronDown, ChevronUp, Copy } from 'lucide-react';
+import { Save, Plus, Edit, Trash2, GitBranch, MessageSquare, HelpCircle, FileText, RotateCcw, Building2, ShoppingCart, Heart, Home, Play, ArrowRight, Loader2, Sparkles, Target, ChevronDown, ChevronUp, Copy, Book } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -245,6 +245,13 @@ const [showDeleteDialog, setShowDeleteDialog] = useState<{ open: boolean; nodeId
       description: 'Universal flow for any business type',
       icon: Building2,
       color: 'bg-purple-100 text-purple-700'
+    },
+    {
+      id: 'Education',
+      name: 'Education',
+      description: 'Admissions, academics, campus life, and more',
+      icon: Book,
+      color: 'bg-yellow-100 text-yellow-700'
     }
   ];
 

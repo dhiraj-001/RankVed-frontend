@@ -84,11 +84,6 @@ export default function ChatStandalone() {
 
   // Initialize chat with welcome message
   useEffect(() => {
-    console.log('Chatbot config:', chatbot);
-    console.log('Messages length:', messages.length);
-    if (chatbot) {
-      console.log('[Frontend] chatbot.questionFlow:', chatbot.questionFlow);
-    }
     if (chatbot && messages.length === 0) {
       const welcomeMessage: Message = {
         id: 'welcome',
@@ -97,13 +92,20 @@ export default function ChatStandalone() {
         timestamp: new Date(),
       };
       setMessages([welcomeMessage]);
-      // Start question flow if present
-      if (chatbot.questionFlow && Array.isArray(chatbot.questionFlow)) {
-        const startNode = chatbot.questionFlow.find((n: any) => n.id === 'start');
+      // Support both array and object with nodes
+      const flowNodes = Array.isArray(chatbot?.questionFlow)
+        ? chatbot?.questionFlow
+        : chatbot?.questionFlow?.nodes;
+      if (flowNodes && Array.isArray(flowNodes)) {
+        const startNode = flowNodes.find((n: any) => n.id === 'start');
         if (startNode) {
           setQuestionFlowActive(true);
           processQuestionNode(startNode);
+        } else {
+          console.warn('[ChatStandalone] No start node found in question flow.');
         }
+      } else {
+        console.warn('[ChatStandalone] flowNodes is not an array.');
       }
     }
   }, [chatbot, messages.length]);
@@ -114,13 +116,20 @@ export default function ChatStandalone() {
   }, [messages]);
 
   function processQuestionNode(node: any) {
-    console.log('Processing node:', node);
+    if (!chatbot) return;
+    const flowNodes = Array.isArray(chatbot?.questionFlow)
+      ? chatbot?.questionFlow
+      : chatbot?.questionFlow?.nodes;
+    if (!flowNodes || !Array.isArray(flowNodes)) {
+      console.error('[ChatStandalone] processQuestionNode: flowNodes is not an array.', flowNodes);
+      return;
+    }
     setContext(prev => ({ ...prev, currentNodeId: node.id }));
     switch (node.type) {
       case 'statement':
         addBotMessage(node.question);
-        if (node.nextId && chatbot?.questionFlow) {
-          const nextNode = chatbot.questionFlow.find((n: any) => n.id === node.nextId);
+        if (node.nextId) {
+          const nextNode = flowNodes.find((n: any) => n.id === node.nextId);
           if (nextNode) setTimeout(() => processQuestionNode(nextNode), 1200);
         }
         break;
@@ -131,7 +140,6 @@ export default function ChatStandalone() {
           action: opt.action,
           nextId: opt.nextId
         })) || [];
-        console.log('Multiple-choice options:', options);
         addBotMessage(node.question, 'options', options);
         setContext(prev => ({ ...prev, awaitingInput: 'choice' }));
         break;
@@ -143,18 +151,13 @@ export default function ChatStandalone() {
         addBotMessage(node.question);
         setContext(prev => ({ ...prev, awaitingInput: 'text' }));
         break;
+      default:
+        console.warn('[ChatStandalone] Unknown node type:', node.type, node);
     }
   }
 
   function addBotMessage(content: string, type: 'text' | 'options' | 'form' = 'text', options?: any[]) {
     const messageId = Date.now().toString();
-    console.log(`[${messageId}] 📝 Adding bot message to UI:`, {
-      contentLength: content.length,
-      type,
-      hasOptions: !!options,
-      optionsCount: options?.length || 0,
-      timestamp: new Date().toISOString()
-    });
     
     const message: Message = {
       id: messageId,
@@ -176,7 +179,15 @@ export default function ChatStandalone() {
     setMessages(prev => [...prev, message]);
   }
 
-  const handleOptionClick = (option: any) => {
+  function handleOptionClick(option: any) {
+    if (!chatbot) return;
+    const flowNodes = Array.isArray(chatbot?.questionFlow)
+      ? chatbot?.questionFlow
+      : chatbot?.questionFlow?.nodes;
+    if (!flowNodes || !Array.isArray(flowNodes)) {
+      console.error('[ChatStandalone] handleOptionClick: flowNodes is not an array.', flowNodes);
+      return;
+    }
     addUserMessage(option.text);
     setContext(prev => ({
       ...prev,
@@ -189,9 +200,9 @@ export default function ChatStandalone() {
     } else if (option.action === 'end-chat') {
       addBotMessage('Thank you for chatting with us! Have a great day!');
       setQuestionFlowActive(false);
-    } else if (option.nextId && chatbot?.questionFlow) {
-      const nextNode = chatbot.questionFlow.find((n: any) => n.id === option.nextId);
-      if (nextNode) setTimeout(() => processQuestionNode(nextNode), 500);
+    } else if (option.nextId) {
+      const nextNode = flowNodes.find((n: any) => n.id === option.nextId);
+      if (nextNode) processQuestionNode(nextNode);
     }
   };
 
@@ -227,38 +238,23 @@ export default function ChatStandalone() {
     if (!input.trim() || isLoading || !chatbotId || !chatbot) return;
 
     const requestId = Date.now().toString();
-    console.log(`[${requestId}] 🚀 Chat standalone - Sending message:`, {
-      messageLength: input.length,
-      chatbotId,
-      questionFlowActive,
-      timestamp: new Date().toISOString()
-    });
-
+    
     const userInput = input;
     setInput('');
     addUserMessage(userInput);
 
+    const flowNodes = Array.isArray(chatbot?.questionFlow)
+      ? chatbot?.questionFlow
+      : chatbot?.questionFlow?.nodes;
+
     if (questionFlowActive && context.currentNodeId) {
-      console.log(`[${requestId}] 🔄 Processing question flow:`, {
-        currentNodeId: context.currentNodeId,
-        awaitingInput: context.awaitingInput
-      });
       
-      const currentNode = chatbot.questionFlow?.find((n: any) => n.id === context.currentNodeId);
+      const currentNode = flowNodes?.find((n: any) => n.id === context.currentNodeId);
       if (currentNode) {
         setIsLoading(true);
         try {
-          console.log(`[${requestId}] 📡 Making API call for question flow`);
           const response = await chatMutation.mutateAsync({ message: userInput, chatbotId: chatbotId, context });
           
-          console.log(`[${requestId}] ✅ Question flow API response:`, {
-            responseLength: response.message?.length || 0,
-            responseType: response.type,
-            hasContext: !!response.context
-          });
-          
-          addBotMessage(response.message || 'I\'m here to help! How can I assist you?');
-          if (response.context) setContext(response.context);
         } catch (error) {
           console.error(`[${requestId}] ❌ Question flow API error:`, error);
           addBotMessage('Sorry, I\'m having trouble responding right now. Please try again.');
@@ -267,22 +263,14 @@ export default function ChatStandalone() {
         }
       }
       if (currentNode?.nextId) {
-        const nextNode = chatbot.questionFlow?.find((n: any) => n.id === currentNode.nextId);
+        const nextNode = flowNodes?.find((n: any) => n.id === currentNode.nextId);
         if (nextNode) setTimeout(() => processQuestionNode(nextNode), 1000);
       }
     } else {
       // Fallback to classic AI chat
-      console.log(`[${requestId}] 🤖 Using classic AI chat (no question flow)`);
       setIsLoading(true);
       try {
-        console.log(`[${requestId}] 📡 Making API call for classic AI chat`);
         const response = await chatMutation.mutateAsync({ message: userInput, chatbotId: chatbotId, context });
-        
-        console.log(`[${requestId}] ✅ Classic AI API response:`, {
-          responseLength: response.message?.length || 0,
-          responseType: response.type,
-          hasContext: !!response.context
-        });
         
         addBotMessage(response.message || 'I\'m here to help! How can I assist you?');
         if (response.context) setContext(response.context);

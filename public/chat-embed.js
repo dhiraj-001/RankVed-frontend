@@ -331,7 +331,7 @@
       messageDiv.appendChild(avatarDiv);
       const contentDiv = document.createElement('div');
       // Sharp bottom-left corner for bot
-      contentDiv.setAttribute('style', `max-width: 70%; padding: 5px 10px; border-radius: 14px 14px 14px 4px; font-size: 11px; background: ${a.msgBg}; color: ${a.msgText}; box-shadow: 0 1px 1px 0px rgb(0 0 0 / 30%); transition: all 0.2s ease-in-out;`);
+      contentDiv.setAttribute('style', `max-width: 70%; padding: 8px 10px; border-radius: 14px 14px 14px 4px; font-size: 11px; background: ${a.msgBg}; color: ${a.msgText}; box-shadow: 0 1px 1px 0px rgb(0 0 0 / 30%); transition: all 0.2s ease-in-out;`);
       contentDiv.textContent = content;
       messageDiv.appendChild(contentDiv);
     }

@@ -320,8 +320,8 @@
 
 @media (max-width: 480px) {
   #rankved-chat-window[data-rankved-widget] {
-    width: calc(100vw - 12px) !important;
-    height: calc(100vh - 12px) !important;
+    width: 80vw !important;
+    height: 45vh !important;
     top: 6px !important;
     left: 6px !important;
     right: 6px !important;
@@ -588,8 +588,7 @@
 /* Responsive enhancements */
 @media (max-width: 480px) {
   #rankved-chat-window[data-rankved-widget] {
-    width: calc(100vw - 32px) !important;
-    height: calc(100vh - 32px) !important;
+    
     top: 16px !important;
     left: 16px !important;
     right: 16px !important;
@@ -638,8 +637,8 @@
 @media (max-width: 600px) {
   #rankved-chat-window[data-rankved-widget] {
     position: fixed !important;
-    bottom: 0 !important;
-    right: 24px !important;
+    bottom: 10px !important;
+    right: 10px !important;
     left: auto !important;
     top: auto !important;
     z-index: 2147483647 !important;

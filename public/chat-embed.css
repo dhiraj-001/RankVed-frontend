@@ -300,7 +300,7 @@
 }
 
 #rankved-input {
-  font-size: 13px !important;
+  font-size: 11px !important;
   padding: 4px 8px !important;
   height: 32px !important;
   border-radius: 10px !important;
@@ -309,6 +309,8 @@
 #rankved-send-btn {
   width: 32px !important;
   height: 32px !important;
+  min-width: 32px !important;
+  flex-shrink: 0 !important;
   border-radius: 10px !important;
 }
 
@@ -331,7 +333,15 @@
     padding: 6px 4px 0 4px !important;
   }
   #rankved-input {
-    font-size: 14px !important;
+    font-size: 11px !important;
+    min-width: 0 !important;
+    flex: 1 !important;
+  }
+  #rankved-send-btn {
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
+    flex-shrink: 0 !important;
   }
 }
 
@@ -600,7 +610,15 @@
   }
   
   #rankved-input {
-    font-size: 16px !important; /* Prevents zoom on iOS */
+    font-size: 11px !important;
+    min-width: 0 !important;
+    flex: 1 !important;
+  }
+  #rankved-send-btn {
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
+    flex-shrink: 0 !important;
   }
 }
 

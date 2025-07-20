@@ -569,12 +569,12 @@ export default function Settings() {
                     <SelectContent>
                       <SelectItem value="platform">Platform Default</SelectItem>
                       <SelectItem value="openai">OpenAI</SelectItem>
-                      <SelectItem value="custom">Custom API</SelectItem>
+                      <SelectItem value="google">Google</SelectItem>
                     </SelectContent>
                   </Select>
                   <p className="text-xs text-slate-500">Choose which AI service to use for generating responses</p>
                 </div>
-                {settings.aiProvider === 'custom' && (
+                {settings.aiProvider !== 'platform' && (
                   <div className="space-y-2">
                     <Label htmlFor="customApiKey" className="text-slate-700 font-medium">
                       Custom API Key

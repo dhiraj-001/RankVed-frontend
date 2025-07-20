@@ -185,7 +185,9 @@
     const inputBorder = theme === 'dark' ? '#6a739f' : '#d7adec';
     
     // Enhanced message backgrounds (matching preview exactly)
-    let msgBg = theme === 'dark' ? '#23232a' : '#fff';
+    let msgBg = theme === 'dark'
+    ? 'linear-gradient(90deg, #23232a 0%, #2d2d3a 100%)'
+    : 'linear-gradient(90deg, #f8fafc 0%, #e2e8f0 100%)';
     if (chatWindowStyle === 'minimal') {
       msgBg = theme === 'dark' ? 'rgba(51, 65, 85, 0.6)' : 'rgba(255, 255, 255, 0.8)';
     } else if (chatWindowStyle === 'floating') {
@@ -272,7 +274,7 @@
         </div>
         <button id="rankved-close-btn" style="background: none; border: none; color: ${a.headerText}; font-size: 20px; cursor: pointer; position: relative; z-index: 2; transition: all 0.2s ease-in-out; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 300;">×</button>
       </div>
-      <div id="rankved-messages" style="flex: 1; overflow-y: auto; padding: 10px 8px 0 8px; color: ${a.msgText}; display: flex; flex-direction: column; gap: 8px; background: ${a.backgroundColor}; border-bottom-left-radius: ${a.borderRadius}px; border-bottom-right-radius: ${a.borderRadius}px;">
+      <div id="rankved-messages" style="flex: 1; overflow-y: auto; padding: 10px 8px 0 8px; color: ${a.msgText}; display: flex; flex-direction: column; gap: 8px; background: ${a.backgroundColor}; border-bottom-left-radius: ${a.borderRadius}px; border-bottom-right-radius: ${a.borderRadius}px; scroll-behavior: smooth; -webkit-overflow-scrolling: touch;">
         <!-- Welcome message removed; will be added by JS only -->
       </div>
       <div style="padding: 6px 8px 4px 8px; border-top: 2px solid ${a.inputBorder}; border-bottom-left-radius: ${a.borderRadius}px; border-bottom-right-radius: ${a.borderRadius}px; position: relative; overflow: hidden; background: ${a.inputBg}; box-shadow: ${a.theme === 'dark' ? '0 2px 8px rgba(30,41,59,0.12)' : '0 2px 8px rgba(100,116,139,0.08)'};">
@@ -291,6 +293,19 @@
     return win;
   }
 
+  // Helper function for smooth scrolling
+  function scrollToBottom(container) {
+    if (!container) return;
+    // Use requestAnimationFrame for smooth scrolling
+    requestAnimationFrame(() => {
+      container.scrollTop = container.scrollHeight;
+    });
+    // Also try again after a small delay to ensure content is rendered
+    setTimeout(() => {
+      container.scrollTop = container.scrollHeight;
+    }, 50);
+  }
+
   // Add message to chat
   function addMessage(content, sender) {
     const a = getAppearance();
@@ -301,7 +316,7 @@
       messageDiv.setAttribute('style', `margin-bottom: 3px; display: flex; justify-content: flex-end;`);
       const contentDiv = document.createElement('div');
       // Sharp bottom-right corner for user
-      contentDiv.setAttribute('style', `max-width: 60%; padding: 5px 10px; border-radius: 14px 14px 4px 14px; font-size: 13px; background: ${a.userMsgBg}; color: ${a.userMsgText}; box-shadow: 0 2px 6px rgba(0,0,0,0.10); transition: all 0.2s ease-in-out;`);
+      contentDiv.setAttribute('style', `max-width: 70%; padding: 5px 10px; border-radius: 14px 14px 4px 14px; font-size: 11px; background: ${a.userMsgBg}; color: ${a.userMsgText}; box-shadow: 0 2px 6px rgba(0,0,0,0.10); transition: all 0.2s ease-in-out;`);
       contentDiv.textContent = content;
       messageDiv.appendChild(contentDiv);
     } else {
@@ -316,12 +331,14 @@
       messageDiv.appendChild(avatarDiv);
       const contentDiv = document.createElement('div');
       // Sharp bottom-left corner for bot
-      contentDiv.setAttribute('style', `max-width: 60%; padding: 5px 10px; border-radius: 14px 14px 14px 4px; font-size: 13px; background: ${a.msgBg}; color: ${a.msgText}; box-shadow: 0 1px 3px rgba(0,0,0,0.08); transition: all 0.2s ease-in-out;`);
+      contentDiv.setAttribute('style', `max-width: 70%; padding: 5px 10px; border-radius: 14px 14px 14px 4px; font-size: 11px; background: ${a.msgBg}; color: ${a.msgText}; box-shadow: 0 1px 1px 0px rgb(0 0 0 / 30%); transition: all 0.2s ease-in-out;`);
       contentDiv.textContent = content;
       messageDiv.appendChild(contentDiv);
     }
     messagesContainer.appendChild(messageDiv);
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    
+    // Use helper function for consistent scroll behavior
+    scrollToBottom(messagesContainer);
   }
 
   // Show suggestion buttons if present
@@ -389,8 +406,8 @@
         btn.style.width = '60%';
         btn.style.alignSelf = 'flex-start';
         btn.style.borderRadius = '14px 14px 4px 14px';
-        btn.style.padding = '8px 12px';
-        btn.style.fontSize = '14px';
+        btn.style.padding = '6px 10px';
+        btn.style.fontSize = '11px';
         btn.style.cursor = 'pointer';
         btn.onclick = function () {
           addMessage(option.text, 'user');
@@ -425,7 +442,7 @@
         optionsDiv.appendChild(btn);
       });
       messagesContainer.appendChild(optionsDiv);
-      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      scrollToBottom(messagesContainer);
     } else if (node.type === 'open-ended') {
       // Instead of rendering a custom input, set a flag to use the main chat input
       questionFlowState.awaitingOpenEnded = node;
@@ -440,48 +457,72 @@
       const nameInput = document.createElement('input');
       nameInput.type = 'text';
       nameInput.placeholder = 'Your Name';
-      nameInput.style.padding = '8px 12px';
-      nameInput.style.borderRadius = '6px';
-      nameInput.style.border = '1px solid #e2e8f0';
-      nameInput.style.fontSize = '14px';
+      nameInput.style.setProperty('padding', '6px 12px', 'important');
+      nameInput.style.setProperty('border-radius', '6px', 'important');
+      nameInput.style.setProperty('border', '1px solid #e2e8f0', 'important');
+      nameInput.style.setProperty('font-size', '11px', 'important');
+      nameInput.style.setProperty('background', '#fff', 'important');
+      nameInput.style.setProperty('color', '#222', 'important');
+      nameInput.style.setProperty('outline', 'none', 'important');
+      nameInput.style.setProperty('box-shadow', '0 1px 2px rgba(0,0,0,0.04)', 'important');
+      nameInput.style.setProperty('margin', '0', 'important');
+      nameInput.style.setProperty('width', '90%', 'important');
       const emailInput = document.createElement('input');
       emailInput.type = 'email';
       emailInput.placeholder = 'Your Email';
-      emailInput.style.padding = '8px 12px';
-      emailInput.style.borderRadius = '6px';
-      emailInput.style.border = '1px solid #e2e8f0';
-      emailInput.style.fontSize = '14px';
-      // Add mobile number input
+      emailInput.style.setProperty('padding', '6px 12px', 'important');
+      emailInput.style.setProperty('border-radius', '6px', 'important');
+      emailInput.style.setProperty('border', '1px solid #e2e8f0', 'important');
+      emailInput.style.setProperty('font-size', '11px', 'important');
+      emailInput.style.setProperty('background', '#fff', 'important');
+      emailInput.style.setProperty('color', '#222', 'important');
+      emailInput.style.setProperty('outline', 'none', 'important');
+      emailInput.style.setProperty('box-shadow', '0 1px 2px rgba(0,0,0,0.04)', 'important');
+      emailInput.style.setProperty('margin', '0', 'important');
+      emailInput.style.setProperty('width', '90%', 'important');
       const phoneInput = document.createElement('input');
       phoneInput.type = 'tel';
       phoneInput.placeholder = 'Your Mobile Number';
-      phoneInput.style.padding = '8px 12px';
-      phoneInput.style.borderRadius = '6px';
-      phoneInput.style.border = '1px solid #e2e8f0';
-      phoneInput.style.fontSize = '14px';
+      phoneInput.style.setProperty('padding', '6px 12px', 'important');
+      phoneInput.style.setProperty('border-radius', '6px', 'important');
+      phoneInput.style.setProperty('border', '1px solid #e2e8f0', 'important');
+      phoneInput.style.setProperty('font-size', '11px', 'important');
+      phoneInput.style.setProperty('background', '#fff', 'important');
+      phoneInput.style.setProperty('color', '#222', 'important');
+      phoneInput.style.setProperty('outline', 'none', 'important');
+      phoneInput.style.setProperty('box-shadow', '0 1px 2px rgba(0,0,0,0.04)', 'important');
+      phoneInput.style.setProperty('margin', '0', 'important');
+      phoneInput.style.setProperty('width', '90%', 'important');
       // Add consent checkbox
       const consentDiv = document.createElement('div');
-      consentDiv.style.display = 'flex';
-      consentDiv.style.alignItems = 'center';
-      consentDiv.style.gap = '8px';
+      consentDiv.style.setProperty('display', 'flex', 'important');
+      consentDiv.style.setProperty('align-items', 'center', 'important');
+      consentDiv.style.setProperty('gap', '8px', 'important');
+      consentDiv.style.setProperty('margin', '0', 'important');
+      consentDiv.style.setProperty('padding', '0', 'important');
       const consentCheckbox = document.createElement('input');
       consentCheckbox.type = 'checkbox';
       consentCheckbox.id = 'rankved-consent-checkbox';
       const consentLabel = document.createElement('label');
       consentLabel.htmlFor = 'rankved-consent-checkbox';
       consentLabel.textContent = 'I consent to be contacted.';
-      consentLabel.style.fontSize = '13px';
+      consentLabel.style.setProperty('font-size', '11px', 'important');
+      consentLabel.style.setProperty('color', '#222', 'important');
+      consentLabel.style.setProperty('margin', '0', 'important');
+      consentLabel.style.setProperty('padding', '0', 'important');
       consentDiv.appendChild(consentCheckbox);
       consentDiv.appendChild(consentLabel);
       const sendBtn = document.createElement('button');
       sendBtn.textContent = 'Send';
-      sendBtn.style.background = getAppearance().primaryColor;
-      sendBtn.style.color = '#fff';
-      sendBtn.style.border = 'none';
-      sendBtn.style.borderRadius = '6px';
-      sendBtn.style.padding = '8px 16px';
-      sendBtn.style.fontSize = '14px';
-      sendBtn.style.cursor = 'pointer';
+      sendBtn.style.setProperty('background', getAppearance().primaryColor, 'important');
+      sendBtn.style.setProperty('color', '#fff', 'important');
+      sendBtn.style.setProperty('border', 'none', 'important');
+      sendBtn.style.setProperty('border-radius', '10px', 'important');
+      sendBtn.style.setProperty('padding', '6px 10px', 'important');
+      sendBtn.style.setProperty('font-size', '14px', 'important');
+      sendBtn.style.setProperty('cursor', 'pointer', 'important');
+      sendBtn.style.setProperty('margin', '0', 'important');
+      sendBtn.style.setProperty('width', '100%', 'important');
       sendBtn.onclick = async function () {
         if (!nameInput.value.trim() || !emailInput.value.trim() || !phoneInput.value.trim() || !consentCheckbox.checked) return;
         addMessage(`Name: ${nameInput.value}, Email: ${emailInput.value}, Phone: ${phoneInput.value}, Consent: Yes`, 'user');
@@ -525,7 +566,7 @@
       inputDiv.appendChild(consentDiv);
       inputDiv.appendChild(sendBtn);
       messagesContainer.appendChild(inputDiv);
-      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      scrollToBottom(messagesContainer);
     }
     if (node.type === 'statement' && node.nextId) {
       setTimeout(() => {
@@ -612,7 +653,7 @@
       </div>
     `;
     messagesContainer.appendChild(loadingDiv);
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    scrollToBottom(messagesContainer);
   }
 
   function removeLoadingMessage() {
@@ -709,7 +750,7 @@
               });
               const messagesContainer = document.getElementById('rankved-messages');
               messagesContainer.appendChild(followUpDiv);
-              messagesContainer.scrollTop = messagesContainer.scrollHeight;
+              scrollToBottom(messagesContainer);
             }, 500);
           } else if (node.nextId) {
             const nextNode = config.questionFlow.nodes.find(n => n.id === node.nextId);
@@ -777,46 +818,71 @@
     const nameInput = document.createElement('input');
     nameInput.type = 'text';
     nameInput.placeholder = 'Your Name';
-    nameInput.style.padding = '8px 12px';
-    nameInput.style.borderRadius = '6px';
-    nameInput.style.border = '1px solid #e2e8f0';
-    nameInput.style.fontSize = '14px';
+    nameInput.style.setProperty('padding', '8px 12px', 'important');
+    nameInput.style.setProperty('border-radius', '6px', 'important');
+    nameInput.style.setProperty('border', '1px solid #e2e8f0', 'important');
+    nameInput.style.setProperty('font-size', '14px', 'important');
+    nameInput.style.setProperty('background', '#fff', 'important');
+    nameInput.style.setProperty('color', '#222', 'important');
+    nameInput.style.setProperty('outline', 'none', 'important');
+    nameInput.style.setProperty('box-shadow', '0 1px 2px rgba(0,0,0,0.04)', 'important');
+    nameInput.style.setProperty('margin', '0', 'important');
+    nameInput.style.setProperty('width', '100%', 'important');
     const emailInput = document.createElement('input');
     emailInput.type = 'email';
     emailInput.placeholder = 'Your Email';
-    emailInput.style.padding = '8px 12px';
-    emailInput.style.borderRadius = '6px';
-    emailInput.style.border = '1px solid #e2e8f0';
-    emailInput.style.fontSize = '14px';
+    emailInput.style.setProperty('padding', '8px 12px', 'important');
+    emailInput.style.setProperty('border-radius', '6px', 'important');
+    emailInput.style.setProperty('border', '1px solid #e2e8f0', 'important');
+    emailInput.style.setProperty('font-size', '14px', 'important');
+    emailInput.style.setProperty('background', '#fff', 'important');
+    emailInput.style.setProperty('color', '#222', 'important');
+    emailInput.style.setProperty('outline', 'none', 'important');
+    emailInput.style.setProperty('box-shadow', '0 1px 2px rgba(0,0,0,0.04)', 'important');
+    emailInput.style.setProperty('margin', '0', 'important');
+    emailInput.style.setProperty('width', '100%', 'important');
     const phoneInput = document.createElement('input');
     phoneInput.type = 'tel';
     phoneInput.placeholder = 'Your Mobile Number';
-    phoneInput.style.padding = '8px 12px';
-    phoneInput.style.borderRadius = '6px';
-    phoneInput.style.border = '1px solid #e2e8f0';
-    phoneInput.style.fontSize = '14px';
+    phoneInput.style.setProperty('padding', '8px 12px', 'important');
+    phoneInput.style.setProperty('border-radius', '6px', 'important');
+    phoneInput.style.setProperty('border', '1px solid #e2e8f0', 'important');
+    phoneInput.style.setProperty('font-size', '14px', 'important');
+    phoneInput.style.setProperty('background', '#fff', 'important');
+    phoneInput.style.setProperty('color', '#222', 'important');
+    phoneInput.style.setProperty('outline', 'none', 'important');
+    phoneInput.style.setProperty('box-shadow', '0 1px 2px rgba(0,0,0,0.04)', 'important');
+    phoneInput.style.setProperty('margin', '0', 'important');
+    phoneInput.style.setProperty('width', '100%', 'important');
     const consentDiv = document.createElement('div');
-    consentDiv.style.display = 'flex';
-    consentDiv.style.alignItems = 'center';
-    consentDiv.style.gap = '8px';
+    consentDiv.style.setProperty('display', 'flex', 'important');
+    consentDiv.style.setProperty('align-items', 'center', 'important');
+    consentDiv.style.setProperty('gap', '8px', 'important');
+    consentDiv.style.setProperty('margin', '0', 'important');
+    consentDiv.style.setProperty('padding', '0', 'important');
     const consentCheckbox = document.createElement('input');
     consentCheckbox.type = 'checkbox';
     consentCheckbox.id = 'rankved-consent-checkbox';
     const consentLabel = document.createElement('label');
     consentLabel.htmlFor = 'rankved-consent-checkbox';
     consentLabel.textContent = 'I consent to be contacted.';
-    consentLabel.style.fontSize = '13px';
+    consentLabel.style.setProperty('font-size', '13px', 'important');
+    consentLabel.style.setProperty('color', '#222', 'important');
+    consentLabel.style.setProperty('margin', '0', 'important');
+    consentLabel.style.setProperty('padding', '0', 'important');
     consentDiv.appendChild(consentCheckbox);
     consentDiv.appendChild(consentLabel);
     const sendBtn = document.createElement('button');
     sendBtn.textContent = 'Send';
-    sendBtn.style.background = getAppearance().primaryColor;
-    sendBtn.style.color = '#fff';
-    sendBtn.style.border = 'none';
-    sendBtn.style.borderRadius = '6px';
-    sendBtn.style.padding = '8px 16px';
-    sendBtn.style.fontSize = '14px';
-    sendBtn.style.cursor = 'pointer';
+    sendBtn.style.setProperty('background', getAppearance().primaryColor, 'important');
+    sendBtn.style.setProperty('color', '#fff', 'important');
+    sendBtn.style.setProperty('border', 'none', 'important');
+    sendBtn.style.setProperty('border-radius', '6px', 'important');
+    sendBtn.style.setProperty('padding', '8px 16px', 'important');
+    sendBtn.style.setProperty('font-size', '14px', 'important');
+    sendBtn.style.setProperty('cursor', 'pointer', 'important');
+    sendBtn.style.setProperty('margin', '0', 'important');
+    sendBtn.style.setProperty('width', '100%', 'important');
     sendBtn.onclick = async function () {
       if (!nameInput.value.trim() || !emailInput.value.trim() || !phoneInput.value.trim() || !consentCheckbox.checked) return;
       addMessage(`Name: ${nameInput.value}, Email: ${emailInput.value}, Phone: ${phoneInput.value}, Consent: Yes`, 'user');
@@ -857,7 +923,7 @@
     inputDiv.appendChild(consentDiv);
     inputDiv.appendChild(sendBtn);
     messagesContainer.appendChild(inputDiv);
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    scrollToBottom(messagesContainer);
   }
 
   // Initialize

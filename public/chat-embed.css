@@ -250,7 +250,6 @@
   min-width: 220px !important;
   min-height: 220px !important;
   position: fixed !important;
-  bottom: 0 !important;
   right: 24px !important;
   left: auto !important;
   top: auto !important;
@@ -314,7 +313,7 @@
 }
 
 #rankved-suggestions button, #rankved-flow-options button {
-  font-size: 13px !important;
+  font-size: 11px !important;
   padding: 6px 10px !important;
   border-radius: 12px 12px 12px 12px !important;
 }
@@ -505,7 +504,7 @@
 #rankved-flow-options button {
   transition: all 0.2s ease-in-out !important;
   border-radius: 8px !important;
-  font-weight: 500 !important;
+  font-weight: 400 !important;
   margin-bottom: 4px !important;
 }
 

@@ -147,8 +147,17 @@ export default function ChatStandalone() {
   }
 
   function addBotMessage(content: string, type: 'text' | 'options' | 'form' = 'text', options?: any[]) {
+    const messageId = Date.now().toString();
+    console.log(`[${messageId}] 📝 Adding bot message to UI:`, {
+      contentLength: content.length,
+      type,
+      hasOptions: !!options,
+      optionsCount: options?.length || 0,
+      timestamp: new Date().toISOString()
+    });
+    
     const message: Message = {
-      id: Date.now().toString(),
+      id: messageId,
       content,
       sender: 'bot',
       timestamp: new Date(),
@@ -215,45 +224,70 @@ export default function ChatStandalone() {
   };
 
   const handleSendMessage = async () => {
-    if (!input.trim() || !chatbotId || !chatbot) return;
-    const userInput = input.trim();
+    if (!input.trim() || isLoading || !chatbotId || !chatbot) return;
+
+    const requestId = Date.now().toString();
+    console.log(`[${requestId}] 🚀 Chat standalone - Sending message:`, {
+      messageLength: input.length,
+      chatbotId,
+      questionFlowActive,
+      timestamp: new Date().toISOString()
+    });
+
+    const userInput = input;
     setInput('');
     addUserMessage(userInput);
-    if (questionFlowActive && chatbot.questionFlow && Array.isArray(chatbot.questionFlow)) {
-      // Store input in context
-      if (context.currentNodeId) {
-        setContext(prev => ({
-          ...prev,
-          variables: { ...prev.variables, [context.currentNodeId!]: userInput },
-          awaitingInput: undefined
-        }));
-      }
-      const currentNode = chatbot.questionFlow.find((n: any) => n.id === context.currentNodeId);
-      if (currentNode?.aiHandling || context.awaitingInput === 'text') {
+
+    if (questionFlowActive && context.currentNodeId) {
+      console.log(`[${requestId}] 🔄 Processing question flow:`, {
+        currentNodeId: context.currentNodeId,
+        awaitingInput: context.awaitingInput
+      });
+      
+      const currentNode = chatbot.questionFlow?.find((n: any) => n.id === context.currentNodeId);
+      if (currentNode) {
         setIsLoading(true);
         try {
-          const response = await chatMutation.mutateAsync({ message: userInput, chatbotId, context });
+          console.log(`[${requestId}] 📡 Making API call for question flow`);
+          const response = await chatMutation.mutateAsync({ message: userInput, chatbotId: chatbotId, context });
+          
+          console.log(`[${requestId}] ✅ Question flow API response:`, {
+            responseLength: response.message?.length || 0,
+            responseType: response.type,
+            hasContext: !!response.context
+          });
+          
           addBotMessage(response.message || 'I\'m here to help! How can I assist you?');
+          if (response.context) setContext(response.context);
         } catch (error) {
+          console.error(`[${requestId}] ❌ Question flow API error:`, error);
           addBotMessage('Sorry, I\'m having trouble responding right now. Please try again.');
         } finally {
           setIsLoading(false);
         }
-      } else {
-        addBotMessage('Thank you for your message. Is there anything else I can help you with?');
       }
       if (currentNode?.nextId) {
-        const nextNode = chatbot.questionFlow.find((n: any) => n.id === currentNode.nextId);
+        const nextNode = chatbot.questionFlow?.find((n: any) => n.id === currentNode.nextId);
         if (nextNode) setTimeout(() => processQuestionNode(nextNode), 1000);
       }
     } else {
       // Fallback to classic AI chat
+      console.log(`[${requestId}] 🤖 Using classic AI chat (no question flow)`);
       setIsLoading(true);
       try {
-        const response = await chatMutation.mutateAsync({ message: userInput, chatbotId, context });
+        console.log(`[${requestId}] 📡 Making API call for classic AI chat`);
+        const response = await chatMutation.mutateAsync({ message: userInput, chatbotId: chatbotId, context });
+        
+        console.log(`[${requestId}] ✅ Classic AI API response:`, {
+          responseLength: response.message?.length || 0,
+          responseType: response.type,
+          hasContext: !!response.context
+        });
+        
         addBotMessage(response.message || 'I\'m here to help! How can I assist you?');
         if (response.context) setContext(response.context);
       } catch (error) {
+        console.error(`[${requestId}] ❌ Classic AI API error:`, error);
         addBotMessage('Sorry, I\'m having trouble responding right now. Please try again.');
       } finally {
         setIsLoading(false);

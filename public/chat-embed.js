@@ -308,15 +308,26 @@
 
   // Add message to chat
   function addMessage(content, sender) {
+    const messageId = Date.now().toString();
+    console.log(`[${messageId}] 📝 Adding message to UI:`, {
+      sender,
+      contentLength: content.length,
+      contentPreview: content.substring(0, 100) + (content.length > 100 ? '...' : ''),
+      timestamp: new Date().toISOString()
+    });
+    
     const a = getAppearance();
     const messagesContainer = document.getElementById('rankved-messages');
-    if (!messagesContainer) return;
+    if (!messagesContainer) {
+      console.error(`[${messageId}] ❌ Messages container not found`);
+      return;
+    }
     const messageDiv = document.createElement('div');
     if (sender === 'user') {
       messageDiv.setAttribute('style', `margin-bottom: 3px; display: flex; justify-content: flex-end;`);
       const contentDiv = document.createElement('div');
       // Sharp bottom-right corner for user
-      contentDiv.setAttribute('style', `max-width: 70%; padding: 5px 10px; border-radius: 14px 14px 4px 14px; font-size: 11px; background: ${a.userMsgBg}; color: ${a.userMsgText}; box-shadow: 0 2px 6px rgba(0,0,0,0.10); transition: all 0.2s ease-in-out;`);
+      contentDiv.setAttribute('style', `max-width: 70%; padding: 8px 10px; border-radius: 14px 14px 4px 14px; font-size: 11px; background: ${a.userMsgBg}; color: ${a.userMsgText}; box-shadow: 0 2px 6px rgba(0,0,0,0.10); transition: all 0.2s ease-in-out;`);
       contentDiv.textContent = content;
       messageDiv.appendChild(contentDiv);
     } else {
@@ -336,6 +347,12 @@
       messageDiv.appendChild(contentDiv);
     }
     messagesContainer.appendChild(messageDiv);
+    
+    console.log(`[${messageId}] ✅ Message added to DOM:`, {
+      sender,
+      contentLength: content.length,
+      messagesContainerChildren: messagesContainer.children.length
+    });
     
     // Use helper function for consistent scroll behavior
     scrollToBottom(messagesContainer);
@@ -379,18 +396,44 @@
   }
 
   function renderQuestionNode(node) {
+    const nodeId = Date.now().toString();
+    console.log(`[${nodeId}] 🎯 Rendering question node:`, {
+      nodeId: node.id,
+      nodeType: node.type,
+      nodeQuestion: node.question || node.text,
+      hasOptions: !!(node.options && node.options.length > 0),
+      optionsCount: node.options?.length || 0,
+      hasNextId: !!node.nextId
+    });
+    
     const messagesContainer = document.getElementById('rankved-messages');
-    if (!messagesContainer || !node) return;
+    if (!messagesContainer) {
+      console.error(`[${nodeId}] ❌ Messages container not found for question node`);
+      return;
+    }
+    
+    console.log(`[${nodeId}] 📝 Adding bot message for question node`);
     addMessage(node.question, 'bot');
+    
     // Track flow history
     questionFlowState.history.push(node.id);
+    console.log(`[${nodeId}] 📊 Updated flow history:`, questionFlowState.history);
+    
     // Remove any previous options/input
     const oldOptions = document.getElementById('rankved-flow-options');
-    if (oldOptions) oldOptions.remove();
+    if (oldOptions) {
+      console.log(`[${nodeId}] 🧹 Removing old flow options`);
+      oldOptions.remove();
+    }
     const oldInput = document.getElementById('rankved-flow-input');
-    if (oldInput) oldInput.remove();
+    if (oldInput) {
+      console.log(`[${nodeId}] 🧹 Removing old flow input`);
+      oldInput.remove();
+    }
+    
     // Handle node types
     if (node.type === 'multiple-choice' && node.options && node.options.length > 0) {
+      console.log(`[${nodeId}] 🔘 Rendering multiple choice options:`, node.options.map(opt => opt.text));
       const optionsDiv = document.createElement('div');
       optionsDiv.id = 'rankved-flow-options';
       optionsDiv.style.margin = '4px 0';
@@ -410,6 +453,7 @@
         btn.style.fontSize = '11px';
         btn.style.cursor = 'pointer';
         btn.onclick = function () {
+          console.log(`[${nodeId}] 🎯 User selected option: "${option.text}"`);
           addMessage(option.text, 'user');
           // Track user input
           questionFlowState.userInputs[node.id] = option.text;
@@ -431,11 +475,14 @@
             return;
           }
           if (option.nextId) {
+            console.log(`[${nodeId}] 🔄 Navigating to next node:`, option.nextId);
             optionsDiv.remove();
             const nextNode = config.questionFlow.nodes.find(n => n.id === option.nextId);
             if (nextNode) {
               questionFlowState.currentNodeId = nextNode.id;
               setTimeout(() => renderQuestionNode(nextNode), 500);
+            } else {
+              console.error(`[${nodeId}] ❌ Next node not found:`, option.nextId);
             }
           }
         };
@@ -444,10 +491,12 @@
       messagesContainer.appendChild(optionsDiv);
       scrollToBottom(messagesContainer);
     } else if (node.type === 'open-ended') {
+      console.log(`[${nodeId}] 📝 Setting up open-ended input`);
       // Instead of rendering a custom input, set a flag to use the main chat input
       questionFlowState.awaitingOpenEnded = node;
       // Optionally, visually indicate to the user to answer below (could highlight input, etc.)
     } else if (node.type === 'contact-form' && config.leadCollectionEnabled) {
+      console.log(`[${nodeId}] 📝 Rendering contact form`);
       const inputDiv = document.createElement('div');
       inputDiv.id = 'rankved-flow-input';
       inputDiv.style.margin = '8px 0';
@@ -569,11 +618,14 @@
       scrollToBottom(messagesContainer);
     }
     if (node.type === 'statement' && node.nextId) {
+      console.log(`[${nodeId}] 🔄 Statement node with nextId, scheduling next node:`, node.nextId);
       setTimeout(() => {
         const nextNode = config.questionFlow.nodes.find(n => n.id === node.nextId);
         if (nextNode) {
           questionFlowState.currentNodeId = nextNode.id;
           renderQuestionNode(nextNode);
+        } else {
+          console.error(`[${nodeId}] ❌ Next node not found:`, node.nextId);
         }
       }, 900); // 900ms delay for smoothness
     }
@@ -663,16 +715,34 @@
 
   // Send message to backend
   async function sendMessage() {
+    const requestId = Date.now().toString();
+    console.log(`[${requestId}] 🚀 Send message started`);
+    
     const input = chatWindow.querySelector('#rankved-input');
     const text = input.value.trim();
-    if (!text) return;
+    if (!text) {
+      console.log(`[${requestId}] ❌ Empty message, returning`);
+      return;
+    }
     if (!config.chatbotId) {
-      console.error('[RankVed Chat] chatbotId is missing at sendMessage. window.CHATBOT_CONFIG:', window.CHATBOT_CONFIG, 'config:', config);
+      console.error(`[${requestId}] ❌ Chatbot ID missing:`, {
+        configChatbotId: config.chatbotId,
+        windowConfig: window.CHATBOT_CONFIG
+      });
       addMessage('Chatbot ID is missing. Please refresh the page.', 'bot');
       return;
     }
+    
+    console.log(`[${requestId}] 📝 Processing message:`, {
+      textLength: text.length,
+      textPreview: text.substring(0, 50) + (text.length > 50 ? '...' : ''),
+      chatbotId: config.chatbotId,
+      awaitingOpenEnded: !!questionFlowState.awaitingOpenEnded
+    });
+    
     // If waiting for open-ended node answer, handle it here
     if (questionFlowState.awaitingOpenEnded) {
+      console.log(`[${requestId}] 🔄 Processing open-ended node response`);
       const node = questionFlowState.awaitingOpenEnded;
       addMessage(text, 'user');
       questionFlowState.userInputs[node.id] = text;
@@ -689,6 +759,7 @@
         flowState: questionFlowState,
       };
       try {
+        console.log(`[${requestId}] 📡 Making API call for open-ended node`);
         const res = await fetch(`${config.apiUrl || ''}/api/chat/${config.chatbotId}/message`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -697,9 +768,15 @@
         removeLoadingMessage();
         if (res.ok) {
           const data = await res.json();
+          console.log(`[${requestId}] ✅ Open-ended API response:`, {
+            responseLength: data.message?.length || 0,
+            responseType: data.type,
+            hasTriggeredFlowNode: !!data.triggeredFlowNode
+          });
           addMessage(data.message || '...', 'bot');
           // After AI response, show follow-up options if aiHandling is set
           if (node.aiHandling) {
+            console.log(`[${requestId}] 🔄 Showing follow-up options for AI handling`);
             setTimeout(() => {
               // Show follow-up options
               const followUpDiv = document.createElement('div');
@@ -760,17 +837,22 @@
             }
           }
         } else {
+          console.error(`[${requestId}] ❌ Open-ended API error:`, res.status, res.statusText);
           addMessage('Sorry, there was a problem. Please try again.', 'bot');
         }
       } catch (e) {
+        console.error(`[${requestId}] ❌ Open-ended API exception:`, e);
         removeLoadingMessage();
         addMessage('Sorry, there was a problem. Please try again.', 'bot');
       }
       return;
     }
+    
+    console.log(`[${requestId}] 📝 Adding user message to UI`);
     addMessage(text, 'user');
     input.value = '';
     showLoadingMessage(); // Show loading indicator
+    
     // Build context for backend
     let context = {
       messageCount: (questionFlowState.history?.length || 0) + 1,
@@ -779,6 +861,17 @@
       usingSuggestions: false,
       flowState: questionFlowState,
     };
+    
+    console.log(`[${requestId}] 📡 Making API call with context:`, {
+      messageLength: text.length,
+      context: {
+        messageCount: context.messageCount,
+        manualMessageCount: context.manualMessageCount,
+        isFlowBased: context.isFlowBased,
+        usingSuggestions: context.usingSuggestions
+      }
+    });
+    
     try {
       const res = await fetch(`${config.apiUrl || ''}/api/chat/${config.chatbotId}/message`, {
         method: 'POST',
@@ -786,17 +879,122 @@
         body: JSON.stringify({ message: text, context })
       });
       removeLoadingMessage(); // Remove loading indicator
+      
       if (res.ok) {
         const data = await res.json();
-        if ((data.type === 'form' || data.shouldCollectLead) && config.leadCollectionEnabled) {
+        console.log(`[${requestId}] ✅ API response received:`, {
+          responseLength: data.message?.length || 0,
+          responseType: data.type,
+          shouldCollectLead: data.shouldCollectLead,
+          hasTriggeredFlowNode: !!data.triggeredFlowNode,
+          triggeredNodeId: data.triggeredFlowNode?.id,
+          hasAiTriggeredNode: !!data.aiTriggeredNode,
+          aiTriggeredNodeId: data.aiTriggeredNode?.id
+        });
+        
+        // Show AI response first
+        console.log(`[${requestId}] 📝 Adding AI response to UI`);
+        addMessage(data.message || '...', 'bot');
+        
+        // Handle triggered flow node (applied in background, AI response already shown)
+        if (data.triggeredFlowNode) {
+          console.log(`[${requestId}] 🎯 Processing triggered flow node:`, {
+            nodeId: data.triggeredFlowNode.id,
+            nodeType: data.triggeredFlowNode.type,
+            nodeQuestion: data.triggeredFlowNode.question || data.triggeredFlowNode.text,
+            responseMessage: data.message,
+            isAiTriggered: !!data.aiTriggeredNode && data.aiTriggeredNode.id === data.triggeredFlowNode.id
+          });
+          
+          // AI response is already shown, now apply the flow node in background
+          console.log(`[${requestId}] 🔄 Applying flow node in background (AI response already shown)`);
+          
+          // Remove any existing flow elements to prevent duplicates
+          const existingOptions = document.getElementById('rankved-flow-options');
+          if (existingOptions) {
+            console.log(`[${requestId}] 🧹 Removing existing flow options`);
+            existingOptions.remove();
+          }
+          const existingInput = document.getElementById('rankved-flow-input');
+          if (existingInput) {
+            console.log(`[${requestId}] 🧹 Removing existing flow input`);
+            existingInput.remove();
+          }
+          
+          // If it's a contact form, show the form
+          if (data.triggeredFlowNode.type === 'contact-form') {
+            console.log(`[${requestId}] 📝 Rendering contact form for triggered node:`, data.triggeredFlowNode.id);
+            setTimeout(() => {
+              console.log(`[${requestId}] 🎨 Calling renderLeadForm()`);
+              renderLeadForm();
+            }, 500);
+          }
+          // If it's a multiple choice, show the options
+          else if (data.triggeredFlowNode.type === 'multiple-choice' && data.triggeredFlowNode.options) {
+            console.log(`[${requestId}] 🔘 Rendering multiple choice options for triggered node:`, {
+              nodeId: data.triggeredFlowNode.id,
+              optionsCount: data.triggeredFlowNode.options.length,
+              options: data.triggeredFlowNode.options.map(opt => opt.text)
+            });
+            
+            setTimeout(() => {
+              const optionsDiv = document.createElement('div');
+              optionsDiv.id = 'rankved-flow-options';
+              optionsDiv.style.margin = '4px 0';
+              optionsDiv.style.display = 'flex';
+              optionsDiv.style.flexDirection = 'column';
+              optionsDiv.style.gap = '3px';
+              
+              data.triggeredFlowNode.options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.textContent = opt.text;
+                btn.style.background = getAppearance().primaryColor;
+                btn.style.color = '#fff';
+                btn.style.border = 'none';
+                btn.style.width = '60%';
+                btn.style.alignSelf = 'flex-start';
+                btn.style.borderRadius = '14px 14px 4px 14px';
+                btn.style.padding = '6px 10px';
+                btn.style.fontSize = '11px';
+                btn.style.cursor = 'pointer';
+                btn.onclick = function () {
+                  console.log(`[${requestId}] 🎯 User selected option: "${opt.text}" from triggered node:`, data.triggeredFlowNode.id);
+                  addMessage(opt.text, 'user');
+                  // Handle option selection
+                  if (opt.nextId) {
+                    console.log(`[${requestId}] 🔄 Navigating to next node:`, opt.nextId);
+                    const nextNode = config.questionFlow.nodes.find(n => n.id === opt.nextId);
+                    if (nextNode) {
+                      questionFlowState.currentNodeId = nextNode.id;
+                      setTimeout(() => renderQuestionNode(nextNode), 500);
+                    } else {
+                      console.log(`[${requestId}] ❌ Next node not found:`, opt.nextId);
+                    }
+                  }
+                  optionsDiv.remove();
+                };
+                optionsDiv.appendChild(btn);
+              });
+              
+              const messagesContainer = document.getElementById('rankved-messages');
+              messagesContainer.appendChild(optionsDiv);
+              scrollToBottom(messagesContainer);
+            }, 500);
+          }
+        }
+        // Handle regular form/lead collection
+        else if ((data.type === 'form' || data.shouldCollectLead) && config.leadCollectionEnabled) {
+          console.log(`[${requestId}] 📝 Rendering lead form (regular flow)`);
           renderLeadForm();
         } else {
-          addMessage(data.message || '...', 'bot');
+          console.log(`[${requestId}] 📝 No additional flow processing needed`);
         }
       } else {
+        console.error(`[${requestId}] ❌ API error:`, res.status, res.statusText);
         addMessage('Sorry, there was a problem. Please try again.', 'bot');
       }
     } catch (e) {
+      console.error(`[${requestId}] ❌ API exception:`, e);
       removeLoadingMessage(); // Remove loading indicator on error
       addMessage('Sorry, there was a problem. Please try again.', 'bot');
     }
@@ -806,9 +1004,12 @@
   function renderLeadForm() {
     const messagesContainer = document.getElementById('rankved-messages');
     if (!messagesContainer) return;
-    // Remove any previous input
+    
+    // Remove any previous input and options to prevent duplicates
     const oldInput = document.getElementById('rankved-flow-input');
     if (oldInput) oldInput.remove();
+    const oldOptions = document.getElementById('rankved-flow-options');
+    if (oldOptions) oldOptions.remove();
     const inputDiv = document.createElement('div');
     inputDiv.id = 'rankved-flow-input';
     inputDiv.style.margin = '8px 0';
@@ -818,42 +1019,42 @@
     const nameInput = document.createElement('input');
     nameInput.type = 'text';
     nameInput.placeholder = 'Your Name';
-    nameInput.style.setProperty('padding', '8px 12px', 'important');
+    nameInput.style.setProperty('padding', '6px 12px', 'important');
     nameInput.style.setProperty('border-radius', '6px', 'important');
     nameInput.style.setProperty('border', '1px solid #e2e8f0', 'important');
-    nameInput.style.setProperty('font-size', '14px', 'important');
+    nameInput.style.setProperty('font-size', '11px', 'important');
     nameInput.style.setProperty('background', '#fff', 'important');
     nameInput.style.setProperty('color', '#222', 'important');
     nameInput.style.setProperty('outline', 'none', 'important');
     nameInput.style.setProperty('box-shadow', '0 1px 2px rgba(0,0,0,0.04)', 'important');
     nameInput.style.setProperty('margin', '0', 'important');
-    nameInput.style.setProperty('width', '100%', 'important');
+    nameInput.style.setProperty('width', '90%', 'important');
     const emailInput = document.createElement('input');
     emailInput.type = 'email';
     emailInput.placeholder = 'Your Email';
-    emailInput.style.setProperty('padding', '8px 12px', 'important');
+    emailInput.style.setProperty('padding', '6px 12px', 'important');
     emailInput.style.setProperty('border-radius', '6px', 'important');
     emailInput.style.setProperty('border', '1px solid #e2e8f0', 'important');
-    emailInput.style.setProperty('font-size', '14px', 'important');
+    emailInput.style.setProperty('font-size', '11px', 'important');
     emailInput.style.setProperty('background', '#fff', 'important');
     emailInput.style.setProperty('color', '#222', 'important');
     emailInput.style.setProperty('outline', 'none', 'important');
     emailInput.style.setProperty('box-shadow', '0 1px 2px rgba(0,0,0,0.04)', 'important');
     emailInput.style.setProperty('margin', '0', 'important');
-    emailInput.style.setProperty('width', '100%', 'important');
+    emailInput.style.setProperty('width', '90%', 'important');
     const phoneInput = document.createElement('input');
     phoneInput.type = 'tel';
     phoneInput.placeholder = 'Your Mobile Number';
-    phoneInput.style.setProperty('padding', '8px 12px', 'important');
+    phoneInput.style.setProperty('padding', '6px 12px', 'important');
     phoneInput.style.setProperty('border-radius', '6px', 'important');
     phoneInput.style.setProperty('border', '1px solid #e2e8f0', 'important');
-    phoneInput.style.setProperty('font-size', '14px', 'important');
+    phoneInput.style.setProperty('font-size', '11px', 'important');
     phoneInput.style.setProperty('background', '#fff', 'important');
     phoneInput.style.setProperty('color', '#222', 'important');
     phoneInput.style.setProperty('outline', 'none', 'important');
     phoneInput.style.setProperty('box-shadow', '0 1px 2px rgba(0,0,0,0.04)', 'important');
     phoneInput.style.setProperty('margin', '0', 'important');
-    phoneInput.style.setProperty('width', '100%', 'important');
+    phoneInput.style.setProperty('width', '90%', 'important');
     const consentDiv = document.createElement('div');
     consentDiv.style.setProperty('display', 'flex', 'important');
     consentDiv.style.setProperty('align-items', 'center', 'important');
@@ -866,7 +1067,7 @@
     const consentLabel = document.createElement('label');
     consentLabel.htmlFor = 'rankved-consent-checkbox';
     consentLabel.textContent = 'I consent to be contacted.';
-    consentLabel.style.setProperty('font-size', '13px', 'important');
+    consentLabel.style.setProperty('font-size', '11px', 'important');
     consentLabel.style.setProperty('color', '#222', 'important');
     consentLabel.style.setProperty('margin', '0', 'important');
     consentLabel.style.setProperty('padding', '0', 'important');
@@ -877,8 +1078,8 @@
     sendBtn.style.setProperty('background', getAppearance().primaryColor, 'important');
     sendBtn.style.setProperty('color', '#fff', 'important');
     sendBtn.style.setProperty('border', 'none', 'important');
-    sendBtn.style.setProperty('border-radius', '6px', 'important');
-    sendBtn.style.setProperty('padding', '8px 16px', 'important');
+    sendBtn.style.setProperty('border-radius', '10px', 'important');
+    sendBtn.style.setProperty('padding', '6px 10px', 'important');
     sendBtn.style.setProperty('font-size', '14px', 'important');
     sendBtn.style.setProperty('cursor', 'pointer', 'important');
     sendBtn.style.setProperty('margin', '0', 'important');

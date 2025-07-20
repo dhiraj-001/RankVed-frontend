@@ -56,6 +56,13 @@ export function ChatWindow({ chatbot, onClose, className }: ChatWindowProps) {
   const handleSendMessage = async () => {
     if (!input.trim()) return;
 
+    const requestId = Date.now().toString();
+    console.log(`[${requestId}] 🚀 Chat window - Sending message:`, {
+      messageLength: input.length,
+      chatbotId: chatbot.id,
+      timestamp: new Date().toISOString()
+    });
+
     const userMessage: Message = {
       id: Date.now().toString(),
       content: input,
@@ -67,9 +74,17 @@ export function ChatWindow({ chatbot, onClose, className }: ChatWindowProps) {
     setInput('');
 
     try {
+      console.log(`[${requestId}] 📡 Making API call to chat response`);
       const response = await chatResponse.mutateAsync({
         chatbotId: chatbot.id,
         message: input,
+      });
+
+      console.log(`[${requestId}] ✅ API response received:`, {
+        responseLength: response.response?.length || 0,
+        responseType: response.type,
+        shouldCollectLead: response.shouldCollectLead,
+        hasTriggeredFlowNode: !!response.triggeredFlowNode
       });
 
       const botMessage: Message = {
@@ -79,8 +94,15 @@ export function ChatWindow({ chatbot, onClose, className }: ChatWindowProps) {
         timestamp: new Date(),
       };
 
+      console.log(`[${requestId}] 📝 Adding bot message to UI:`, {
+        messageId: botMessage.id,
+        contentLength: botMessage.content.length,
+        timestamp: botMessage.timestamp.toISOString()
+      });
+
       setMessages(prev => [...prev, botMessage]);
     } catch (error) {
+      console.error(`[${requestId}] ❌ Chat response error:`, error);
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         content: 'Sorry, I encountered an error. Please try again.',

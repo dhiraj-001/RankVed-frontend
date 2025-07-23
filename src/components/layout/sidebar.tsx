@@ -14,6 +14,7 @@ import {
   User,
   Shield,
   ChevronLeft, ChevronRight,
+  BotIcon,
 } from 'lucide-react';
 import { useClerk } from '@clerk/clerk-react';
 import { useEffect, useState } from 'react';
@@ -53,14 +54,6 @@ const sidebarStyles = `
     }
   }
   
-  .sidebar-item {
-    animation: slideInFromLeft 0.6s ease-out forwards;
-  }
-  
-  .sidebar-item:hover {
-    animation: fadeInUp 0.2s ease-out;
-  }
-  
   .sidebar-mobile {
     animation: slideInFromLeftMobile 0.3s ease-out forwards;
   }
@@ -90,6 +83,7 @@ const navigation = [
   { name: 'Leads', href: '/leads', icon: Users },
   { name: 'Embed Code', href: '/embed', icon: Code },
   { name: 'Profile', href: '/profile', icon: User },
+  { name: 'chat-test', href: '/chat-test', icon: BotIcon },
 ];
 
 interface SidebarProps {

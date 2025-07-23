@@ -378,259 +378,124 @@
     }
   }
 
-  // --- Question Flow State ---
-  let questionFlowState = {
-    currentNodeId: null,
-    history: [],
-    userInputs: {},
-    awaitingOpenEnded: null, // New state variable for open-ended node
-  };
+  // --- New Stateless, Context-Aware Chat Logic ---
+  let chatHistory = [];
+  let awaitingContactInfo = null;
 
-  function resetQuestionFlow() {
-    questionFlowState = {
-      currentNodeId: null,
-      history: [],
-      userInputs: {},
-      awaitingOpenEnded: null,
-    };
+  function isValidEmail(text) {
+    return /\b[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}\b/i.test(text);
+  }
+  function isCancelPhrase(text) {
+    const cancelPhrases = [
+      "never mind", "no thanks", "not now", "cancel", "don't collect info", "no thank you", "skip", "leave it", "forget it", "stop asking", "i don't want to continue"
+    ];
+    return cancelPhrases.some(phrase => text.toLowerCase().includes(phrase));
   }
 
-  function renderQuestionNode(node) {
-    const nodeId = Date.now().toString();
-    console.log(`[${nodeId}] 🎯 Rendering question node:`, {
-      nodeId: node.id,
-      nodeType: node.type,
-      nodeQuestion: node.question || node.text,
-      hasOptions: !!(node.options && node.options.length > 0),
-      optionsCount: node.options?.length || 0,
-      hasNextId: !!node.nextId
-    });
-    
-    const messagesContainer = document.getElementById('rankved-messages');
-    if (!messagesContainer) {
-      console.error(`[${nodeId}] ❌ Messages container not found for question node`);
+  async function sendMessageStateless(userInput) {
+    if (!userInput.trim()) return;
+    addMessage(userInput, 'user');
+    chatHistory.push({ role: 'user', content: userInput });
+
+    // Phase 1: Contact Info Collection (frontend logic)
+    if (awaitingContactInfo) {
+      if (awaitingContactInfo.field === 'email' && isValidEmail(userInput)) {
+        awaitingContactInfo = null;
+        addMessage("Thank you! We've received your email. You can ask another question or use the contact options below.", 'bot');
+        chatHistory.push({ role: 'bot', content: "Thank you! We've received your email. You can ask another question or use the contact options below." });
+        return;
+      }
+      // For all other cases (including cancellation), send to backend for intent detection
+      try {
+        const history = chatHistory.slice(-4);
+        const res = await fetch((config.apiUrl || window.location.origin) + '/api/intent-detect', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: userInput, history }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          const bot = data.intent;
+          addMessage(bot.message_text, 'bot');
+          chatHistory.push({ role: 'bot', content: bot.message_text });
+          if (bot.action_collect_contact_info && bot.requested_contact_field) {
+            awaitingContactInfo = { field: bot.requested_contact_field };
+          } else {
+            awaitingContactInfo = null;
+          }
+        } else {
+          addMessage('Sorry, I could not connect to the server.', 'bot');
+          chatHistory.push({ role: 'bot', content: 'Sorry, I could not connect to the server.' });
+        }
+      } catch {
+        addMessage('Sorry, I could not connect to the server.', 'bot');
+        chatHistory.push({ role: 'bot', content: 'Sorry, I could not connect to the server.' });
+      }
       return;
     }
-    
-    console.log(`[${nodeId}] 📝 Adding bot message for question node`);
-    addMessage(node.question, 'bot');
-    
-    // Track flow history
-    questionFlowState.history.push(node.id);
-    console.log(`[${nodeId}] 📊 Updated flow history:`, questionFlowState.history);
-    
-    // Remove any previous options/input
-    const oldOptions = document.getElementById('rankved-flow-options');
-    if (oldOptions) {
-      console.log(`[${nodeId}] 🧹 Removing old flow options`);
-      oldOptions.remove();
-    }
-    const oldInput = document.getElementById('rankved-flow-input');
-    if (oldInput) {
-      console.log(`[${nodeId}] 🧹 Removing old flow input`);
-      oldInput.remove();
-    }
-    
-    // Handle node types
-    if (node.type === 'multiple-choice' && node.options && node.options.length > 0) {
-      console.log(`[${nodeId}] 🔘 Rendering multiple choice options:`, node.options.map(opt => opt.text));
-      const optionsDiv = document.createElement('div');
-      optionsDiv.id = 'rankved-flow-options';
-      optionsDiv.style.margin = '4px 0';
-      optionsDiv.style.display = 'flex';
-      optionsDiv.style.flexDirection = 'column';
-      optionsDiv.style.gap = '3px';
-      node.options.forEach(option => {
-        const btn = document.createElement('button');
-        btn.textContent = option.text;
-        btn.style.background = getAppearance().primaryColor;
-        btn.style.color = '#fff';
-        btn.style.border = 'none';
-        btn.style.width = '60%';
-        btn.style.alignSelf = 'flex-start';
-        btn.style.borderRadius = '14px 14px 4px 14px';
-        btn.style.padding = '6px 10px';
-        btn.style.fontSize = '11px';
-        btn.style.cursor = 'pointer';
-        btn.onclick = function () {
-          console.log(`[${nodeId}] 🎯 User selected option: "${option.text}"`);
-          addMessage(option.text, 'user');
-          // Track user input
-          questionFlowState.userInputs[node.id] = option.text;
-          questionFlowState.currentNodeId = node.id;
-          if (option.action === 'collect-lead') {
-            if (config.leadCollectionEnabled) {
-              addMessage('Thank you! Please provide your contact information so we can help you better.', 'bot');
-              optionsDiv.remove();
-              renderLeadForm();
-            } else {
-              addMessage('Is there anything we can help you with?', 'bot');
-              optionsDiv.remove();
-            }
-            return;
-          }
-          if (option.action === 'end-chat') {
-            addMessage('Thank you for using our service! Have a great day!', 'bot');
-            optionsDiv.remove();
-            return;
-          }
-          if (option.nextId) {
-            console.log(`[${nodeId}] 🔄 Navigating to next node:`, option.nextId);
-            optionsDiv.remove();
-            const nextNode = config.questionFlow.nodes.find(n => n.id === option.nextId);
-            if (nextNode) {
-              questionFlowState.currentNodeId = nextNode.id;
-              setTimeout(() => renderQuestionNode(nextNode), 500);
-            } else {
-              console.error(`[${nodeId}] ❌ Next node not found:`, option.nextId);
-            }
-          }
-        };
-        optionsDiv.appendChild(btn);
+
+    // Normal message flow
+    try {
+      const history = chatHistory.slice(-4);
+      const res = await fetch((config.apiUrl || window.location.origin) + '/api/intent-detect', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: userInput, history }),
       });
-      messagesContainer.appendChild(optionsDiv);
-      scrollToBottom(messagesContainer);
-    } else if (node.type === 'open-ended') {
-      console.log(`[${nodeId}] 📝 Setting up open-ended input`);
-      // Instead of rendering a custom input, set a flag to use the main chat input
-      questionFlowState.awaitingOpenEnded = node;
-      // Optionally, visually indicate to the user to answer below (could highlight input, etc.)
-    } else if (node.type === 'contact-form' && config.leadCollectionEnabled) {
-      console.log(`[${nodeId}] 📝 Rendering contact form`);
-      const inputDiv = document.createElement('div');
-      inputDiv.id = 'rankved-flow-input';
-      inputDiv.style.margin = '8px 0';
-      inputDiv.style.display = 'flex';
-      inputDiv.style.flexDirection = 'column';
-      inputDiv.style.gap = '6px';
-      const nameInput = document.createElement('input');
-      nameInput.type = 'text';
-      nameInput.placeholder = 'Your Name';
-      nameInput.style.setProperty('padding', '6px 12px', 'important');
-      nameInput.style.setProperty('border-radius', '6px', 'important');
-      nameInput.style.setProperty('border', '1px solid #e2e8f0', 'important');
-      nameInput.style.setProperty('font-size', '11px', 'important');
-      nameInput.style.setProperty('background', '#fff', 'important');
-      nameInput.style.setProperty('color', '#222', 'important');
-      nameInput.style.setProperty('outline', 'none', 'important');
-      nameInput.style.setProperty('box-shadow', '0 1px 2px rgba(0,0,0,0.04)', 'important');
-      nameInput.style.setProperty('margin', '0', 'important');
-      nameInput.style.setProperty('width', '90%', 'important');
-      const emailInput = document.createElement('input');
-      emailInput.type = 'email';
-      emailInput.placeholder = 'Your Email';
-      emailInput.style.setProperty('padding', '6px 12px', 'important');
-      emailInput.style.setProperty('border-radius', '6px', 'important');
-      emailInput.style.setProperty('border', '1px solid #e2e8f0', 'important');
-      emailInput.style.setProperty('font-size', '11px', 'important');
-      emailInput.style.setProperty('background', '#fff', 'important');
-      emailInput.style.setProperty('color', '#222', 'important');
-      emailInput.style.setProperty('outline', 'none', 'important');
-      emailInput.style.setProperty('box-shadow', '0 1px 2px rgba(0,0,0,0.04)', 'important');
-      emailInput.style.setProperty('margin', '0', 'important');
-      emailInput.style.setProperty('width', '90%', 'important');
-      const phoneInput = document.createElement('input');
-      phoneInput.type = 'tel';
-      phoneInput.placeholder = 'Your Mobile Number';
-      phoneInput.style.setProperty('padding', '6px 12px', 'important');
-      phoneInput.style.setProperty('border-radius', '6px', 'important');
-      phoneInput.style.setProperty('border', '1px solid #e2e8f0', 'important');
-      phoneInput.style.setProperty('font-size', '11px', 'important');
-      phoneInput.style.setProperty('background', '#fff', 'important');
-      phoneInput.style.setProperty('color', '#222', 'important');
-      phoneInput.style.setProperty('outline', 'none', 'important');
-      phoneInput.style.setProperty('box-shadow', '0 1px 2px rgba(0,0,0,0.04)', 'important');
-      phoneInput.style.setProperty('margin', '0', 'important');
-      phoneInput.style.setProperty('width', '90%', 'important');
-      // Add consent checkbox
-      const consentDiv = document.createElement('div');
-      consentDiv.style.setProperty('display', 'flex', 'important');
-      consentDiv.style.setProperty('align-items', 'center', 'important');
-      consentDiv.style.setProperty('gap', '8px', 'important');
-      consentDiv.style.setProperty('margin', '0', 'important');
-      consentDiv.style.setProperty('padding', '0', 'important');
-      const consentCheckbox = document.createElement('input');
-      consentCheckbox.type = 'checkbox';
-      consentCheckbox.id = 'rankved-consent-checkbox';
-      const consentLabel = document.createElement('label');
-      consentLabel.htmlFor = 'rankved-consent-checkbox';
-      consentLabel.textContent = 'I consent to be contacted.';
-      consentLabel.style.setProperty('font-size', '11px', 'important');
-      consentLabel.style.setProperty('color', '#222', 'important');
-      consentLabel.style.setProperty('margin', '0', 'important');
-      consentLabel.style.setProperty('padding', '0', 'important');
-      consentDiv.appendChild(consentCheckbox);
-      consentDiv.appendChild(consentLabel);
-      const sendBtn = document.createElement('button');
-      sendBtn.textContent = 'Send';
-      sendBtn.style.setProperty('background', getAppearance().primaryColor, 'important');
-      sendBtn.style.setProperty('color', '#fff', 'important');
-      sendBtn.style.setProperty('border', 'none', 'important');
-      sendBtn.style.setProperty('border-radius', '10px', 'important');
-      sendBtn.style.setProperty('padding', '6px 10px', 'important');
-      sendBtn.style.setProperty('font-size', '14px', 'important');
-      sendBtn.style.setProperty('cursor', 'pointer', 'important');
-      sendBtn.style.setProperty('margin', '0', 'important');
-      sendBtn.style.setProperty('width', '100%', 'important');
-      sendBtn.onclick = async function () {
-        if (!nameInput.value.trim() || !emailInput.value.trim() || !phoneInput.value.trim() || !consentCheckbox.checked) return;
-        addMessage(`Name: ${nameInput.value}, Email: ${emailInput.value}, Phone: ${phoneInput.value}, Consent: Yes`, 'user');
-        sendBtn.disabled = true;
-        // --- Send lead data to backend (public endpoint) ---
-        try {
-          let apiUrl =
-            (typeof window !== 'undefined' && window.VITE_API_URL) ? window.VITE_API_URL
-              : (config.apiUrl || (window.CHATBOT_CONFIG && window.CHATBOT_CONFIG.apiUrl) || window.location.origin);
-          const chatbotId = config.chatbotId || (window.CHATBOT_CONFIG && window.CHATBOT_CONFIG.chatbotId);
-          if (!chatbotId) {
-            addMessage('Chatbot ID is missing. Please refresh the page.', 'bot');
-            return;
-          }
-          // Build context from questionFlowState (add more if needed)
-          const context = { questionFlowState };
-          const res = await fetch(apiUrl + '/api/chat/' + chatbotId + '/leads', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              name: nameInput.value,
-              email: emailInput.value,
-              phone: phoneInput.value,
-              consentGiven: consentCheckbox.checked,
-              source: 'chat_widget',
-              conversationContext: context // <-- send context here
-            })
-          });
-          if (res.ok) {
-            addMessage('Thank you! Our team will contact you soon.', 'bot');
-          } else {
-            addMessage('Failed to submit your info. Please try again later.', 'bot');
-          }
-        } catch (e) {
-          addMessage('Failed to submit your info. Please try again later.', 'bot');
-        }
-      };
-      inputDiv.appendChild(nameInput);
-      inputDiv.appendChild(emailInput);
-      inputDiv.appendChild(phoneInput);
-      inputDiv.appendChild(consentDiv);
-      inputDiv.appendChild(sendBtn);
-      messagesContainer.appendChild(inputDiv);
-      scrollToBottom(messagesContainer);
-    }
-    if (node.type === 'statement' && node.nextId) {
-      console.log(`[${nodeId}] 🔄 Statement node with nextId, scheduling next node:`, node.nextId);
-      setTimeout(() => {
-        const nextNode = config.questionFlow.nodes.find(n => n.id === node.nextId);
-        if (nextNode) {
-          questionFlowState.currentNodeId = nextNode.id;
-          renderQuestionNode(nextNode);
+      if (res.ok) {
+        const data = await res.json();
+        const bot = data.intent;
+        addMessage(bot.message_text, 'bot');
+        chatHistory.push({ role: 'bot', content: bot.message_text });
+        if (bot.action_collect_contact_info && bot.requested_contact_field) {
+          awaitingContactInfo = { field: bot.requested_contact_field };
         } else {
-          console.error(`[${nodeId}] ❌ Next node not found:`, node.nextId);
+          awaitingContactInfo = null;
         }
-      }, 900); // 900ms delay for smoothness
+      } else {
+        addMessage('Sorry, I could not connect to the server.', 'bot');
+        chatHistory.push({ role: 'bot', content: 'Sorry, I could not connect to the server.' });
+      }
+    } catch {
+      addMessage('Sorry, I could not connect to the server.', 'bot');
+      chatHistory.push({ role: 'bot', content: 'Sorry, I could not connect to the server.' });
     }
   }
 
+  // On initial load, fetch the bot's hello message
+  async function loadInitialBotMessage() {
+    try {
+      const res = await fetch((config.apiUrl || window.location.origin) + '/api/intent-detect', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: 'hello', history: [] }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const bot = data.intent;
+        addMessage(bot.message_text, 'bot');
+        chatHistory.push({ role: 'bot', content: bot.message_text });
+        if (bot.action_collect_contact_info && bot.requested_contact_field) {
+          awaitingContactInfo = { field: bot.requested_contact_field };
+        } else {
+          awaitingContactInfo = null;
+        }
+      } else {
+        addMessage('Hello! How can I help you today?', 'bot');
+        chatHistory.push({ role: 'bot', content: 'Hello! How can I help you today?' });
+      }
+    } catch {
+      addMessage('Hello! How can I help you today?', 'bot');
+      chatHistory.push({ role: 'bot', content: 'Hello! How can I help you today?' });
+    }
+  }
+
+  // Replace old sendMessage logic with new stateless logic
+  window.sendMessageStateless = sendMessageStateless;
+  window.loadInitialBotMessage = loadInitialBotMessage;
+
+  // On chat open, load initial bot message
+  // (Call loadInitialBotMessage() when chat window is created)
   // Open chat window with animation
   async function openChat() {
     // console.log("hello")
@@ -650,12 +515,14 @@
     // console.log('[RankVed Chat] openChat: questionFlowEnabled:', config.questionFlowEnabled, 'questionFlow:', config.questionFlow, bubble.style);
     // console.log()
     if (config.questionFlowEnabled && config.questionFlow && Array.isArray(config.questionFlow.nodes) && config.questionFlow.nodes.length > 0) {
-      resetQuestionFlow();
-      const startNode = config.questionFlow.nodes.find(n => n.id === 'start') || config.questionFlow.nodes[0];
-      if (startNode) {
-        questionFlowState.currentNodeId = startNode.id;
-        setTimeout(() => renderQuestionNode(startNode), 500);
-      }
+      // resetQuestionFlow(); // No longer needed
+      // const startNode = config.questionFlow.nodes.find(n => n.id === 'start') || config.questionFlow.nodes[0];
+      // if (startNode) {
+      //   questionFlowState.currentNodeId = startNode.id;
+      //   setTimeout(() => renderQuestionNode(startNode), 500);
+      // }
+      // If question flow is enabled, load initial bot message
+      await loadInitialBotMessage();
     } else {
       addMessage(config.welcomeMessage || 'Hello! How can I help you today?', 'bot');
       showSuggestions();
@@ -664,9 +531,9 @@
       closeChat();
       if (bubble) bubble.style.display = 'flex'; // Show bubble when chat is closed
     };
-    chatWindow.querySelector('#rankved-send-btn').onclick = sendMessage;
+    chatWindow.querySelector('#rankved-send-btn').onclick = sendMessageStateless;
     chatWindow.querySelector('#rankved-input').onkeydown = function (e) {
-      if (e.key === 'Enter') sendMessage();
+      if (e.key === 'Enter') sendMessageStateless(this.value);
     };
   }
 
@@ -713,433 +580,21 @@
     if (oldLoading) oldLoading.remove();
   }
 
-  // Send message to backend
-  async function sendMessage() {
-    const requestId = Date.now().toString();
-    console.log(`[${requestId}] 🚀 Send message started`);
-    
-    const input = chatWindow.querySelector('#rankved-input');
-    const text = input.value.trim();
-    if (!text) {
-      console.log(`[${requestId}] ❌ Empty message, returning`);
-      return;
-    }
-    if (!config.chatbotId) {
-      console.error(`[${requestId}] ❌ Chatbot ID missing:`, {
-        configChatbotId: config.chatbotId,
-        windowConfig: window.CHATBOT_CONFIG
-      });
-      addMessage('Chatbot ID is missing. Please refresh the page.', 'bot');
-      return;
-    }
-    
-    console.log(`[${requestId}] 📝 Processing message:`, {
-      textLength: text.length,
-      textPreview: text.substring(0, 50) + (text.length > 50 ? '...' : ''),
-      chatbotId: config.chatbotId,
-      awaitingOpenEnded: !!questionFlowState.awaitingOpenEnded
-    });
-    
-    // If waiting for open-ended node answer, handle it here
-    if (questionFlowState.awaitingOpenEnded) {
-      console.log(`[${requestId}] 🔄 Processing open-ended node response`);
-      const node = questionFlowState.awaitingOpenEnded;
-      addMessage(text, 'user');
-      questionFlowState.userInputs[node.id] = text;
-      questionFlowState.currentNodeId = node.id;
-      input.value = '';
-      questionFlowState.awaitingOpenEnded = null;
-      showLoadingMessage();
-      // Send to backend for AI response
-      let context = {
-        messageCount: (questionFlowState.history?.length || 0) + 1,
-        manualMessageCount: (questionFlowState.history?.length || 0) + 1,
-        isFlowBased: true,
-        usingSuggestions: false,
-        flowState: questionFlowState,
-      };
-      try {
-        console.log(`[${requestId}] 📡 Making API call for open-ended node`);
-        const res = await fetch(`${config.apiUrl || ''}/api/chat/${config.chatbotId}/message`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message: text, context })
-        });
-        removeLoadingMessage();
-        if (res.ok) {
-          const data = await res.json();
-          console.log(`[${requestId}] ✅ Open-ended API response:`, {
-            responseLength: data.message?.length || 0,
-            responseType: data.type,
-            hasTriggeredFlowNode: !!data.triggeredFlowNode
-          });
-          addMessage(data.message || '...', 'bot');
-          // After AI response, show follow-up options if aiHandling is set
-          if (node.aiHandling) {
-            console.log(`[${requestId}] 🔄 Showing follow-up options for AI handling`);
-            setTimeout(() => {
-              // Show follow-up options
-              const followUpDiv = document.createElement('div');
-              followUpDiv.id = 'rankved-flow-options';
-              followUpDiv.style.margin = '8px 0';
-              followUpDiv.style.display = 'flex';
-              followUpDiv.style.flexDirection = 'column';
-              followUpDiv.style.gap = '6px';
-              [
-                { text: 'Tell me more', nextId: node.nextId },
-                { text: 'Contact support', action: 'collect-lead' },
-                { text: 'End chat', action: 'end-chat' }
-              ].forEach(opt => {
-                const btn = document.createElement('button');
-                btn.textContent = opt.text;
-                btn.style.background = getAppearance().primaryColor;
-                btn.style.color = '#fff';
-                btn.style.border = 'none';
-                btn.style.borderRadius = '6px';
-                btn.style.padding = '8px 12px';
-                btn.style.fontSize = '14px';
-                btn.style.cursor = 'pointer';
-                btn.onclick = function () {
-                  addMessage(opt.text, 'user');
-                  questionFlowState.userInputs[node.id + '_followup'] = opt.text;
-                  questionFlowState.currentNodeId = node.id;
-                  if (opt.action === 'collect-lead') {
-                    addMessage('Thank you! Please provide your contact information so we can help you better.', 'bot');
-                    followUpDiv.remove();
-                    renderLeadForm();
-                    return;
-                  }
-                  if (opt.action === 'end-chat') {
-                    addMessage('Thank you for using our service! Have a great day!', 'bot');
-                    followUpDiv.remove();
-                    return;
-                  }
-                  if (opt.nextId) {
-                    followUpDiv.remove();
-                    const nextNode = config.questionFlow.nodes.find(n => n.id === opt.nextId);
-                    if (nextNode) {
-                      questionFlowState.currentNodeId = nextNode.id;
-                      setTimeout(() => renderQuestionNode(nextNode), 500);
-                    }
-                  }
-                };
-                followUpDiv.appendChild(btn);
-              });
-              const messagesContainer = document.getElementById('rankved-messages');
-              messagesContainer.appendChild(followUpDiv);
-              scrollToBottom(messagesContainer);
-            }, 500);
-          } else if (node.nextId) {
-            const nextNode = config.questionFlow.nodes.find(n => n.id === node.nextId);
-            if (nextNode) {
-              questionFlowState.currentNodeId = nextNode.id;
-              setTimeout(() => renderQuestionNode(nextNode), 500);
-            }
-          }
-        } else {
-          console.error(`[${requestId}] ❌ Open-ended API error:`, res.status, res.statusText);
-          addMessage('Sorry, there was a problem. Please try again.', 'bot');
-        }
-      } catch (e) {
-        console.error(`[${requestId}] ❌ Open-ended API exception:`, e);
-        removeLoadingMessage();
-        addMessage('Sorry, there was a problem. Please try again.', 'bot');
-      }
-      return;
-    }
-    
-    console.log(`[${requestId}] 📝 Adding user message to UI`);
-    addMessage(text, 'user');
-    input.value = '';
-    showLoadingMessage(); // Show loading indicator
-    
-    // Build context for backend
-    let context = {
-      messageCount: (questionFlowState.history?.length || 0) + 1,
-      manualMessageCount: (questionFlowState.history?.length || 0) + 1,
-      isFlowBased: !!(config.questionFlowEnabled && config.questionFlow && Array.isArray(config.questionFlow.nodes) && config.questionFlow.nodes.length > 0),
-      usingSuggestions: false,
-      flowState: questionFlowState,
-    };
-    
-    console.log(`[${requestId}] 📡 Making API call with context:`, {
-      messageLength: text.length,
-      context: {
-        messageCount: context.messageCount,
-        manualMessageCount: context.manualMessageCount,
-        isFlowBased: context.isFlowBased,
-        usingSuggestions: context.usingSuggestions
-      }
-    });
-    
-    try {
-      const res = await fetch(`${config.apiUrl || ''}/api/chat/${config.chatbotId}/message`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: text, context })
-      });
-      removeLoadingMessage(); // Remove loading indicator
-      
-      if (res.ok) {
-        const data = await res.json();
-        console.log(`[${requestId}] ✅ API response received:`, {
-          responseLength: data.message?.length || 0,
-          responseType: data.type,
-          shouldCollectLead: data.shouldCollectLead,
-          hasTriggeredFlowNode: !!data.triggeredFlowNode,
-          triggeredNodeId: data.triggeredFlowNode?.id,
-          hasAiTriggeredNode: !!data.aiTriggeredNode,
-          aiTriggeredNodeId: data.aiTriggeredNode?.id
-        });
-        
-        // Show AI response first
-        console.log(`[${requestId}] 📝 Adding AI response to UI`);
-        addMessage(data.message || '...', 'bot');
-        
-        // Handle triggered flow node (applied in background, AI response already shown)
-        if (data.triggeredFlowNode) {
-          console.log(`[${requestId}] 🎯 Processing triggered flow node:`, {
-            nodeId: data.triggeredFlowNode.id,
-            nodeType: data.triggeredFlowNode.type,
-            nodeQuestion: data.triggeredFlowNode.question || data.triggeredFlowNode.text,
-            responseMessage: data.message,
-            isAiTriggered: !!data.aiTriggeredNode && data.aiTriggeredNode.id === data.triggeredFlowNode.id
-          });
-          
-          // AI response is already shown, now apply the flow node in background
-          console.log(`[${requestId}] 🔄 Applying flow node in background (AI response already shown)`);
-          
-          // Remove any existing flow elements to prevent duplicates
-          const existingOptions = document.getElementById('rankved-flow-options');
-          if (existingOptions) {
-            console.log(`[${requestId}] 🧹 Removing existing flow options`);
-            existingOptions.remove();
-          }
-          const existingInput = document.getElementById('rankved-flow-input');
-          if (existingInput) {
-            console.log(`[${requestId}] 🧹 Removing existing flow input`);
-            existingInput.remove();
-          }
-          
-          // If it's a contact form, show the form
-          if (data.triggeredFlowNode.type === 'contact-form') {
-            console.log(`[${requestId}] 📝 Rendering contact form for triggered node:`, data.triggeredFlowNode.id);
-            setTimeout(() => {
-              console.log(`[${requestId}] 🎨 Calling renderLeadForm()`);
-              renderLeadForm();
-            }, 500);
-          }
-          // If it's a multiple choice, show the options
-          else if (data.triggeredFlowNode.type === 'multiple-choice' && data.triggeredFlowNode.options) {
-            console.log(`[${requestId}] 🔘 Rendering multiple choice options for triggered node:`, {
-              nodeId: data.triggeredFlowNode.id,
-              optionsCount: data.triggeredFlowNode.options.length,
-              options: data.triggeredFlowNode.options.map(opt => opt.text)
-            });
-            
-            setTimeout(() => {
-              const optionsDiv = document.createElement('div');
-              optionsDiv.id = 'rankved-flow-options';
-              optionsDiv.style.margin = '4px 0';
-              optionsDiv.style.display = 'flex';
-              optionsDiv.style.flexDirection = 'column';
-              optionsDiv.style.gap = '3px';
-              
-              data.triggeredFlowNode.options.forEach(opt => {
-                const btn = document.createElement('button');
-                btn.textContent = opt.text;
-                btn.style.background = getAppearance().primaryColor;
-                btn.style.color = '#fff';
-                btn.style.border = 'none';
-                btn.style.width = '60%';
-                btn.style.alignSelf = 'flex-start';
-                btn.style.borderRadius = '14px 14px 4px 14px';
-                btn.style.padding = '6px 10px';
-                btn.style.fontSize = '11px';
-                btn.style.cursor = 'pointer';
-                btn.onclick = function () {
-                  console.log(`[${requestId}] 🎯 User selected option: "${opt.text}" from triggered node:`, data.triggeredFlowNode.id);
-                  addMessage(opt.text, 'user');
-                  // Handle option selection
-                  if (opt.nextId) {
-                    console.log(`[${requestId}] 🔄 Navigating to next node:`, opt.nextId);
-                    const nextNode = config.questionFlow.nodes.find(n => n.id === opt.nextId);
-                    if (nextNode) {
-                      questionFlowState.currentNodeId = nextNode.id;
-                      setTimeout(() => renderQuestionNode(nextNode), 500);
-                    } else {
-                      console.log(`[${requestId}] ❌ Next node not found:`, opt.nextId);
-                    }
-                  }
-                  optionsDiv.remove();
-                };
-                optionsDiv.appendChild(btn);
-              });
-              
-              const messagesContainer = document.getElementById('rankved-messages');
-              messagesContainer.appendChild(optionsDiv);
-              scrollToBottom(messagesContainer);
-            }, 500);
-          }
-        }
-        // Handle regular form/lead collection
-        else if ((data.type === 'form' || data.shouldCollectLead) && config.leadCollectionEnabled) {
-          console.log(`[${requestId}] 📝 Rendering lead form (regular flow)`);
-          renderLeadForm();
-        } else {
-          console.log(`[${requestId}] 📝 No additional flow processing needed`);
-        }
-      } else {
-        console.error(`[${requestId}] ❌ API error:`, res.status, res.statusText);
-        addMessage('Sorry, there was a problem. Please try again.', 'bot');
-      }
-    } catch (e) {
-      console.error(`[${requestId}] ❌ API exception:`, e);
-      removeLoadingMessage(); // Remove loading indicator on error
-      addMessage('Sorry, there was a problem. Please try again.', 'bot');
-    }
-  }
-
-  // Render lead collection form (when backend says to collect lead)
-  function renderLeadForm() {
-    const messagesContainer = document.getElementById('rankved-messages');
-    if (!messagesContainer) return;
-    
-    // Remove any previous input and options to prevent duplicates
-    const oldInput = document.getElementById('rankved-flow-input');
-    if (oldInput) oldInput.remove();
-    const oldOptions = document.getElementById('rankved-flow-options');
-    if (oldOptions) oldOptions.remove();
-    const inputDiv = document.createElement('div');
-    inputDiv.id = 'rankved-flow-input';
-    inputDiv.style.margin = '8px 0';
-    inputDiv.style.display = 'flex';
-    inputDiv.style.flexDirection = 'column';
-    inputDiv.style.gap = '6px';
-    const nameInput = document.createElement('input');
-    nameInput.type = 'text';
-    nameInput.placeholder = 'Your Name';
-    nameInput.style.setProperty('padding', '6px 12px', 'important');
-    nameInput.style.setProperty('border-radius', '6px', 'important');
-    nameInput.style.setProperty('border', '1px solid #e2e8f0', 'important');
-    nameInput.style.setProperty('font-size', '11px', 'important');
-    nameInput.style.setProperty('background', '#fff', 'important');
-    nameInput.style.setProperty('color', '#222', 'important');
-    nameInput.style.setProperty('outline', 'none', 'important');
-    nameInput.style.setProperty('box-shadow', '0 1px 2px rgba(0,0,0,0.04)', 'important');
-    nameInput.style.setProperty('margin', '0', 'important');
-    nameInput.style.setProperty('width', '90%', 'important');
-    const emailInput = document.createElement('input');
-    emailInput.type = 'email';
-    emailInput.placeholder = 'Your Email';
-    emailInput.style.setProperty('padding', '6px 12px', 'important');
-    emailInput.style.setProperty('border-radius', '6px', 'important');
-    emailInput.style.setProperty('border', '1px solid #e2e8f0', 'important');
-    emailInput.style.setProperty('font-size', '11px', 'important');
-    emailInput.style.setProperty('background', '#fff', 'important');
-    emailInput.style.setProperty('color', '#222', 'important');
-    emailInput.style.setProperty('outline', 'none', 'important');
-    emailInput.style.setProperty('box-shadow', '0 1px 2px rgba(0,0,0,0.04)', 'important');
-    emailInput.style.setProperty('margin', '0', 'important');
-    emailInput.style.setProperty('width', '90%', 'important');
-    const phoneInput = document.createElement('input');
-    phoneInput.type = 'tel';
-    phoneInput.placeholder = 'Your Mobile Number';
-    phoneInput.style.setProperty('padding', '6px 12px', 'important');
-    phoneInput.style.setProperty('border-radius', '6px', 'important');
-    phoneInput.style.setProperty('border', '1px solid #e2e8f0', 'important');
-    phoneInput.style.setProperty('font-size', '11px', 'important');
-    phoneInput.style.setProperty('background', '#fff', 'important');
-    phoneInput.style.setProperty('color', '#222', 'important');
-    phoneInput.style.setProperty('outline', 'none', 'important');
-    phoneInput.style.setProperty('box-shadow', '0 1px 2px rgba(0,0,0,0.04)', 'important');
-    phoneInput.style.setProperty('margin', '0', 'important');
-    phoneInput.style.setProperty('width', '90%', 'important');
-    const consentDiv = document.createElement('div');
-    consentDiv.style.setProperty('display', 'flex', 'important');
-    consentDiv.style.setProperty('align-items', 'center', 'important');
-    consentDiv.style.setProperty('gap', '8px', 'important');
-    consentDiv.style.setProperty('margin', '0', 'important');
-    consentDiv.style.setProperty('padding', '0', 'important');
-    const consentCheckbox = document.createElement('input');
-    consentCheckbox.type = 'checkbox';
-    consentCheckbox.id = 'rankved-consent-checkbox';
-    const consentLabel = document.createElement('label');
-    consentLabel.htmlFor = 'rankved-consent-checkbox';
-    consentLabel.textContent = 'I consent to be contacted.';
-    consentLabel.style.setProperty('font-size', '11px', 'important');
-    consentLabel.style.setProperty('color', '#222', 'important');
-    consentLabel.style.setProperty('margin', '0', 'important');
-    consentLabel.style.setProperty('padding', '0', 'important');
-    consentDiv.appendChild(consentCheckbox);
-    consentDiv.appendChild(consentLabel);
-    const sendBtn = document.createElement('button');
-    sendBtn.textContent = 'Send';
-    sendBtn.style.setProperty('background', getAppearance().primaryColor, 'important');
-    sendBtn.style.setProperty('color', '#fff', 'important');
-    sendBtn.style.setProperty('border', 'none', 'important');
-    sendBtn.style.setProperty('border-radius', '10px', 'important');
-    sendBtn.style.setProperty('padding', '6px 10px', 'important');
-    sendBtn.style.setProperty('font-size', '14px', 'important');
-    sendBtn.style.setProperty('cursor', 'pointer', 'important');
-    sendBtn.style.setProperty('margin', '0', 'important');
-    sendBtn.style.setProperty('width', '100%', 'important');
-    sendBtn.onclick = async function () {
-      if (!nameInput.value.trim() || !emailInput.value.trim() || !phoneInput.value.trim() || !consentCheckbox.checked) return;
-      addMessage(`Name: ${nameInput.value}, Email: ${emailInput.value}, Phone: ${phoneInput.value}, Consent: Yes`, 'user');
-      sendBtn.disabled = true;
-      try {
-        let apiUrl = (typeof window !== 'undefined' && window.VITE_API_URL) ? window.VITE_API_URL : (config.apiUrl || (window.CHATBOT_CONFIG && window.CHATBOT_CONFIG.apiUrl) || window.location.origin);
-        const chatbotId = config.chatbotId || (window.CHATBOT_CONFIG && window.CHATBOT_CONFIG.chatbotId);
-        if (!chatbotId) {
-          addMessage('Chatbot ID is missing. Please refresh the page.', 'bot');
-          return;
-        }
-        // Build context from questionFlowState
-        const context = { questionFlowState };
-        const res = await fetch(apiUrl + '/api/chat/' + chatbotId + '/leads', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            name: nameInput.value,
-            email: emailInput.value,
-            phone: phoneInput.value,
-            consentGiven: consentCheckbox.checked,
-            source: 'chat_widget',
-            conversationContext: context
-          })
-        });
-        if (res.ok) {
-          addMessage('Thank you! Our team will contact you soon.', 'bot');
-        } else {
-          addMessage('Failed to submit your info. Please try again later.', 'bot');
-        }
-      } catch (e) {
-        addMessage('Failed to submit your info. Please try again later.', 'bot');
-      }
-    };
-    inputDiv.appendChild(nameInput);
-    inputDiv.appendChild(emailInput);
-    inputDiv.appendChild(phoneInput);
-    inputDiv.appendChild(consentDiv);
-    inputDiv.appendChild(sendBtn);
-    messagesContainer.appendChild(inputDiv);
-    scrollToBottom(messagesContainer);
-  }
-
   // Initialize
   async function init() {
     injectStyles();
     await fetchChatbotConfig(); // Wait for config to load before rendering bubble
     // If question flow is enabled and present, preload the first node as a preview (optional)
     if (config.questionFlowEnabled && config.questionFlow && Array.isArray(config.questionFlow.nodes) && config.questionFlow.nodes.length > 0) {
-      resetQuestionFlow();
-      const startNode = config.questionFlow.nodes.find(n => n.id === 'start') || config.questionFlow.nodes[0];
-      if (startNode) {
-        questionFlowState.currentNodeId = startNode.id;
-        // Optionally, show a preview or indicator here
-        // e.g., addMessage('Ready for a guided conversation!', 'bot');
-      }
+      // resetQuestionFlow(); // No longer needed
+      // const startNode = config.questionFlow.nodes.find(n => n.id === 'start') || config.questionFlow.nodes[0];
+      // if (startNode) {
+      //   questionFlowState.currentNodeId = startNode.id;
+      //   // Optionally, show a preview or indicator here
+      //   // e.g., addMessage('Ready for a guided conversation!', 'bot');
+      // }
+      // If question flow is enabled, load initial bot message
+      await loadInitialBotMessage();
     } else {
       if (!config.questionFlowEnabled) console.log('Question flow not enabled');
       if (!config.questionFlow) console.log('No question flow data');

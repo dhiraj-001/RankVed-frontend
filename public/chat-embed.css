@@ -669,3 +669,20 @@
     z-index: 2147483647 !important;
   }
 }
+
+/* Blend effect for chat header */
+#rankved-chat-window[data-rankved-widget] > div:first-child {
+  background: linear-gradient(90deg, rgba(99,102,241,0.85) 0%, rgba(255,255,255,0.7) 100%);
+  backdrop-filter: blur(12px) saturate(1.2);
+  -webkit-backdrop-filter: blur(12px) saturate(1.2);
+  box-shadow: 0 4px 24px 0 rgba(99,102,241,0.10);
+  border-bottom: 1px solid rgba(99,102,241,0.10);
+}
+
+/* Blend effect for chatbox (messages area) */
+#rankved-chat-window[data-rankved-widget] #rankved-messages {
+  background: linear-gradient(135deg, rgba(255,255,255,0.85) 0%, rgba(99,102,241,0.08) 100%);
+  backdrop-filter: blur(8px) saturate(1.1);
+  -webkit-backdrop-filter: blur(8px) saturate(1.1);
+  border-radius: 0 0 16px 16px;
+}

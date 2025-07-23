@@ -21,6 +21,7 @@ import ChatStandalone from "@/pages/chat-standalone";
 import NotFound from "@/pages/not-found";
 import { SignedIn, SignedOut, SignIn } from '@clerk/clerk-react';
 import Profile from "./pages/profile";
+import ChatTest from "./pages/chat-test";
 function Router() {
   return (
     <Switch>
@@ -39,6 +40,7 @@ function Router() {
       <Route path="/chat-embed/:chatbotId?" component={ChatEmbed} />
       <Route path="/chat-widget/:chatbotId" component={ChatWidget} />
       <Route path="/chat/:chatbotId" component={ChatStandalone} />
+      <Route path="/chat-test" component={ChatTest} />
       <Route component={NotFound} />
     </Switch>
   );

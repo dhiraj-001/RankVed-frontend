@@ -145,7 +145,7 @@ export default function Dashboard() {
       change: (stats?.totalLeads ?? 0) > 0 ? 'Active' : 'No data',
       trend: (stats?.totalLeads ?? 0) > 0 ? 'up' : 'neutral',
       icon: Users,
-      color: 'emerald',
+      color: 'blue',
     },
     {
       title: 'Response Rate',
@@ -153,7 +153,7 @@ export default function Dashboard() {
       change: 'Real-time',
       trend: 'neutral',
       icon: TrendingUp,
-      color: 'violet',
+      color: 'blue',
     },
     {
       title: 'Active Chatbots',
@@ -161,7 +161,7 @@ export default function Dashboard() {
       change: 'No change',
       trend: 'neutral',
       icon: Bot,
-      color: 'amber',
+      color: 'blue',
     },
   ];
 
@@ -212,7 +212,7 @@ export default function Dashboard() {
   return (
     <>
 
-      <div className="flex-1 bg-gradient-to-br from-blue-50 to-white min-h-screen">
+      <div className="flex-1 bg-gradient-to-br from-blue-100 to-blue-50 min-h-screen">
         {/* Chatbot Creation Dialog */}
         <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
           <DialogContent className="sm:max-w-[430px] bg-white rounded-2xl shadow-2xl border border-slate-200 p-0 overflow-hidden">
@@ -403,8 +403,8 @@ export default function Dashboard() {
               <Card key={i} className="rounded-2xl shadow-md border border-slate-100 bg-white hover:shadow-xl transition-shadow duration-200 group">
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                   <CardTitle className="text-sm font-medium text-slate-500">{stat.title}</CardTitle>
-                  <div className={`rounded-full p-3 bg-${stat.color}-100 group-hover:scale-110 transition-transform`}>
-                    <stat.icon className={`h-6 w-6 text-${stat.color}-600`} />
+                  <div className={`rounded-full p-3 bg-blue-100 group-hover:scale-110 transition-transform`}>
+                    <stat.icon className={`h-6 w-6 text-blue-600`} />
                   </div>
                 </CardHeader>
                 <CardContent>
@@ -425,29 +425,29 @@ export default function Dashboard() {
               <div 
                 className={`flex items-center gap-3 mt-4 cursor-pointer select-none p-3 rounded-xl transition-all duration-300 hover:shadow-md ${
                   showChatbots 
-                    ? 'bg-purple-100 border-2 border-purple-300 shadow-lg' 
-                    : 'bg-white border-2 border-slate-200 hover:border-purple-200'
+                    ? 'bg-blue-100 border-2 border-blue-300 shadow-lg' 
+                    : 'bg-white border-2 border-blue-200 hover:border-blue-200'
                 }`} 
                 onClick={() => setShowChatbots(v => !v)}
               >
                 <div className={`p-2 rounded-lg transition-colors duration-300 ${
-                  showChatbots ? 'bg-purple-500 text-white' : 'bg-slate-100 text-slate-600'
+                  showChatbots ? 'bg-blue-500 text-white' : 'bg-blue-100 text-blue-600'
                 }`}>
                   <Bot className="h-5 w-5" />
                 </div>
                 <span className={`font-bold text-lg transition-colors duration-300 ${
-                  showChatbots ? 'text-purple-800' : 'text-slate-800'
+                  showChatbots ? 'text-blue-800' : 'text-blue-800'
                 }`}>Active Chatbots</span>
                 <div className={`ml-auto p-1 rounded-full transition-all duration-300 ${
-                  showChatbots ? 'bg-purple-500 text-white' : 'bg-slate-200 text-slate-600'
+                  showChatbots ? 'bg-blue-500 text-white' : 'bg-blue-200 text-blue-600'
                 }`}>
                   {showChatbots ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                 </div>
               </div>
               <div className={`transition-all duration-700 ease-in-out overflow-hidden ${showChatbots ? 'max-h-[1000px] opacity-100 mt-2' : 'max-h-0 opacity-0 mt-0'}`}>
                 {showChatbots && (
-                  <Card className="shadow-xl rounded-2xl border-0 bg-gradient-to-br from-purple-50/60 via-white/80 to-purple-100/60 relative overflow-hidden">
-                    <div className="absolute left-0 top-0 bottom-0 w-2 bg-purple-400 rounded-l-2xl" />
+                  <Card className="shadow-xl rounded-2xl border-0 bg-gradient-to-br from-blue-50/60 via-white/80 to-blue-100/60 relative overflow-hidden">
+                    <div className="absolute left-0 top-0 bottom-0 w-2 bg-blue-400 rounded-l-2xl" />
                     <CardHeader>
                       <CardTitle className="text-lg font-semibold text-slate-900">Active Chatbots</CardTitle>
                       <p className="text-slate-600">Manage and monitor your deployed chatbots</p>
@@ -480,7 +480,7 @@ export default function Dashboard() {
                               <tr>
                                 <td colSpan={6} className="p-8 text-center">
                                   <div className="flex flex-col items-center justify-center gap-2">
-                                    <Bot className="h-10 w-10 text-purple-200 mb-2" />
+                                    <Bot className="h-10 w-10 text-blue-200 mb-2" />
                                     <span className="text-lg font-semibold text-slate-400">No chatbots found.</span>
                                     <span className="text-sm text-slate-400">Create a chatbot to get started!</span>
                                   </div>
@@ -488,16 +488,16 @@ export default function Dashboard() {
                               </tr>
                             ) : (
                               chatbots?.map((chatbot) => (
-                                <tr key={chatbot.id} className="border-b border-slate-100 hover:bg-purple-100/40 transition-colors group">
+                                <tr key={chatbot.id} className="border-b border-slate-100 hover:bg-blue-100/40 transition-colors group">
                                   <td className="p-4">
                                     <div className="flex items-center space-x-3">
-                                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-200 via-purple-100 to-white flex items-center justify-center shadow-md">
+                                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-200 via-blue-100 to-white flex items-center justify-center shadow-md">
                                         {typeof chatbot.chatWidgetIcon === 'string' && chatbot.chatWidgetIcon.trim() !== '' ? (
                                           <img src={chatbot.chatWidgetIcon} alt="Chatbot Icon" className="w-8 h-8 rounded-full object-cover" />
                                         ) : chatbot.name ? (
-                                          <span className="font-bold text-purple-700 text-lg">{chatbot.name.charAt(0).toUpperCase()}</span>
+                                          <span className="font-bold text-blue-700 text-lg">{chatbot.name.charAt(0).toUpperCase()}</span>
                                         ) : (
-                                          <Bot className="h-5 w-5 text-purple-600" />
+                                          <Bot className="h-5 w-5 text-blue-600" />
                                         )}
                                       </div>
                                       <div>
@@ -507,7 +507,7 @@ export default function Dashboard() {
                                     </div>
                                   </td>
                                   <td className="p-4">
-                                    <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${chatbot.isActive ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'} shadow-sm`}>
+                                    <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${chatbot.isActive ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-500'} shadow-sm`}>
                                       {chatbot.isActive ? 'Active' : 'Paused'}
                                     </span>
                                   </td>
@@ -543,20 +543,20 @@ export default function Dashboard() {
                 className={`flex items-center gap-3 mt-4 cursor-pointer select-none p-3 rounded-xl transition-all duration-300 hover:shadow-md ${
                   showLeads 
                     ? 'bg-blue-100 border-2 border-blue-300 shadow-lg' 
-                    : 'bg-white border-2 border-slate-200 hover:border-blue-200'
+                    : 'bg-white border-2 border-blue-200 hover:border-blue-200'
                 }`} 
                 onClick={() => setShowLeads(v => !v)}
               >
                 <div className={`p-2 rounded-lg transition-colors duration-300 ${
-                  showLeads ? 'bg-blue-500 text-white' : 'bg-slate-100 text-slate-600'
+                  showLeads ? 'bg-blue-500 text-white' : 'bg-blue-100 text-blue-600'
                 }`}>
                   <Users className="h-5 w-5" />
                 </div>
                 <span className={`font-bold text-lg transition-colors duration-300 ${
-                  showLeads ? 'text-blue-800' : 'text-slate-800'
+                  showLeads ? 'text-blue-800' : 'text-blue-800'
                 }`}>Recent Leads</span>
                 <div className={`ml-auto p-1 rounded-full transition-all duration-300 ${
-                  showLeads ? 'bg-blue-500 text-white' : 'bg-slate-200 text-slate-600'
+                  showLeads ? 'bg-blue-500 text-white' : 'bg-blue-200 text-blue-600'
                 }`}>
                   {showLeads ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                 </div>
@@ -626,7 +626,7 @@ export default function Dashboard() {
                                   <td className="p-4">{lead.phone || <span className="text-slate-400 text-sm">No phone</span>}</td>
                                   <td className="p-4">{lead.email || <span className="text-slate-400 text-sm">No email</span>}</td>
                                   <td className="p-4">
-                                    <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${lead.consentGiven ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'} shadow-sm`}>
+                                    <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${lead.consentGiven ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-500'} shadow-sm`}>
                                       {lead.consentGiven ? 'Yes' : 'No'}
                                     </span>
                                   </td>
@@ -690,7 +690,7 @@ export default function Dashboard() {
                       <div className="flex-1 min-w-0">
                         <p className="font-semibold text-slate-900 truncate">{activeChatbot.name || 'Unnamed Chatbot'}</p>
                         <div className="flex items-center gap-2 mt-1">
-                          <span className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${activeChatbot.isActive ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}`}>
+                          <span className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${activeChatbot.isActive ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-500'}`}>
                             {activeChatbot.isActive ? 'Active' : 'Paused'}
                           </span>
                           <span className="text-xs text-slate-500">ID: {activeChatbot.id.slice(0, 8)}...</span>

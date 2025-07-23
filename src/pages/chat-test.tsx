@@ -42,7 +42,6 @@ export default function ChatTest() {
   const [awaitingContactInfo, setAwaitingContactInfo] = useState<null | { field: string }>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const apiUrl = import.meta.env.VITE_API_URL || '';
-  const userId = 'test-user-123';
 
   // Initialize chat with welcome message
   useEffect(() => {
@@ -242,7 +241,7 @@ export default function ChatTest() {
       {/* Chat Messages */}
       <ScrollArea className="flex-1 bg-gradient-to-br from-blue-50/60 via-slate-50 to-blue-100 px-2 md:px-0">
         <div className="p-4 md:p-8 space-y-6 max-w-4xl mx-auto">
-          {messages.map((message, idx) => (
+          {messages.map((message) => (
             <div
               key={message.id}
               className={cn(

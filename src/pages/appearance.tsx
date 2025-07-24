@@ -45,6 +45,7 @@ export default function Appearance() {
     title: string;
     welcomeMessage: string;
     primaryColor: string;
+    secondaryColor: string;
     showWelcomePopup: boolean;
     suggestionButtons: string[];
     suggestionTiming: 'initial' | 'after_welcome' | 'after_first_message' | 'manual';
@@ -56,7 +57,6 @@ export default function Appearance() {
     chatWidgetIcon: string;
     chatWidgetName: string;
     chatWindowAvatar: string;
-    chatWindowStyle: 'modern' | 'classic' | 'minimal' | 'floating';
     chatWindowTheme: 'light' | 'dark' | 'auto';
     borderRadius: number;
     shadowStyle: 'none' | 'soft' | 'medium' | 'strong';
@@ -64,6 +64,7 @@ export default function Appearance() {
     title: '',
     welcomeMessage: '',
     primaryColor: '#6366F1',
+    secondaryColor: '#A7C7E7',
     showWelcomePopup: true,
     suggestionButtons: [],
     suggestionTiming: 'initial',
@@ -75,7 +76,6 @@ export default function Appearance() {
     chatWidgetIcon: '',
     chatWidgetName: 'Support Chat',
     chatWindowAvatar: '',
-    chatWindowStyle: 'modern',
     chatWindowTheme: 'light',
     borderRadius: 16,
     shadowStyle: 'soft',
@@ -89,6 +89,7 @@ export default function Appearance() {
         title: fetchedChatbot.title || '',
         welcomeMessage: fetchedChatbot.welcomeMessage || '',
         primaryColor: fetchedChatbot.primaryColor || '#6366F1',
+        secondaryColor: fetchedChatbot.secondaryColor || '#A7C7E7', // now fetched from backend
         showWelcomePopup: fetchedChatbot.showWelcomePopup ?? true,
         suggestionButtons: fetchedChatbot.suggestionButtons ? JSON.parse(fetchedChatbot.suggestionButtons) : [],
         suggestionTiming: (fetchedChatbot.suggestionTiming as 'initial' | 'after_welcome' | 'after_first_message' | 'manual') || 'initial',
@@ -100,7 +101,6 @@ export default function Appearance() {
         chatWidgetIcon: fetchedChatbot.chatWidgetIcon || '',
         chatWidgetName: fetchedChatbot.chatWidgetName || 'Support Chat',
         chatWindowAvatar: fetchedChatbot.chatWindowAvatar || '',
-        chatWindowStyle: (fetchedChatbot.chatWindowStyle as 'modern' | 'classic' | 'minimal' | 'floating') || 'modern',
         chatWindowTheme: (fetchedChatbot.chatWindowTheme as 'light' | 'dark' | 'auto') || 'light',
         borderRadius: fetchedChatbot.borderRadius || 16,
         shadowStyle: (fetchedChatbot.shadowStyle as 'none' | 'soft' | 'medium' | 'strong') || 'soft',
@@ -125,12 +125,15 @@ export default function Appearance() {
     chatWidgetName: appearance.chatWidgetName,
     poweredByText: user?.agencyName ? `Powered by ${user.agencyName}` : 'Powered by Chatbot',
     poweredByLink: activeChatbot?.poweredByLink || 'https://your-website.com',
+    primaryColor: appearance.primaryColor,
+    secondaryColor: appearance.secondaryColor,
   };
   // Just before rendering <ChatPreview />
   const previewChatbot: any = {
     id: activeChatbot?.id || 'demo',
     name:  appearance.chatWidgetName || 'Support Bot',
     primaryColor: appearance.primaryColor,
+    secondaryColor: appearance.secondaryColor,
     welcomeMessage: appearance.welcomeMessage,
     inputPlaceholder: appearance.inputPlaceholder,
     borderRadius: appearance.borderRadius,
@@ -141,7 +144,6 @@ export default function Appearance() {
     chatWidgetName: appearance.chatWidgetName,
     poweredByText: user?.agencyName ? `Powered by ${user.agencyName}` : 'Powered by Chatbot',
     poweredByLink: activeChatbot?.poweredByLink || 'https://your-website.com',
-    chatWindowStyle: appearance.chatWindowStyle,
     chatWindowTheme: appearance.chatWindowTheme,
   };
 
@@ -179,6 +181,7 @@ export default function Appearance() {
           data: {
             welcomeMessage: appearance.welcomeMessage,
             primaryColor: appearance.primaryColor,
+            secondaryColor: appearance.secondaryColor, // now sent to backend
             showWelcomePopup: appearance.showWelcomePopup,
             suggestionButtons: JSON.stringify(appearance.suggestionButtons),
             suggestionTiming: appearance.suggestionTiming,
@@ -186,14 +189,11 @@ export default function Appearance() {
             suggestionTimeout: appearance.suggestionTimeout,
             inputPlaceholder: appearance.inputPlaceholder,
             leadButtonText: appearance.leadButtonText,
-            chatWindowStyle: appearance.chatWindowStyle,
             chatWindowTheme: appearance.chatWindowTheme,
             borderRadius: appearance.borderRadius,
             shadowStyle: appearance.shadowStyle,
-            chatBubbleIcon: appearance.chatBubbleIcon,
-            chatWidgetIcon: appearance.chatWidgetIcon,
+            // Do not send icon/avatar fields here, they are handled in Visual Branding tab
             chatWidgetName: appearance.chatWidgetName,
-            chatWindowAvatar: appearance.chatWindowAvatar,
           },
         });
         toast({
@@ -256,9 +256,9 @@ export default function Appearance() {
   ];
 
   return (
-    <div className="flex-1 bg-gradient-to-br from-purple-50 to-white min-h-screen">
+    <div className="flex-1 bg-gradient-to-br from-blue-50 via-white to-blue-100 min-h-screen">
       {/* Header */}
-      <header className="backdrop-blur-md bg-gradient-to-br from-purple-50 to-white/80 border-b border-slate-200 px-4 sm:px-6 py-5 sticky top-0 z-20 shadow-lg">
+      <header className="backdrop-blur-md bg-gradient-to-br from-blue-50 via-white to-blue-100/80 border-b border-blue-50 px-4 sm:px-6 py-5 sticky top-0 z-20 shadow-lg">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between max-w-7xl mx-auto gap-4">
           <div>
             <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Chatbot Appearance</h2>
@@ -271,7 +271,7 @@ export default function Appearance() {
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
             <Button
               variant="outline"
-              className="border-slate-300 text-slate-700 hover:bg-slate-100 hover:text-slate-900 rounded-lg transition-all duration-200"
+              className="border-blue-100 text-blue-700 hover:bg-blue-50 hover:text-blue-900 rounded-lg transition-all duration-200"
               onClick={() => {
                 if (previewRef.current) {
                   previewRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -285,7 +285,7 @@ export default function Appearance() {
             <Button
               onClick={handleSave}
               disabled={updateChatbot.isPending}
-              className="bg-purple-600 hover:bg-purple-700 text-white font-semibold px-4 sm:px-6 py-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
+              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 sm:px-6 py-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
             >
               <Save className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
               {updateChatbot.isPending ? 'Saving...' : 'Save Changes'}
@@ -300,7 +300,7 @@ export default function Appearance() {
           {/* Mobile Dropdown */}
           <div className="sm:hidden">
             <Select value={activeTab} onValueChange={setActiveTab}>
-              <SelectTrigger className="w-full bg-white border-slate-300 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 rounded-lg shadow-sm">
+              <SelectTrigger className="w-full bg-white border-blue-100 focus:ring-2 focus:ring-blue-200 focus:border-blue-200 rounded-lg shadow-sm">
                 <SelectValue placeholder="Select a tab" />
               </SelectTrigger>
               <SelectContent>
@@ -314,17 +314,17 @@ export default function Appearance() {
           </div>
 
           {/* Desktop Tabs */}
-          <TabsList className="hidden sm:flex w-full bg-white/80 backdrop-blur-sm border border-slate-200 rounded-xl p-1 shadow-sm">
+          <TabsList className="hidden sm:flex w-full bg-white/80 backdrop-blur-sm border border-blue-50 rounded-xl p-1 shadow-sm">
             <TabsTrigger
               value="chatbot"
               disabled={!activeChatbot}
-              className="flex-1 text-slate-600 hover:text-purple-600 focus:text-purple-600 font-medium py-3 px-4 rounded-lg data-[state=active]:bg-purple-50 data-[state=active]:text-purple-600 data-[state=active]:shadow-sm transition-all duration-200"
+              className="flex-1 text-blue-600 hover:text-blue-700 focus:text-blue-700 font-medium py-3 px-4 rounded-lg data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 data-[state=active]:shadow-sm transition-all duration-200"
             >
               Chatbot Appearance
             </TabsTrigger>
             <TabsTrigger
               value="global"
-              className="flex-1 text-slate-600 hover:text-purple-600 focus:text-purple-600 font-medium py-3 px-4 rounded-lg data-[state=active]:bg-purple-50 data-[state=active]:text-purple-600 data-[state=active]:shadow-sm transition-all duration-200"
+              className="flex-1 text-blue-600 hover:text-blue-700 focus:text-blue-700 font-medium py-3 px-4 rounded-lg data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 data-[state=active]:shadow-sm transition-all duration-200"
             >
               Visual Branding
             </TabsTrigger>
@@ -337,222 +337,136 @@ export default function Appearance() {
               <TabsContent value="chatbot" className="space-y-6">
                 {activeChatbot ? (
                   <>
-                    {/* Basic Settings */}
-                    <Card className="shadow-xl rounded-2xl border-0 bg-gradient-to-br from-blue-50/60 via-white/80 to-blue-100/60 relative overflow-hidden">
-                      <div className="absolute left-0 top-0 bottom-0 w-2 bg-blue-400 rounded-l-2xl" />
-                      <CardHeader>
-                        <CardTitle className="flex items-center space-x-2 text-slate-900 font-semibold text-lg">
-                          <Palette className="h-5 w-5 text-blue-600" />
-                          <span>Basic Settings</span>
+                    {/* Color Settings Group */}
+                    <Card className="shadow-md rounded-2xl border border-blue-50 bg-white/80 p-6">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="flex items-center space-x-2 text-blue-900 font-semibold text-lg">
+                          <Palette className="h-5 w-5 text-blue-400" />
+                          <span>Colors</span>
                         </CardTitle>
-                        <p className="text-slate-600 text-sm">Configure your chatbot's core appearance and behavior</p>
+                        <p className="text-blue-400 text-sm">Set your chatbot's primary and secondary colors</p>
                       </CardHeader>
-                      <CardContent className="space-y-6">
+                      <CardContent className="space-y-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                           <div className="space-y-2">
-                            <Label htmlFor="title" className="text-slate-700 font-medium">Chat Window Title</Label>
-                            <Input 
-                              id="title" 
-                              value={appearance.title} 
-                              onChange={e => { console.log('title changed', e.target.value); setAppearance(prev => ({ ...prev, title: e.target.value })) }} 
-                              placeholder="Chat with us" 
-                              className="border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 rounded-lg transition-all duration-200 hover:border-blue-400"
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="primaryColor" className="text-slate-700 font-medium">Primary Color</Label>
+                            <Label htmlFor="primaryColor" className="text-blue-700 font-medium">Primary Color</Label>
                             <div className="flex items-center gap-3">
                               <Input 
                                 id="primaryColor" 
                                 type="color" 
                                 value={appearance.primaryColor} 
                                 onChange={e => setAppearance(prev => ({ ...prev, primaryColor: e.target.value }))} 
-                                className="w-12 h-10 p-1 border rounded-lg cursor-pointer" 
+                                className="w-12 h-10 p-1 border rounded-lg cursor-pointer border-blue-100" 
                               />
                               <Input 
                                 value={appearance.primaryColor} 
                                 onChange={e => setAppearance(prev => ({ ...prev, primaryColor: e.target.value }))} 
                                 placeholder="#6366F1" 
-                                className="flex-1 border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 rounded-lg transition-all duration-200 hover:border-blue-400" 
+                                className="flex-1 border-blue-100 focus:ring-2 focus:ring-blue-200 focus:border-blue-200 rounded-lg transition-all duration-200 hover:border-blue-200" 
+                              />
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="secondaryColor" className="text-blue-700 font-medium">Secondary Color</Label>
+                            <div className="flex items-center gap-3">
+                              <Input 
+                                id="secondaryColor" 
+                                type="color" 
+                                value={appearance.secondaryColor} 
+                                onChange={e => setAppearance(prev => ({ ...prev, secondaryColor: e.target.value }))} 
+                                className="w-12 h-10 p-1 border rounded-lg cursor-pointer border-blue-100" 
+                              />
+                              <Input 
+                                value={appearance.secondaryColor} 
+                                onChange={e => setAppearance(prev => ({ ...prev, secondaryColor: e.target.value }))} 
+                                placeholder="#A7C7E7" 
+                                className="flex-1 border-blue-100 focus:ring-2 focus:ring-blue-200 focus:border-blue-200 rounded-lg transition-all duration-200 hover:border-blue-200" 
                               />
                             </div>
                           </div>
                         </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Text Settings Group */}
+                    <Card className="shadow-md rounded-2xl border border-blue-50 bg-white/80 p-6">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="flex items-center space-x-2 text-blue-900 font-semibold text-lg">
+                          <Settings className="h-5 w-5 text-blue-400" />
+                          <span>Text & Messages</span>
+                        </CardTitle>
+                        <p className="text-blue-400 text-sm">Customize text elements and placeholders</p>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
                         <div className="space-y-2">
-                          <Label htmlFor="welcomeMessage" className="text-slate-700 font-medium">Welcome Message</Label>
+                          <Label htmlFor="title" className="text-blue-700 font-medium">Chat Window Title</Label>
+                          <Input 
+                            id="title" 
+                            value={appearance.title} 
+                            onChange={e => setAppearance(prev => ({ ...prev, title: e.target.value }))} 
+                            placeholder="Chat with us" 
+                            className="border-blue-100 focus:ring-2 focus:ring-blue-200 focus:border-blue-200 rounded-lg transition-all duration-200 hover:border-blue-200"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="welcomeMessage" className="text-blue-700 font-medium">Welcome Message</Label>
                           <Textarea 
                             id="welcomeMessage" 
                             value={appearance.welcomeMessage} 
                             onChange={e => setAppearance(prev => ({ ...prev, welcomeMessage: e.target.value }))} 
                             placeholder="Hello! How can I help you today?" 
                             rows={2} 
-                            className="border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 rounded-lg transition-all duration-200 hover:border-blue-400 resize-none"
+                            className="border-blue-100 focus:ring-2 focus:ring-blue-200 focus:border-blue-200 rounded-lg transition-all duration-200 hover:border-blue-200 resize-none"
                           />
                         </div>
-                        
-                      </CardContent>
-                    </Card>
-
-                    {/* Modern Styling */}
-                    <Card className="shadow-xl rounded-2xl border-0 bg-gradient-to-br from-purple-50/60 via-white/80 to-purple-100/60 relative overflow-hidden">
-                      <div className="absolute left-0 top-0 bottom-0 w-2 bg-purple-400 rounded-l-2xl" />
-                      <CardHeader>
-                        <CardTitle className="flex items-center space-x-2 text-slate-900 font-semibold text-lg">
-                          <Sparkles className="h-5 w-5 text-purple-600" />
-                          <span>Modern Styling</span>
-                        </CardTitle>
-                        <p className="text-slate-600 text-sm">Customize the chat window's look and feel</p>
-                      </CardHeader>
-                      <CardContent className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        <div className="space-y-4">
-                          <div className="space-y-2">
-                            <Label htmlFor="chatWindowStyle" className="text-slate-700 font-medium">Window Style</Label>
-                            <Select
-                              value={appearance.chatWindowStyle}
-                              onValueChange={(value) => setAppearance(prev => ({ ...prev, chatWindowStyle: value as 'modern' | 'classic' | 'minimal' | 'floating' }))}
-                            >
-                              <SelectTrigger className="border-slate-300 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 rounded-lg transition-all duration-200 hover:border-purple-400">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="modern">Modern</SelectItem>
-                                <SelectItem value="classic">Classic</SelectItem>
-                                <SelectItem value="minimal">Minimal</SelectItem>
-                                <SelectItem value="floating">Floating</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="chatWindowTheme" className="text-slate-700 font-medium">Theme</Label>
-                            <Select
-                              value={appearance.chatWindowTheme}
-                              onValueChange={(value) => setAppearance(prev => ({ ...prev, chatWindowTheme: value as 'light' | 'dark' | 'auto' }))}
-                            >
-                              <SelectTrigger className="border-slate-300 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 rounded-lg transition-all duration-200 hover:border-purple-400">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="light">Light</SelectItem>
-                                <SelectItem value="dark">Dark</SelectItem>
-                                <SelectItem value="auto">Auto</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="borderRadius" className="text-slate-700 font-medium">Border Radius ({appearance.borderRadius}px)</Label>
-                            <input 
-                              id="borderRadius" 
-                              type="range" 
-                              min="0" 
-                              max="32" 
-                              value={appearance.borderRadius} 
-                              onChange={e => setAppearance(prev => ({ ...prev, borderRadius: parseInt(e.target.value) }))} 
-                              className="w-full accent-purple-600" 
-                            />
-                            <div className="flex justify-between text-xs text-slate-500">
-                              <span>Sharp (0px)</span>
-                              <span>Very Rounded (32px)</span>
-                            </div>
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="shadowStyle" className="text-slate-700 font-medium">Shadow Style</Label>
-                            <Select
-                              value={appearance.shadowStyle}
-                              onValueChange={(value) => setAppearance(prev => ({ ...prev, shadowStyle: value as 'none' | 'soft' | 'medium' | 'strong' }))}
-                            >
-                              <SelectTrigger className="border-slate-300 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 rounded-lg transition-all duration-200 hover:border-purple-400">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="none">None</SelectItem>
-                                <SelectItem value="soft">Soft</SelectItem>
-                                <SelectItem value="medium">Medium</SelectItem>
-                                <SelectItem value="strong">Strong</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                        </div>
-                        <div className="flex flex-col justify-center items-center">
-                          <Label className="mb-2 text-slate-700 font-medium">Style Preview</Label>
-                          <div 
-                            className="w-full max-w-64 h-32 border rounded-lg flex flex-col justify-center items-center bg-white shadow-sm transition-all duration-300" 
-                            style={{ 
-                              borderRadius: `${appearance.borderRadius}px`, 
-                              boxShadow: appearance.shadowStyle === 'soft' ? '0 1px 4px rgba(0,0,0,0.06)' : appearance.shadowStyle === 'medium' ? '0 2px 8px rgba(0,0,0,0.10)' : appearance.shadowStyle === 'strong' ? '0 4px 16px rgba(0,0,0,0.16)' : 'none', 
-                              background: appearance.chatWindowTheme === 'dark' ? '#1e293b' : '#fff' 
-                            }}
-                          >
-                            <span className={`text-base font-medium ${appearance.chatWindowTheme === 'dark' ? 'text-white' : 'text-slate-900'}`}>Chat Preview</span>
-                            <span className={`text-xs mt-1 ${appearance.chatWindowTheme === 'dark' ? 'text-slate-300' : 'text-slate-600'}`}>{appearance.chatWindowStyle} style</span>
-                            <span className="mt-2 px-2 py-1 rounded text-xs text-white" style={{ backgroundColor: appearance.primaryColor }}>Sample message</span>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-
-                    {/* Text Customization */}
-                    <Card className="shadow-xl rounded-2xl border-0 bg-gradient-to-br from-green-50/60 via-white/80 to-green-100/60 relative overflow-hidden">
-                      <div className="absolute left-0 top-0 bottom-0 w-2 bg-green-400 rounded-l-2xl" />
-                      <CardHeader>
-                        <CardTitle className="flex items-center space-x-2 text-slate-900 font-semibold text-lg">
-                          <Settings className="h-5 w-5 text-green-600" />
-                          <span>Text Customization</span>
-                        </CardTitle>
-                        <p className="text-slate-600 text-sm">Customize text elements and placeholders</p>
-                      </CardHeader>
-                      <CardContent className="space-y-6">
                         <div className="space-y-2">
-                          <Label htmlFor="inputPlaceholder" className="text-slate-700 font-medium">Input Placeholder</Label>
+                          <Label htmlFor="inputPlaceholder" className="text-blue-700 font-medium">Input Placeholder</Label>
                           <Input 
                             id="inputPlaceholder" 
                             value={appearance.inputPlaceholder} 
                             onChange={e => setAppearance(prev => ({ ...prev, inputPlaceholder: e.target.value }))} 
                             placeholder="Type your message..." 
-                            className="border-slate-300 focus:ring-2 focus:ring-green-500 focus:border-green-500 rounded-lg transition-all duration-200 hover:border-green-400"
+                            className="border-blue-100 focus:ring-2 focus:ring-blue-200 focus:border-blue-200 rounded-lg transition-all duration-200 hover:border-blue-200"
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="leadButtonText" className="text-slate-700 font-medium">Lead Button Text</Label>
+                          <Label htmlFor="leadButtonText" className="text-blue-700 font-medium">Lead Button Text</Label>
                           <Input 
                             id="leadButtonText" 
                             value={appearance.leadButtonText} 
                             onChange={e => setAppearance(prev => ({ ...prev, leadButtonText: e.target.value }))} 
                             placeholder="Get Started" 
-                            className="border-slate-300 focus:ring-2 focus:ring-green-500 focus:border-green-500 rounded-lg transition-all duration-200 hover:border-green-400"
+                            className="border-blue-100 focus:ring-2 focus:ring-blue-200 focus:border-blue-200 rounded-lg transition-all duration-200 hover:border-blue-200"
                           />
                         </div>
                       </CardContent>
                     </Card>
                   </>
                 ) : (
-                  <Card className="shadow-xl rounded-2xl border-0 bg-gradient-to-br from-slate-50/60 via-white/80 to-slate-100/60 relative overflow-hidden">
-                    <div className="absolute left-0 top-0 bottom-0 w-2 bg-slate-400 rounded-l-2xl" />
-                    <CardContent className="py-12 text-center">
-                      <Palette className="h-12 w-12 text-slate-400 mx-auto mb-4" />
-                      <h3 className="text-lg font-medium text-slate-900 mb-2">No Active Chatbot</h3>
-                      <p className="text-slate-500">Select a chatbot from the sidebar to customize its appearance.</p>
-                    </CardContent>
+                  <Card className="shadow-md rounded-2xl border border-blue-50 bg-white/80 p-12 text-center">
+                    <Palette className="h-12 w-12 text-blue-200 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-blue-900 mb-2">No Active Chatbot</h3>
+                    <p className="text-blue-400">Select a chatbot from the sidebar to customize its appearance.</p>
                   </Card>
                 )}
               </TabsContent>
 
               {/* Visual Branding Tab */}
               <TabsContent value="global" className="space-y-6">
-                <Card className="shadow-xl rounded-2xl border-0 bg-gradient-to-br from-orange-50/60 via-white/80 to-orange-100/60 relative overflow-hidden">
-                  <div className="absolute left-0 top-0 bottom-0 w-2 bg-orange-400 rounded-l-2xl" />
-                  <CardHeader>
-                    <CardTitle className="flex items-center space-x-2 text-slate-900 font-semibold text-lg">
-                      <Image className="h-5 w-5 text-orange-600" />
+                <Card className="shadow-md rounded-2xl border border-blue-50 bg-white/80 p-6">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="flex items-center space-x-2 text-blue-900 font-semibold text-lg">
+                      <Image className="h-5 w-5 text-blue-400" />
                       <span>Visual Branding</span>
                     </CardTitle>
-                    <p className="text-slate-600 text-sm">Customize your chatbot's icons and avatar</p>
+                    <p className="text-blue-400 text-sm">Customize your chatbot's icons and avatar</p>
                   </CardHeader>
-                  <CardContent className="space-y-6">
+                  <CardContent className="space-y-4">
                     <div className="space-y-2">
-                      <Label className="text-slate-700 font-medium">Chat Bubble Icon</Label>
+                      <Label className="text-blue-700 font-medium">Chat Bubble Icon</Label>
                       <div className="flex items-center gap-4">
                         {activeChatbot?.chatBubbleIcon && (
-                          <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center border-2 border-slate-200">
+                          <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center border-2 border-blue-100">
                             <img src={activeChatbot.chatBubbleIcon} alt="Chat Bubble Icon" className="w-8 h-8 rounded-full object-cover" />
                           </div>
                         )}
@@ -561,17 +475,17 @@ export default function Appearance() {
                             type="file" 
                             accept="image/*" 
                             onChange={e => { const file = e.target.files?.[0]; if (file) handleFileUpload('chatBubbleIcon', file); }} 
-                            className="border-slate-300 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 rounded-lg transition-all duration-200 hover:border-orange-400" 
+                            className="border-blue-100 focus:ring-2 focus:ring-blue-200 focus:border-blue-200 rounded-lg transition-all duration-200 hover:border-blue-200" 
                           />
-                          <p className="text-xs text-slate-500 mt-1">32x32px, PNG/JPG</p>
+                          <p className="text-xs text-blue-400 mt-1">32x32px, PNG/JPG</p>
                         </div>
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-slate-700 font-medium">Chat Widget Icon</Label>
+                      <Label className="text-blue-700 font-medium">Chat Widget Icon</Label>
                       <div className="flex items-center gap-4">
                         {appearance.chatWidgetIcon && (
-                          <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center border-2 border-slate-200">
+                          <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center border-2 border-blue-100">
                             <img src={appearance.chatWidgetIcon} alt="Chat Widget Icon" className="w-8 h-8 rounded-full object-cover" />
                           </div>
                         )}
@@ -580,27 +494,27 @@ export default function Appearance() {
                             type="file" 
                             accept="image/*" 
                             onChange={e => { const file = e.target.files?.[0]; if (file) handleFileUpload('chatWidgetIcon', file); }} 
-                            className="border-slate-300 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 rounded-lg transition-all duration-200 hover:border-orange-400" 
+                            className="border-blue-100 focus:ring-2 focus:ring-blue-200 focus:border-blue-200 rounded-lg transition-all duration-200 hover:border-blue-200" 
                           />
-                          <p className="text-xs text-slate-500 mt-1">32x32px, PNG/JPG</p>
+                          <p className="text-xs text-blue-400 mt-1">32x32px, PNG/JPG</p>
                         </div>
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="chatWidgetName" className="text-slate-700 font-medium">Chat Widget Name</Label>
+                      <Label htmlFor="chatWidgetName" className="text-blue-700 font-medium">Chat Widget Name</Label>
                       <Input 
                         id="chatWidgetName"
                         value={appearance.chatWidgetName} 
                         onChange={e => setAppearance(prev => ({ ...prev, chatWidgetName: e.target.value }))} 
                         placeholder="Support Chat" 
-                        className="border-slate-300 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 rounded-lg transition-all duration-200 hover:border-orange-400" 
+                        className="border-blue-100 focus:ring-2 focus:ring-blue-200 focus:border-blue-200 rounded-lg transition-all duration-200 hover:border-blue-200" 
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-slate-700 font-medium">Chat Window Avatar</Label>
+                      <Label className="text-blue-700 font-medium">Chat Window Avatar</Label>
                       <div className="flex items-center gap-4">
                         {appearance.chatWindowAvatar && (
-                          <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center border-2 border-slate-200">
+                          <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center border-2 border-blue-100">
                             <img src={appearance.chatWindowAvatar} alt="Chat Window Avatar" className="w-10 h-10 rounded-full object-cover" />
                           </div>
                         )}
@@ -609,9 +523,9 @@ export default function Appearance() {
                             type="file" 
                             accept="image/*" 
                             onChange={e => { const file = e.target.files?.[0]; if (file) handleFileUpload('chatWindowAvatar', file); }} 
-                            className="border-slate-300 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 rounded-lg transition-all duration-200 hover:border-orange-400" 
+                            className="border-blue-100 focus:ring-2 focus:ring-blue-200 focus:border-blue-200 rounded-lg transition-all duration-200 hover:border-blue-200" 
                           />
-                          <p className="text-xs text-slate-500 mt-1">64x64px, PNG/JPG</p>
+                          <p className="text-xs text-blue-400 mt-1">64x64px, PNG/JPG</p>
                         </div>
                       </div>
                     </div>
@@ -622,15 +536,14 @@ export default function Appearance() {
 
             {/* Right Column: Live Preview */}
             <div className="space-y-6 lg:sticky lg:top-24 h-fit">
-              <div ref={previewRef} className={`transition-all duration-500 ${highlightPreview ? 'ring-4 ring-purple-400 ring-opacity-60' : ''}`}>
-                <Card className="shadow-xl rounded-2xl border-0 bg-gradient-to-br from-slate-50/60 via-white/80 to-slate-100/60 relative overflow-hidden">
-                  <div className="absolute left-0 top-0 bottom-0 w-2 bg-slate-400 rounded-l-2xl" />
+              <div ref={previewRef} className={`transition-all duration-500 ${highlightPreview ? 'ring-4 ring-blue-400 ring-opacity-60' : ''}`}>
+                <Card className="shadow-md rounded-2xl border border-blue-50 bg-white/80">
                   <CardHeader>
-                    <CardTitle className="flex items-center space-x-2 text-slate-900 font-semibold text-lg">
-                      <Eye className="h-5 w-5 text-slate-600" />
+                    <CardTitle className="flex items-center space-x-2 text-blue-900 font-semibold text-lg">
+                      <Eye className="h-5 w-5 text-blue-400" />
                       <span>Live Preview</span>
                     </CardTitle>
-                    <p className="text-slate-600 text-sm">See your changes in real-time</p>
+                    <p className="text-blue-400 text-sm">See your changes in real-time</p>
                   </CardHeader>
                   <CardContent>
                     <ChatPreview chatbot={previewChatbot} {...previewProps} />

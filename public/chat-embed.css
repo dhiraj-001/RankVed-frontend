@@ -289,7 +289,7 @@
 }
 
 #rankved-messages {
-  padding: 10px 8px 0 8px !important;
+
   gap: 8px !important;
 }
 
@@ -329,9 +329,7 @@
     right: 6px !important;
     bottom: 6px !important;
   }
-  #rankved-messages {
-    padding: 6px 4px 0 4px !important;
-  }
+
   #rankved-input {
     font-size: 11px !important;
     min-width: 0 !important;
@@ -460,11 +458,6 @@
 /* Bot message styling */
 #rankved-messages > div:not(:last-child) > div:last-child {
   transition: all 0.2s ease-in-out;
-}
-
-#rankved-messages > div:not(:last-child) > div:last-child:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
 }
 
 /* User message styling */

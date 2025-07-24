@@ -98,6 +98,7 @@
           console.log('[RankVed Chat] No question flow found. Injected default flow:', config.questionFlow);
         }
         configLoaded = true;
+        console.log('[RankVed Chat] Config loaded:', config);
       } else {
         showError('Failed to load chatbot config.');
       }
@@ -274,22 +275,48 @@
         </div>
         <button id="rankved-close-btn" style="background: none; border: none; color: ${a.headerText}; font-size: 20px; cursor: pointer; position: relative; z-index: 2; transition: all 0.2s ease-in-out; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 300;">×</button>
       </div>
-      <div id="rankved-messages" style="flex: 1; overflow-y: auto; padding: 10px 8px 0 8px; color: ${a.msgText}; display: flex; flex-direction: column; gap: 8px; background: ${a.backgroundColor}; border-bottom-left-radius: ${a.borderRadius}px; border-bottom-right-radius: ${a.borderRadius}px; scroll-behavior: smooth; -webkit-overflow-scrolling: touch;">
+      <div id="rankved-messages" style="flex: 1; overflow-y: auto; padding: 10px 8px 0 8px; color: ${a.msgText}; display: flex; flex-direction: column; gap: 8px; background: ${a.backgroundColor}; border-bottom-left-radius: ${a.borderRadius}px; border-bottom-right-radius: ${a.borderRadius}px; scroll-behavior: smooth; -webkit-overflow-scrolling: touch; padding-bottom: 110px;">
         <!-- Welcome message removed; will be added by JS only -->
       </div>
-      <div style="padding: 6px 8px 4px 8px; border-top: 2px solid ${a.inputBorder}; border-bottom-left-radius: ${a.borderRadius}px; border-bottom-right-radius: ${a.borderRadius}px; position: relative; overflow: hidden; background: ${a.inputBg}; box-shadow: ${a.theme === 'dark' ? '0 2px 8px rgba(30,41,59,0.12)' : '0 2px 8px rgba(100,116,139,0.08)'};">
-        <div style="display: flex; gap: 6px; align-items: center; position: relative; z-index: 2;">
-                      <input id="rankved-input" placeholder="${config.inputPlaceholder || config.placeholder || 'Type your message...'}" style="flex: 1; border: 1px solid ${a.inputBorder}; border-radius: 10px; padding: 4px 8px; font-size: 11px; outline: none; color: ${a.inputText}; height: 32px; box-shadow: inset 0 1px 2px rgba(0,0,0,0.04); transition: all 0.2s ease-in-out; background: ${a.theme === 'dark' ? 'rgba(30, 41, 59, 0.8)' : 'rgba(255, 255, 255, 0.9)'};">
-                      <button id="rankved-send-btn" style="width: 32px; padding:0; height: 32px; border-radius: 10px; background: ${a.primaryColor}; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease-in-out; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M2,21L23,12L2,3V10L17,12L2,14V21Z"/></svg>
-          </button>
-        </div>
-        <div id="rankved-suggestions" style="margin-top: 6px; display: flex; flex-wrap: wrap; gap: 6px;"></div>
-        <div style="text-align: center; padding: 2px 0 0 0; font-size: 11px; color: ${a.theme === 'dark' ? '#94a3b8' : '#64748b'}; background: none; position: relative; z-index: 2;">
-          ${config.poweredByText ? `<span>${config.poweredByLink ? `<a href="${config.poweredByLink}" target="_blank" style="color: ${a.primaryColor}; text-decoration: none; transition: all 0.2s ease-in-out;">${config.poweredByText}</a>` : config.poweredByText}</span>` : `Powered by <a href="https://rankved.com" target="_blank" style="color: ${a.primaryColor}; text-decoration: none; transition: all 0.2s ease-in-out;">RankVed</a>`}
-        </div>
+      <div style="position: absolute; left: 0; right: 0; bottom: 13px; z-index: 10; display: flex; gap: 6px; align-items: center; padding: 8px; background: none; box-shadow: none;">
+        <input id="rankved-input" placeholder="${config.inputPlaceholder || config.placeholder || 'Type your message...'}" style="flex: 1; border: 1px solid ${a.inputBorder}; border-radius: 10px; padding: 4px 8px; font-size: 11px; outline: none; color: ${a.inputText}; height: 32px; box-shadow: inset 0 1px 2px rgba(0,0,0,0.04); transition: all 0.2s ease-in-out; background: ${a.theme === 'dark' ? 'rgba(30, 41, 59, 0.8)' : 'rgba(255, 255, 255, 0.9)'};">
+        <button id="rankved-send-btn" style="width: 32px; padding:0; height: 32px; border-radius: 10px; background: ${a.primaryColor}; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease-in-out; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M2,21L23,12L2,3V10L17,12L2,14V21Z"/></svg>
+        </button>
       </div>
     `;
+    // Add powered by text at the very bottom, below the input bar
+    const poweredByDiv = document.createElement('div');
+    poweredByDiv.setAttribute('style', `
+      width: 100%;
+      text-align: center;
+      padding: 4px 0 2px 0;
+      font-size: 11px;
+      color: ${a.theme === 'dark' ? '#fff' : '#222'};
+      background: none;
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 15;
+      pointer-events: none;
+    `);
+    poweredByDiv.innerHTML =
+      config.poweredByText
+        ? `<span>${config.poweredByLink ? `<a href="${config.poweredByLink}" target="_blank" style="color: ${a.primaryColor}; text-decoration: none; transition: all 0.2s ease-in-out; pointer-events: auto;">${config.poweredByText}</a>` : config.poweredByText}</span>`
+        : `Powered by <a href="https://rankved.com" target="_blank" style="color: ${a.primaryColor}; text-decoration: none; transition: all 0.2s ease-in-out; pointer-events: auto;">RankVed</a>`;
+    win.appendChild(poweredByDiv);
+    // Dynamically set bottom padding for messages container
+    setTimeout(() => {
+      const messagesDiv = win.querySelector('#rankved-messages');
+      const inputBar = win.querySelector('div[style*="position: absolute"]');
+      const poweredBy = poweredByDiv;
+      if (messagesDiv && inputBar && poweredBy) {
+        const inputHeight = inputBar.offsetHeight || 0;
+        const poweredByHeight = poweredBy.offsetHeight || 0;
+        messagesDiv.style.paddingBottom = (inputHeight + poweredByHeight + 5) + 'px';
+      }
+    }, 0);
     return win;
   }
 
@@ -331,7 +358,8 @@
       contentDiv.textContent = content;
       messageDiv.appendChild(contentDiv);
     } else {
-      messageDiv.setAttribute('style', `margin-bottom: 3px; display: flex; justify-content: flex-start; align-items: flex-start; gap: 5px;`);
+      messageDiv.setAttribute('style', `margin-bottom: 7px; display: flex; flex-direction: row; align-items: flex-start; gap: 8px;`);
+      // Avatar div
       const avatarDiv = document.createElement('div');
       let botIcon = config.chatWindowAvatar || config.chatWidgetIcon;
       if (botIcon) {
@@ -340,11 +368,79 @@
         avatarDiv.innerHTML = `<span style=\"display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; background: ${a.primaryColor}; border: 2px solid rgba(255,255,255,0.2); box-shadow: 0 1px 3px rgba(0,0,0,0.1);\"><svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"white\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"3\" y=\"11\" width=\"18\" height=\"7\" rx=\"2\"/><path d=\"M8 11V7a4 4 0 0 1 8 0v4\"/></svg></span>`;
       }
       messageDiv.appendChild(avatarDiv);
+      // Message and options container
+      const msgOptDiv = document.createElement('div');
+      msgOptDiv.setAttribute('style', 'display: flex; flex-direction: row;flex-wrap:wrap; align-items: flex-start;');
+      // Message bubble
+      const paragraphs = content.split(/\n\n|\r\n\r\n/).filter(Boolean);
       const contentDiv = document.createElement('div');
-      // Sharp bottom-left corner for bot
-      contentDiv.setAttribute('style', `max-width: 70%; padding: 8px 10px; border-radius: 14px 14px 14px 4px; font-size: 11px; background: ${a.msgBg}; color: ${a.msgText}; box-shadow: 0 1px 1px 0px rgb(0 0 0 / 30%); transition: all 0.2s ease-in-out;`);
-      contentDiv.textContent = content;
-      messageDiv.appendChild(contentDiv);
+      contentDiv.setAttribute('style', `max-width: 70%; padding: 8px 10px; border-radius: 14px 14px 14px 1px; font-size: 11px; background: ${a.msgBg}; color: ${a.msgText}; box-shadow: 0 1px 1px 0px rgb(0 0 0 / 30%); transition: all 0.2s ease-in-out; margin-bottom: 8px;`);
+      contentDiv.innerHTML = paragraphs.map(p => p.trim()).join('<br><br>');
+      msgOptDiv.appendChild(contentDiv);
+      // Render follow-up buttons below the message bubble if present
+      if (latestFollowUpButtons && latestFollowUpButtons.length > 0) {
+        latestFollowUpButtons.forEach((btnObj) => {
+          const text = btnObj.text || btnObj;
+          const payload = btnObj.payload || text;
+          const btn = document.createElement('button');
+          // Glass effect and secondary color
+          const secondary = getAppearance().secondaryColor || '#A7C7E7';
+          btn.textContent = text;
+          btn.setAttribute('style', `
+            background: ${hexToGlass(secondary, 0.7)};
+            color: ${getAppearance().primaryColor};
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 8px;
+            backdrop-filter: blur(8px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            padding: 3px 8px;
+            font-size: 12px;
+            cursor: pointer;
+            margin: 0 8px 8px 0;
+            transition: background 0.2s;
+          `);
+          btn.onclick = function () {
+            addMessage(text, 'user');
+            sendMessageStateless(payload);
+            if (config.suggestionPersistence !== 'always_visible') btn.style.display = 'none';
+          };
+          msgOptDiv.appendChild(btn);
+        });
+      }
+      // Render CTA button below the suggestion buttons if present
+      if (latestCtaButton && latestCtaButton.text && latestCtaButton.link) {
+        const ctaBtn = document.createElement('button');
+        ctaBtn.innerHTML = `
+          <span style="display: inline-flex; align-items: center; gap: 6px;">
+            <span>${latestCtaButton.text}</span>
+            <svg width="15" height="15" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:inline;vertical-align:middle;"><path d="M7 13L13 7M13 7H7M13 7V13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+        `;
+        ctaBtn.setAttribute('style', `
+          margin-top: 4px;
+          background: ${hexToGlass(getAppearance().primaryColor, 0.12)};
+          color: ${getAppearance().primaryColor};
+          border: 1.5px solid ${getAppearance().primaryColor};
+          border-radius: 8px;
+          padding: 5px 14px;
+          font-size: 12px;
+          font-weight: 500;
+          cursor: pointer;
+          box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+          backdrop-filter: blur(8px);
+          transition: background 0.2s, color 0.2s;
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+        `);
+        ctaBtn.onclick = function(e) {
+          e.stopPropagation();
+          window.open(latestCtaButton.link, '_blank');
+        };
+        msgOptDiv.appendChild(ctaBtn);
+        latestCtaButton = null;
+      }
+      messageDiv.appendChild(msgOptDiv);
     }
     messagesContainer.appendChild(messageDiv);
     
@@ -356,21 +452,28 @@
     
     // Use helper function for consistent scroll behavior
     scrollToBottom(messagesContainer);
+
+    // Render follow-up buttons below the message bubble if present
   }
 
-  // Show suggestion buttons if present
+  // Show follow-up buttons from latest intent-detect response
   function showSuggestions() {
-    const suggestions = config.suggestionButtons;
+    const suggestions = latestFollowUpButtons;
     const container = document.getElementById('rankved-suggestions');
     if (!container) return;
     container.innerHTML = '';
+    console.log('[RankVed Chat] Rendering follow-up suggestions:', suggestions);
     if (Array.isArray(suggestions) && suggestions.length > 0) {
-      suggestions.forEach((text) => {
+      suggestions.forEach((btnObj) => {
+        const text = btnObj.text || btnObj;
+        const payload = btnObj.payload || text;
         const btn = document.createElement('button');
         btn.textContent = text;
         btn.setAttribute('style', `background: ${getAppearance().primaryColor}; color: #fff; border: none; border-radius: 6px; padding: 6px 12px; font-size: 13px; cursor: pointer; margin: 0;`);
         btn.onclick = function () {
           addMessage(text, 'user');
+          console.log('payload', text);
+          sendMessageStateless(payload);
           if (config.suggestionPersistence !== 'always_visible') btn.style.display = 'none';
         };
         container.appendChild(btn);
@@ -381,6 +484,9 @@
   // --- New Stateless, Context-Aware Chat Logic ---
   let chatHistory = [];
   let awaitingContactInfo = null;
+  let latestFollowUpButtons = [];
+  let latestCtaButton = null;
+  let loadingMessageDiv = null;
 
   function isValidEmail(text) {
     return /\b[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}\b/i.test(text);
@@ -393,9 +499,15 @@
   }
 
   async function sendMessageStateless(userInput) {
+    if (typeof userInput !== 'string') {
+      userInput = String(userInput.text || userInput.payload || '');
+    }
     if (!userInput.trim()) return;
     addMessage(userInput, 'user');
     chatHistory.push({ role: 'user', content: userInput });
+
+    // Show loading indicator
+    showLoadingIndicator();
 
     // Phase 1: Contact Info Collection (frontend logic)
     if (awaitingContactInfo) {
@@ -418,6 +530,10 @@
           const bot = data.intent;
           addMessage(bot.message_text, 'bot');
           chatHistory.push({ role: 'bot', content: bot.message_text });
+          // Update follow-up buttons and CTA from response
+          latestFollowUpButtons = bot.follow_up_buttons || [];
+          latestCtaButton = bot.cta_button || null;
+          showSuggestions();
           if (bot.action_collect_contact_info && bot.requested_contact_field) {
             awaitingContactInfo = { field: bot.requested_contact_field };
           } else {
@@ -426,10 +542,16 @@
         } else {
           addMessage('Sorry, I could not connect to the server.', 'bot');
           chatHistory.push({ role: 'bot', content: 'Sorry, I could not connect to the server.' });
+          latestFollowUpButtons = [];
+          latestCtaButton = null;
+          showSuggestions();
         }
       } catch {
         addMessage('Sorry, I could not connect to the server.', 'bot');
         chatHistory.push({ role: 'bot', content: 'Sorry, I could not connect to the server.' });
+        latestFollowUpButtons = [];
+        latestCtaButton = null;
+        showSuggestions();
       }
       return;
     }
@@ -445,20 +567,33 @@
       if (res.ok) {
         const data = await res.json();
         const bot = data.intent;
+        removeLoadingIndicator();
         addMessage(bot.message_text, 'bot');
         chatHistory.push({ role: 'bot', content: bot.message_text });
+        // Update follow-up buttons and CTA from response
+        latestFollowUpButtons = bot.follow_up_buttons || [];
+        latestCtaButton = bot.cta_button || null;
+        showSuggestions();
         if (bot.action_collect_contact_info && bot.requested_contact_field) {
           awaitingContactInfo = { field: bot.requested_contact_field };
         } else {
           awaitingContactInfo = null;
         }
       } else {
+        removeLoadingIndicator();
         addMessage('Sorry, I could not connect to the server.', 'bot');
         chatHistory.push({ role: 'bot', content: 'Sorry, I could not connect to the server.' });
+        latestFollowUpButtons = [];
+        latestCtaButton = null;
+        showSuggestions();
       }
     } catch {
+      removeLoadingIndicator();
       addMessage('Sorry, I could not connect to the server.', 'bot');
       chatHistory.push({ role: 'bot', content: 'Sorry, I could not connect to the server.' });
+      latestFollowUpButtons = [];
+      latestCtaButton = null;
+      showSuggestions();
     }
   }
 
@@ -472,9 +607,13 @@
       });
       if (res.ok) {
         const data = await res.json();
-        const bot = data.intent;
+         const bot = data.intent;
         addMessage(bot.message_text, 'bot');
         chatHistory.push({ role: 'bot', content: bot.message_text });
+        // Update follow-up buttons and CTA from response
+        latestFollowUpButtons = bot.follow_up_buttons || [];
+        latestCtaButton = bot.cta_button || null;
+        showSuggestions();
         if (bot.action_collect_contact_info && bot.requested_contact_field) {
           awaitingContactInfo = { field: bot.requested_contact_field };
         } else {
@@ -483,10 +622,16 @@
       } else {
         addMessage('Hello! How can I help you today?', 'bot');
         chatHistory.push({ role: 'bot', content: 'Hello! How can I help you today?' });
+        latestFollowUpButtons = [];
+        latestCtaButton = null;
+        showSuggestions();
       }
     } catch {
       addMessage('Hello! How can I help you today?', 'bot');
       chatHistory.push({ role: 'bot', content: 'Hello! How can I help you today?' });
+      latestFollowUpButtons = [];
+      latestCtaButton = null;
+      showSuggestions();
     }
   }
 
@@ -531,9 +676,20 @@
       closeChat();
       if (bubble) bubble.style.display = 'flex'; // Show bubble when chat is closed
     };
-    chatWindow.querySelector('#rankved-send-btn').onclick = sendMessageStateless;
+    // Fix: Send button should send the input value
+    const sendBtn = chatWindow.querySelector('#rankved-send-btn');
+    const inputEl = chatWindow.querySelector('#rankved-input');
+    if (sendBtn && inputEl) {
+      sendBtn.onclick = function() {
+        sendMessageStateless(inputEl.value);
+        inputEl.value = '';
+      };
+    }
     chatWindow.querySelector('#rankved-input').onkeydown = function (e) {
-      if (e.key === 'Enter') sendMessageStateless(this.value);
+      if (e.key === 'Enter') {
+        sendMessageStateless(this.value);
+        this.value = '';
+      }
     };
   }
 
@@ -580,6 +736,41 @@
     if (oldLoading) oldLoading.remove();
   }
 
+  // Show loading indicator as a temporary bot message
+  function showLoadingIndicator() {
+    removeLoadingIndicator();
+    const messagesContainer = document.getElementById('rankved-messages');
+    if (!messagesContainer) return;
+    loadingMessageDiv = document.createElement('div');
+    loadingMessageDiv.setAttribute('style', 'margin-bottom: 7px; display: flex; flex-direction: row; align-items: flex-start; gap: 8px;');
+    const avatarDiv = document.createElement('div');
+    let botIcon = config.chatWindowAvatar || config.chatWidgetIcon;
+    if (botIcon) {
+      avatarDiv.innerHTML = `<img src="${botIcon}" style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover; background: rgba(255,255,255,0.2); border: 2px solid rgba(255,255,255,0.2); box-shadow: 0 1px 3px rgba(0,0,0,0.1);">`;
+    } else {
+      avatarDiv.innerHTML = `<span style=\"display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; background: ${getAppearance().primaryColor}; border: 2px solid rgba(255,255,255,0.2); box-shadow: 0 1px 3px rgba(0,0,0,0.1);\"><svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"white\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"3\" y=\"11\" width=\"18\" height=\"7\" rx=\"2\"/><path d=\"M8 11V7a4 4 0 0 1 8 0v4\"/></svg></span>`;
+    }
+    loadingMessageDiv.appendChild(avatarDiv);
+    const loadingBubble = document.createElement('div');
+    loadingBubble.setAttribute('style', `max-width: 70%; padding: 4px 8px; border-radius: 14px 14px 14px 4px; font-size: 11px; background: #f3f4f6; color: #888; box-shadow: 0 1px 1px 0px rgb(0 0 0 / 10%); margin-bottom: 8px; display: flex; align-items: center; min-height: 20px;`);
+    loadingBubble.innerHTML = `<span class="rankved-typing-dots" style="display: inline-block;">
+      <span style="display:inline-block;width:6px;height:6px;background:${getAppearance().primaryColor};border-radius:50%;margin-right:2px;animation:rankved-dot-bounce 1s infinite alternate;"></span>
+      <span style="display:inline-block;width:6px;height:6px;background:${getAppearance().primaryColor};border-radius:50%;margin-right:2px;animation:rankved-dot-bounce 1s 0.2s infinite alternate;"></span>
+      <span style="display:inline-block;width:6px;height:6px;background:${getAppearance().primaryColor};border-radius:50%;animation:rankved-dot-bounce 1s 0.4s infinite alternate;"></span>
+    </span>`;
+    loadingMessageDiv.appendChild(loadingBubble);
+    messagesContainer.appendChild(loadingMessageDiv);
+    scrollToBottom(messagesContainer);
+  }
+
+  // Remove loading indicator
+  function removeLoadingIndicator() {
+    if (loadingMessageDiv && loadingMessageDiv.parentElement) {
+      loadingMessageDiv.parentElement.removeChild(loadingMessageDiv);
+      loadingMessageDiv = null;
+    }
+  }
+
   // Initialize
   async function init() {
     injectStyles();
@@ -622,5 +813,16 @@
     // Re-initialize
     init();
   };
+
+  // Add a helper function to convert hex to rgba for glass effect
+  function hexToGlass(hex, alpha) {
+    let c = hex.replace('#', '');
+    if (c.length === 3) c = c.split('').map(x => x + x).join('');
+    const num = parseInt(c, 16);
+    const r = (num >> 16) & 255;
+    const g = (num >> 8) & 255;
+    const b = num & 255;
+    return `rgba(${r},${g},${b},${alpha})`;
+  }
 
 })();

@@ -212,11 +212,11 @@ export default function Dashboard() {
   return (
     <>
 
-      <div className="flex-1 bg-gradient-to-br from-blue-100 to-blue-50 min-h-screen">
+      <div className="flex-1 bg-gradient-to-br from-blue-50 via-white to-white min-h-screen">
         {/* Chatbot Creation Dialog */}
         <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-          <DialogContent className="sm:max-w-[430px] bg-white rounded-2xl shadow-2xl border border-slate-200 p-0 overflow-hidden">
-            <DialogHeader className="bg-slate-50 px-6 py-4 border-b border-slate-200">
+          <DialogContent className="sm:max-w-[430px] bg-white rounded-2xl shadow-2xl border border-blue-50 p-0 overflow-hidden">
+            <DialogHeader className="bg-blue-50 px-6 py-4 border-b border-blue-100">
               <DialogTitle className="text-2xl font-bold text-slate-900">{editMode ? 'Edit Chatbot' : 'Create New Chatbot'}</DialogTitle>
               <p className="text-slate-500 text-sm mt-1">Set up your chatbot's basic details and welcome message.</p>
             </DialogHeader>
@@ -228,7 +228,7 @@ export default function Dashboard() {
                   value={newChatbot.name}
                   onChange={(e) => setNewChatbot(prev => ({ ...prev, name: e.target.value }))}
                   placeholder="e.g., Customer Support Bot"
-                  className="focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all rounded-lg border-slate-300 hover:border-blue-400"
+                  className="focus:ring-2 focus:ring-blue-200 focus:border-blue-200 transition-all rounded-lg border-blue-50 hover:border-blue-100"
                 />
               </div>
               <div className="border-t border-slate-100 pt-6 space-y-2">
@@ -238,7 +238,7 @@ export default function Dashboard() {
                   value={newChatbot.aiSystemPrompt}
                   onChange={(e) => setNewChatbot(prev => ({ ...prev, aiSystemPrompt: e.target.value }))}
                   placeholder="You are a helpful customer service assistant..."
-                  className="focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all rounded-lg border-slate-300 hover:border-blue-400 min-h-[80px]"
+                  className="focus:ring-2 focus:ring-blue-200 focus:border-blue-200 transition-all rounded-lg border-blue-50 hover:border-blue-100 min-h-[80px]"
                 />
               </div>
               <div className="border-t border-slate-100 pt-6 space-y-2">
@@ -248,7 +248,7 @@ export default function Dashboard() {
                   value={newChatbot.welcomeMessage}
                   onChange={(e) => setNewChatbot(prev => ({ ...prev, welcomeMessage: e.target.value }))}
                   placeholder="Hello! How can I help you today?"
-                  className="focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all rounded-lg border-slate-300 hover:border-blue-400"
+                  className="focus:ring-2 focus:ring-blue-200 focus:border-blue-200 transition-all rounded-lg border-blue-50 hover:border-blue-100"
                 />
               </div>
               <div className="border-t border-slate-100 pt-6 flex items-center space-x-2 mt-2">
@@ -256,14 +256,14 @@ export default function Dashboard() {
                   id="active"
                   checked={newChatbot.isActive}
                   onCheckedChange={(checked) => setNewChatbot(prev => ({ ...prev, isActive: checked }))}
-                  className={`transition-colors duration-300 w-10 h-6 rounded-full relative focus:ring-2 focus:ring-green-500 focus:border-green-500
-                      ${newChatbot.isActive ? 'bg-green-500 shadow-green-200 shadow' : 'bg-gray-300'}
+                  className={`transition-colors duration-300 w-10 h-6 rounded-full relative focus:ring-2 focus:ring-blue-200 focus:border-blue-200
+                      ${newChatbot.isActive ? 'bg-blue-200 shadow-blue-100 shadow' : 'bg-blue-50'}
                     `}
                 />
                 <Label
                   htmlFor="active"
                   className={`ml-2 font-medium transition-colors duration-300 flex items-center select-none
-                      ${newChatbot.isActive ? 'text-green-600' : 'text-gray-500'}
+                      ${newChatbot.isActive ? 'text-blue-600' : 'text-blue-400'}
                     `}
                 >
                   {newChatbot.isActive ? (
@@ -284,7 +284,7 @@ export default function Dashboard() {
                 </Label>
               </div>
               <div className="flex justify-end space-x-2 pt-4">
-                <Button variant="outline" onClick={() => setShowCreateDialog(false)} aria-label="Cancel chatbot creation" className="rounded-lg px-5 py-2">
+                <Button variant="outline" onClick={() => setShowCreateDialog(false)} aria-label="Cancel chatbot creation" className="rounded-lg px-5 py-2 border-blue-100">
                   Cancel
                 </Button>
                 <Button
@@ -324,7 +324,7 @@ export default function Dashboard() {
                   }}
                   disabled={!newChatbot.name || (editMode ? updateChatbot.isPending : createChatbot.isPending)}
                   aria-label={editMode ? 'Save chatbot changes' : 'Create new chatbot'}
-                  className="rounded-lg px-5 py-2 shadow-sm font-semibold"
+                  className="rounded-lg px-5 py-2 shadow-sm font-semibold bg-blue-100 text-blue-900 hover:bg-blue-200"
                 >
                   {(editMode ? updateChatbot.isPending : createChatbot.isPending) ? (
                     <svg className="animate-spin h-4 w-4 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -341,7 +341,7 @@ export default function Dashboard() {
         </Dialog>
         {/* Delete Confirmation Dialog */}
         <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-          <DialogContent className="sm:max-w-[425px] transition-all duration-300">
+          <DialogContent className="sm:max-w-[425px] transition-all duration-300 bg-white border border-blue-50">
             <DialogHeader>
               <DialogTitle>Delete Chatbot</DialogTitle>
             </DialogHeader>
@@ -368,7 +368,7 @@ export default function Dashboard() {
           </DialogContent>
         </Dialog>
         {/* Responsive Header */}
-        <header className="backdrop-blur-md bg-gradient-to-br from-blue-50 to-white/80 border-b border-slate-200 px-6 py-5 sticky top-0 z-20 shadow-lg flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <header className="backdrop-blur-md bg-gradient-to-br from-blue-50 via-white to-white border-b border-blue-50 px-6 py-5 sticky top-0 z-20 shadow-lg flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="text-center sm:text-left">
             <h2 className="text-xl sm:text-2xl font-semibold text-slate-900">Dashboard</h2>
             <p className="text-sm sm:text-base text-slate-600 mt-1">Monitor your chatbots and analyze performance</p>
@@ -400,11 +400,11 @@ export default function Dashboard() {
           <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight mb-6">Overview</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {statsData.map((stat, i) => (
-              <Card key={i} className="rounded-2xl shadow-md border border-slate-100 bg-white hover:shadow-xl transition-shadow duration-200 group">
+              <Card key={i} className="rounded-2xl shadow-md border border-blue-50 bg-white hover:shadow-xl transition-shadow duration-200 group">
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                   <CardTitle className="text-sm font-medium text-slate-500">{stat.title}</CardTitle>
-                  <div className={`rounded-full p-3 bg-blue-100 group-hover:scale-110 transition-transform`}>
-                    <stat.icon className={`h-6 w-6 text-blue-600`} />
+                  <div className={`rounded-full p-3 bg-blue-50 group-hover:scale-110 transition-transform`}>
+                    <stat.icon className={`h-6 w-6 text-blue-400`} />
                   </div>
                 </CardHeader>
                 <CardContent>
@@ -425,38 +425,38 @@ export default function Dashboard() {
               <div 
                 className={`flex items-center gap-3 mt-4 cursor-pointer select-none p-3 rounded-xl transition-all duration-300 hover:shadow-md ${
                   showChatbots 
-                    ? 'bg-blue-100 border-2 border-blue-300 shadow-lg' 
-                    : 'bg-white border-2 border-blue-200 hover:border-blue-200'
+                    ? 'bg-blue-50 border-2 border-blue-100 shadow-lg' 
+                    : 'bg-white border-2 border-blue-50 hover:border-blue-100'
                 }`} 
                 onClick={() => setShowChatbots(v => !v)}
               >
                 <div className={`p-2 rounded-lg transition-colors duration-300 ${
-                  showChatbots ? 'bg-blue-500 text-white' : 'bg-blue-100 text-blue-600'
+                  showChatbots ? 'bg-blue-200 text-blue-700' : 'bg-blue-50 text-blue-400'
                 }`}>
                   <Bot className="h-5 w-5" />
                 </div>
                 <span className={`font-bold text-lg transition-colors duration-300 ${
-                  showChatbots ? 'text-blue-800' : 'text-blue-800'
+                  showChatbots ? 'text-blue-700' : 'text-blue-700'
                 }`}>Active Chatbots</span>
                 <div className={`ml-auto p-1 rounded-full transition-all duration-300 ${
-                  showChatbots ? 'bg-blue-500 text-white' : 'bg-blue-200 text-blue-600'
+                  showChatbots ? 'bg-blue-200 text-blue-700' : 'bg-blue-50 text-blue-400'
                 }`}>
                   {showChatbots ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                 </div>
               </div>
-              <div className={`transition-all duration-700 ease-in-out overflow-hidden ${showChatbots ? 'max-h-[1000px] opacity-100 mt-2' : 'max-h-0 opacity-0 mt-0'}`}>
+              <div className={`transition-all duration-700 ease-in-out overflow-hidden ${showChatbots ? 'max-h-[1000px] opacity-100 mt-2' : 'max-h-0 opacity-0 mt-0'}`}> 
                 {showChatbots && (
-                  <Card className="shadow-xl rounded-2xl border-0 bg-gradient-to-br from-blue-50/60 via-white/80 to-blue-100/60 relative overflow-hidden">
-                    <div className="absolute left-0 top-0 bottom-0 w-2 bg-blue-400 rounded-l-2xl" />
+                  <Card className="shadow-xl rounded-2xl border-0 bg-gradient-to-br from-blue-50/80 via-white/90 to-white/80 relative overflow-hidden">
+                    <div className="absolute left-0 top-0 bottom-0 w-2 bg-blue-100 rounded-l-2xl" />
                     <CardHeader>
-                      <CardTitle className="text-lg font-semibold text-slate-900">Active Chatbots</CardTitle>
-                      <p className="text-slate-600">Manage and monitor your deployed chatbots</p>
+                      <CardTitle className="text-lg font-semibold text-blue-900">Active Chatbots</CardTitle>
+                      <p className="text-blue-400">Manage and monitor your deployed chatbots</p>
                     </CardHeader>
                     <CardContent className="p-0">
                       <div className="overflow-x-auto">
                         <table className="w-full">
                           <thead>
-                            <tr className="border-b border-slate-200 bg-white/80 sticky top-0 z-10 shadow-sm">
+                            <tr className="border-b border-blue-50 bg-white/80 sticky top-0 z-10 shadow-sm">
                               <th className="text-left p-4 font-medium text-slate-600">Name</th>
                               <th className="text-left p-4 font-medium text-slate-600">Status</th>
                               <th className="text-left p-4 font-medium text-slate-600">Conversations</th>
@@ -488,10 +488,10 @@ export default function Dashboard() {
                               </tr>
                             ) : (
                               chatbots?.map((chatbot) => (
-                                <tr key={chatbot.id} className="border-b border-slate-100 hover:bg-blue-100/40 transition-colors group">
+                                <tr key={chatbot.id} className="border-b border-blue-50 hover:bg-blue-50/60 transition-colors group">
                                   <td className="p-4">
                                     <div className="flex items-center space-x-3">
-                                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-200 via-blue-100 to-white flex items-center justify-center shadow-md">
+                                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-100 via-blue-50 to-white flex items-center justify-center shadow-md">
                                         {typeof chatbot.chatWidgetIcon === 'string' && chatbot.chatWidgetIcon.trim() !== '' ? (
                                           <img src={chatbot.chatWidgetIcon} alt="Chatbot Icon" className="w-8 h-8 rounded-full object-cover" />
                                         ) : chatbot.name ? (
@@ -502,12 +502,12 @@ export default function Dashboard() {
                                       </div>
                                       <div>
                                         <p className="font-semibold text-slate-900">{chatbot.name}</p>
-                                        <p className="text-xs text-slate-400">ID: {chatbot.id.slice(0, 8)}...</p>
+                                        <p className="text-xs text-blue-300">ID: {chatbot.id.slice(0, 8)}...</p>
                                       </div>
                                     </div>
                                   </td>
                                   <td className="p-4">
-                                    <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${chatbot.isActive ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-500'} shadow-sm`}>
+                                    <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${chatbot.isActive ? 'bg-blue-50 text-blue-700' : 'bg-blue-100 text-blue-400'} shadow-sm`}>
                                       {chatbot.isActive ? 'Active' : 'Paused'}
                                     </span>
                                   </td>
@@ -542,38 +542,38 @@ export default function Dashboard() {
               <div 
                 className={`flex items-center gap-3 mt-4 cursor-pointer select-none p-3 rounded-xl transition-all duration-300 hover:shadow-md ${
                   showLeads 
-                    ? 'bg-blue-100 border-2 border-blue-300 shadow-lg' 
-                    : 'bg-white border-2 border-blue-200 hover:border-blue-200'
+                    ? 'bg-blue-50 border-2 border-blue-100 shadow-lg' 
+                    : 'bg-white border-2 border-blue-50 hover:border-blue-100'
                 }`} 
                 onClick={() => setShowLeads(v => !v)}
               >
                 <div className={`p-2 rounded-lg transition-colors duration-300 ${
-                  showLeads ? 'bg-blue-500 text-white' : 'bg-blue-100 text-blue-600'
+                  showLeads ? 'bg-blue-200 text-blue-700' : 'bg-blue-50 text-blue-400'
                 }`}>
                   <Users className="h-5 w-5" />
                 </div>
                 <span className={`font-bold text-lg transition-colors duration-300 ${
-                  showLeads ? 'text-blue-800' : 'text-blue-800'
+                  showLeads ? 'text-blue-700' : 'text-blue-700'
                 }`}>Recent Leads</span>
                 <div className={`ml-auto p-1 rounded-full transition-all duration-300 ${
-                  showLeads ? 'bg-blue-500 text-white' : 'bg-blue-200 text-blue-600'
+                  showLeads ? 'bg-blue-200 text-blue-700' : 'bg-blue-50 text-blue-400'
                 }`}>
                   {showLeads ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                 </div>
               </div>
-              <div className={`transition-all duration-700 ease-in-out overflow-hidden ${showLeads ? 'max-h-[1000px] opacity-100 mt-2' : 'max-h-0 opacity-0 mt-0'}`}>
+              <div className={`transition-all duration-700 ease-in-out overflow-hidden ${showLeads ? 'max-h-[1000px] opacity-100 mt-2' : 'max-h-0 opacity-0 mt-0'}`}> 
                 {showLeads && (
-                  <Card className="shadow-xl rounded-2xl border-0 bg-gradient-to-br from-blue-50/60 via-white/80 to-blue-100/60 relative overflow-hidden">
-                    <div className="absolute left-0 top-0 bottom-0 w-2 bg-blue-400 rounded-l-2xl" />
+                  <Card className="shadow-xl rounded-2xl border-0 bg-gradient-to-br from-blue-50/80 via-white/90 to-white/80 relative overflow-hidden">
+                    <div className="absolute left-0 top-0 bottom-0 w-2 bg-blue-100 rounded-l-2xl" />
                     <CardHeader className="top-[180px] z-10 bg-white/90 backdrop-blur-md rounded-t-2xl flex flex-row items-center justify-between">
                       <CardTitle className="flex items-center gap-2 text-lg font-bold">
-                        <Users className="h-5 w-5 text-blue-600" /> Recent Leads
+                        <Users className="h-5 w-5 text-blue-400" /> Recent Leads
                       </CardTitle>
                       <Button
                         onClick={exportLeads}
                         variant="default"
                         size="sm"
-                        className="ml-auto bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-md px-4 py-2"
+                        className="ml-auto bg-blue-100 hover:bg-blue-200 text-blue-900 rounded-full shadow-md px-4 py-2"
                         aria-label="Export leads as CSV"
                       >
                         <Download className="h-4 w-4 mr-2" /> Export
@@ -583,7 +583,7 @@ export default function Dashboard() {
                       <div className="overflow-x-auto">
                         <table className="w-full">
                           <thead>
-                            <tr className="border-b border-slate-200 bg-white/80 sticky top-0 z-10 shadow-sm">
+                            <tr className="border-b border-blue-50 bg-white/80 sticky top-0 z-10 shadow-sm">
                               <th className="text-left p-4 font-medium text-slate-600">Contact</th>
                               <th className="text-left p-4 font-medium text-slate-600">Phone</th>
                               <th className="text-left p-4 font-medium text-slate-600">Email</th>
@@ -607,10 +607,10 @@ export default function Dashboard() {
                               </tr>
                             ) : (
                               [...leads].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 10).map((lead) => (
-                                <tr key={lead.id} className="border-b border-slate-100 hover:bg-blue-100/40 transition-colors group">
+                                <tr key={lead.id} className="border-b border-blue-50 hover:bg-blue-50/60 transition-colors group">
                                   <td className="p-4">
                                     <div className="flex items-center gap-3">
-                                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-200 via-blue-100 to-white flex items-center justify-center shadow-md">
+                                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-100 via-blue-50 to-white flex items-center justify-center shadow-md">
                                         {lead.name ? (
                                           <span className="font-bold text-blue-700 text-lg">{lead.name.charAt(0).toUpperCase()}</span>
                                         ) : (
@@ -619,23 +619,23 @@ export default function Dashboard() {
                                       </div>
                                       <div>
                                         <p className="font-semibold text-slate-900">{lead.name || 'Unknown'}</p>
-                                        <p className="text-xs text-slate-400">ID: {lead.id}</p>
+                                        <p className="text-xs text-blue-300">ID: {lead.id}</p>
                                       </div>
                                     </div>
                                   </td>
                                   <td className="p-4">{lead.phone || <span className="text-slate-400 text-sm">No phone</span>}</td>
                                   <td className="p-4">{lead.email || <span className="text-slate-400 text-sm">No email</span>}</td>
                                   <td className="p-4">
-                                    <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${lead.consentGiven ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-500'} shadow-sm`}>
+                                    <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${lead.consentGiven ? 'bg-blue-50 text-blue-700' : 'bg-blue-100 text-blue-400'} shadow-sm`}>
                                       {lead.consentGiven ? 'Yes' : 'No'}
                                     </span>
                                   </td>
                                   <td className="p-4">
-                                    <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700 shadow-sm">
+                                    <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 shadow-sm">
                                       {chatbots?.find(c => c.id === lead.chatbotId)?.name || 'Unknown'}
                                     </span>
                                   </td>
-                                  <td className="p-4">{formatTimeAgo(lead.createdAt)}</td>
+                                  <td className="p-4 text-blue-400">{formatTimeAgo(lead.createdAt)}</td>
                                 </tr>
                               ))
                             )}
@@ -651,49 +651,48 @@ export default function Dashboard() {
             {/* Right Column - Live Preview */}
             <div className="space-y-6">
               {/* Live Chatbot Preview */}
-              <Card className="shadow-xl rounded-2xl border-0 bg-gradient-to-br from-blue-50/60 via-white/80 to-blue-100/60 relative overflow-hidden">
-                <div className="absolute left-0 top-0 bottom-0 w-2 bg-blue-400 rounded-l-2xl" />
+              <Card className="shadow-xl rounded-2xl border-0 bg-gradient-to-br from-blue-50/80 via-white/90 to-white/80 relative overflow-hidden">
+                <div className="absolute left-0 top-0 bottom-0 w-2 bg-blue-100 rounded-l-2xl" />
                 <CardHeader className="pb-4">
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <div>
-                      <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                        <Bot className="h-5 w-5 text-blue-600" />
+                      <CardTitle className="text-lg font-semibold text-blue-900 flex items-center gap-2">
+                        <Bot className="h-5 w-5 text-blue-400" />
                         Live Preview
                       </CardTitle>
-                      <p className="text-sm text-slate-600 mt-1">Test your chatbot in real-time</p>
+                      <p className="text-sm text-blue-400 mt-1">Test your chatbot in real-time</p>
                     </div>
                     {activeChatbot && (
                       <Button 
                         variant="outline" 
                         size="sm" 
                         onClick={() => window.open(`/chat/${activeChatbot.id}`, '_blank')}
-                        className="bg-blue-600 hover:bg-blue-700 text-white border-blue-600 hover:border-blue-700"
+                        className="bg-blue-100 hover:bg-blue-200 text-blue-900 border-blue-100 hover:border-blue-200"
                       >
                         <Eye className="h-4 w-4 mr-2" />
                         Try Live
                       </Button>
                     )}
                   </div>
-                  
                   {/* Active Chatbot Info */}
                   {activeChatbot && (
-                    <div className="flex items-center gap-3 mt-4 p-3 bg-white/80 rounded-lg border border-slate-200">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-200 via-blue-100 to-white flex items-center justify-center shadow-md">
+                    <div className="flex items-center gap-3 mt-4 p-3 bg-white/80 rounded-lg border border-blue-50">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-100 via-blue-50 to-white flex items-center justify-center shadow-md">
                         {typeof activeChatbot.chatWidgetIcon === 'string' && activeChatbot.chatWidgetIcon.trim() !== '' ? (
                           <img src={activeChatbot.chatWidgetIcon} alt="Chatbot Icon" className="w-8 h-8 rounded-full object-cover" />
                         ) : activeChatbot.name ? (
                           <span className="font-bold text-blue-700 text-lg">{activeChatbot.name.charAt(0).toUpperCase()}</span>
                         ) : (
-                          <Bot className="h-5 w-5 text-blue-600" />
+                          <Bot className="h-5 w-5 text-blue-400" />
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-slate-900 truncate">{activeChatbot.name || 'Unnamed Chatbot'}</p>
+                        <p className="font-semibold text-blue-900 truncate">{activeChatbot.name || 'Unnamed Chatbot'}</p>
                         <div className="flex items-center gap-2 mt-1">
-                          <span className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${activeChatbot.isActive ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-500'}`}>
+                          <span className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${activeChatbot.isActive ? 'bg-blue-50 text-blue-700' : 'bg-blue-100 text-blue-400'}`}> 
                             {activeChatbot.isActive ? 'Active' : 'Paused'}
                           </span>
-                          <span className="text-xs text-slate-500">ID: {activeChatbot.id.slice(0, 8)}...</span>
+                          <span className="text-xs text-blue-300">ID: {activeChatbot.id.slice(0, 8)}...</span>
                         </div>
                       </div>
                     </div>
@@ -701,24 +700,22 @@ export default function Dashboard() {
                 </CardHeader>
                 <CardContent className="p-0">
                   <div className="p-4">
-                    <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div className="bg-white rounded-xl border border-blue-50 shadow-sm overflow-hidden">
                       {/* Preview Header */}
-                      
                       {/* Preview Content */}
                       <div className="p-2 min-h-[300px] max-h-[400px] overflow-y-auto">
                         {activeChatbot ? (
                           <ChatPreview chatbot={activeChatbot} />
                         ) : (
                           <div className="flex flex-col items-center justify-center h-full text-center py-8">
-                            <Bot className="h-12 w-12 text-slate-300 mb-4" />
-                            <p className="text-slate-500 font-medium mb-2">No Active Chatbot</p>
-                            <p className="text-slate-400 text-sm">Select a chatbot from the header to see a live preview</p>
+                            <Bot className="h-12 w-12 text-blue-100 mb-4" />
+                            <p className="text-blue-400 font-medium mb-2">No Active Chatbot</p>
+                            <p className="text-blue-200 text-sm">Select a chatbot from the header to see a live preview</p>
                           </div>
                         )}
                       </div>
-                      
                       {/* Preview Input */}
-                      <div className="border-t border-slate-200 p-3 bg-slate-50">
+                      <div className="border-t border-blue-50 p-3 bg-blue-50">
                         <div className="flex items-center gap-2">
                          
                         </div>

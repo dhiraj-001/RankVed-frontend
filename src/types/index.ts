@@ -77,6 +77,7 @@ export interface Chatbot {
   allowedDomains?: string[];
   inputPlaceholder?: string;
   primaryColor?: string;
+  secondaryColor?: string;
   suggestionButtons?: any;
   title?: string;
   showWelcomePopup?: boolean;
@@ -179,6 +180,7 @@ export interface InsertChatbot {
   questionFlowEnabled?: boolean;
   isActive?: boolean;
   primaryColor?: string;
+  secondaryColor?: string;
   showWelcomePopup?: boolean;
   suggestionButtons?: string;
   suggestionTiming?: string;

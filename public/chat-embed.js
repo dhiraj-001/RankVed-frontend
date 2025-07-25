@@ -411,7 +411,7 @@
       contentDiv.textContent = content;
       messageDiv.appendChild(contentDiv);
     } else {
-      messageDiv.setAttribute('style', `margin-bottom: 7px; display: flex; flex-direction: row; align-items: flex-start; gap: 8px;`);
+      messageDiv.setAttribute('style', `margin-bottom: 7px; display: flex; flex-direction: row; align-items: flex-start; gap: 8px; width: 70%;`);
       // Avatar div
       const avatarDiv = document.createElement('div');
       let botIcon = config.chatWindowAvatar || config.chatWidgetIcon;
@@ -436,7 +436,7 @@
         formatted = '<ul style="margin: 0 0 0 1em; padding: 0; list-style: disc inside;">' + formatted.replace(/(<br>)*(<li>)/g, '$2') + '</ul>';
       }
       const contentDiv = document.createElement('div');
-      contentDiv.setAttribute('style', `max-width: 80%; padding: 8px 10px; border-radius: 14px 14px 14px 1px; background: ${a.msgBg}; color: ${a.msgText}; box-shadow: 0 1px 1px 0px rgb(0 0 0 / 30%); transition: all 0.2s ease-in-out; margin-bottom: 8px; word-break: break-word;`);
+      contentDiv.setAttribute('style', `max-width: 100%; padding: 8px 10px; border-radius: 14px 14px 14px 1px; background: ${a.msgBg}; color: ${a.msgText}; box-shadow: 0 1px 1px 0px rgb(0 0 0 / 30%); transition: all 0.2s ease-in-out; margin-bottom: 8px; word-break: break-word;`);
       contentDiv.innerHTML = formatted;
       msgOptDiv.appendChild(contentDiv);
       // Render follow-up buttons below the message bubble if present
@@ -784,7 +784,7 @@
     loadingDiv.setAttribute('style', 'margin-bottom: 14px; display: flex; justify-content: flex-start; align-items: flex-start; gap: 8px;');
     loadingDiv.innerHTML = `
       <div style="width: 28px; height: 28px;"></div>
-      <div style="max-width: 80%; padding: 10px 16px; border-radius: 12px; font-size: 14px; background: #f3f4f6; color: #333; box-shadow: 0 1px 2px rgba(0,0,0,0.08);">
+      <div style="max-width: 100%; padding: 10px 16px; border-radius: 12px; font-size: 14px; background: #f3f4f6; color: #333; box-shadow: 0 1px 2px rgba(0,0,0,0.08);">
         <span class="rankved-typing-wave" style="display: inline-block;">
           <span class="wave-dot" style="display:inline-block;width:5px;height:5px;background:#6366F1;border-radius:50%;margin-right:2px;animation:rankved-dot-wave 1.2s infinite;animation-delay:0s;"></span>
           <span class="wave-dot" style="display:inline-block;width:5px;height:5px;background:#6366F1;border-radius:50%;margin-right:2px;animation:rankved-dot-wave 1.2s infinite;animation-delay:0.2s;"></span>

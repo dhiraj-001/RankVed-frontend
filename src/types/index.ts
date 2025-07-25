@@ -64,7 +64,7 @@ export interface Chatbot {
   
   // Training Data
   trainingData?: string;
-  
+  plainData?: string;
   // Question Flow
   questionFlow?: any;
   questionFlowEnabled?: boolean;
@@ -195,6 +195,7 @@ export interface InsertChatbot {
   borderRadius?: number;
   shadowStyle?: string;
   allowedDomains?: string[];
+  plainData?: string;
 }
 
 export interface InsertLead {

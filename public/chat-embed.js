@@ -273,16 +273,45 @@
             ${onlineStatus}
           </div>
         </div>
-        <button id="rankved-close-btn" style="background: none; border: none; color: ${a.headerText}; font-size: 20px; cursor: pointer; position: relative; z-index: 2; transition: all 0.2s ease-in-out; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 300;">×</button>
+        <div style="display: flex; align-items: center; gap: 4px;">
+          <button 
+            id="rankved-reset-btn" 
+            title="Reset chat" 
+            style="
+              background: none;
+              border: none;
+              color: #fff;
+              font-size: 16px;
+              cursor: pointer;
+              position: relative;
+              z-index: 2;
+              transition: background 0.2s, color 0.2s;
+              border-radius: 50%;
+              width: 24px;
+              height: 24px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              margin-right: 2px;
+              padding: 0;
+              outline: none;
+            "
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-rotate-ccw bpHeaderContentActionsIcons" aria-label="Restart Conversation Button" tabindex="0" role="button"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
+          </button>
+          <button id="rankved-close-btn" style="background: none; border: none; color: ${a.headerText}; font-size: 20px; cursor: pointer; position: relative; z-index: 2; transition: all 0.2s ease-in-out; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 300;">×</button>
+        </div>
       </div>
       <div id="rankved-messages" style="flex: 1; overflow-y: auto; padding: 10px 8px 0 8px; color: ${a.msgText}; display: flex; flex-direction: column; gap: 8px; background: ${a.backgroundColor}; border-bottom-left-radius: ${a.borderRadius}px; border-bottom-right-radius: ${a.borderRadius}px; scroll-behavior: smooth; -webkit-overflow-scrolling: touch; padding-bottom: 110px;">
         <!-- Welcome message removed; will be added by JS only -->
       </div>
-      <div style="position: absolute; left: 0; right: 0; bottom: 13px; z-index: 10; display: flex; gap: 6px; align-items: center; padding: 8px; background: none; box-shadow: none;">
-        <input id="rankved-input" placeholder="${config.inputPlaceholder || config.placeholder || 'Type your message...'}" style="flex: 1; border: 1px solid ${a.inputBorder}; border-radius: 10px; padding: 4px 8px; font-size: 11px; outline: none; color: ${a.inputText}; height: 32px; box-shadow: inset 0 1px 2px rgba(0,0,0,0.04); transition: all 0.2s ease-in-out; background: ${a.theme === 'dark' ? 'rgba(30, 41, 59, 0.8)' : 'rgba(255, 255, 255, 0.9)'};">
-        <button id="rankved-send-btn" style="width: 32px; padding:0; height: 32px; border-radius: 10px; background: ${a.primaryColor}; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease-in-out; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M2,21L23,12L2,3V10L17,12L2,14V21Z"/></svg>
-        </button>
+      <div style="position: absolute; left: 0; right: 0; bottom: 13px; z-index: 10; display: flex; align-items: center; justify-content: center; padding: 8px; background: none; box-shadow: none;">
+        <div style="display: flex; align-items: center; width: 100%; background: ${a.theme === 'dark' ? '#23232a' : '#fff'}; border-radius: 25px; border: 1px solid ${a.inputBorder}; box-shadow: 0 1px 4px rgba(0,0,0,0.04); padding: 2px 4px;">
+          <input id="rankved-input" placeholder="${config.inputPlaceholder || config.placeholder || 'Type your message...'}" style="flex: 1; border: none; border-radius: 14px; padding: 7px 10px; font-size: 12px; outline: none; color: ${a.inputText}; background: transparent; height: 32px; box-shadow: none; transition: all 0.2s ease-in-out;" />
+          <button id="rankved-send-btn" style="width: 36px; height: 36px; margin-left: 4px; border-radius: 45%; background: ${a.primaryColor}; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M2,21L23,12L2,3V10L17,12L2,14V21Z"/></svg>
+          </button>
+        </div>
       </div>
     `;
     // Add powered by text at the very bottom, below the input bar
@@ -300,6 +329,7 @@
       bottom: 0;
       z-index: 15;
       pointer-events: none;
+      background: ${a.backgroundColor};
     `);
     poweredByDiv.innerHTML =
       config.poweredByText
@@ -315,6 +345,21 @@
         const inputHeight = inputBar.offsetHeight || 0;
         const poweredByHeight = poweredBy.offsetHeight || 0;
         messagesDiv.style.paddingBottom = (inputHeight + poweredByHeight + 5) + 'px';
+      }
+    }, 0);
+    setTimeout(() => {
+      const resetBtn = win.querySelector('#rankved-reset-btn');
+      if (resetBtn) {
+        resetBtn.onclick = function() {
+          // sessionStorage.removeItem('rankved_chat_history');
+          const messagesDiv = win.querySelector('#rankved-messages');
+          if (messagesDiv) messagesDiv.innerHTML = '';
+          chatHistory = [];
+          latestFollowUpButtons = initialFollowUpButtons;
+          latestCtaButton = initialCtaButton;
+          addMessage(initialBotMessage || config.welcomeMessage || 'Hello! How can I help you today?', 'bot');
+          showSuggestions();
+        };
       }
     }, 0);
     return win;
@@ -354,7 +399,7 @@
       messageDiv.setAttribute('style', `margin-bottom: 3px; display: flex; justify-content: flex-end;`);
       const contentDiv = document.createElement('div');
       // Sharp bottom-right corner for user
-      contentDiv.setAttribute('style', `max-width: 70%; padding: 8px 10px; border-radius: 14px 14px 4px 14px; font-size: 11px; background: ${a.userMsgBg}; color: ${a.userMsgText}; box-shadow: 0 2px 6px rgba(0,0,0,0.10); transition: all 0.2s ease-in-out;`);
+      contentDiv.setAttribute('style', `max-width: 70%; padding: 8px 10px; border-radius: 14px 14px 4px 14px; font-size: 12px; background: ${a.userMsgBg}; color: ${a.userMsgText}; box-shadow: 0 2px 6px rgba(0,0,0,0.10); transition: all 0.2s ease-in-out;`);
       contentDiv.textContent = content;
       messageDiv.appendChild(contentDiv);
     } else {
@@ -372,10 +417,19 @@
       const msgOptDiv = document.createElement('div');
       msgOptDiv.setAttribute('style', 'display: flex; flex-direction: row;flex-wrap:wrap; align-items: flex-start;');
       // Message bubble
-      const paragraphs = content.split(/\n\n|\r\n\r\n/).filter(Boolean);
+      // --- Markdown-like formatting for bot messages ---
+      let formatted = content
+        .replace(/\n\n/g, '<br><br>') // double newline to double break
+        .replace(/\n/g, '<br>') // single newline to break
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // bold
+        .replace(/^- (.*)$/gm, '<li>$1</li>'); // bullet points
+      // If any <li> found, wrap in <ul>
+      if (/<li>/.test(formatted)) {
+        formatted = '<ul style="margin: 0 0 0 1em; padding: 0; list-style: disc inside;">' + formatted.replace(/(<br>)*(<li>)/g, '$2') + '</ul>';
+      }
       const contentDiv = document.createElement('div');
-      contentDiv.setAttribute('style', `max-width: 70%; padding: 8px 10px; border-radius: 14px 14px 14px 1px; font-size: 11px; background: ${a.msgBg}; color: ${a.msgText}; box-shadow: 0 1px 1px 0px rgb(0 0 0 / 30%); transition: all 0.2s ease-in-out; margin-bottom: 8px;`);
-      contentDiv.innerHTML = paragraphs.map(p => p.trim()).join('<br><br>');
+      contentDiv.setAttribute('style', `max-width: 70%; padding: 8px 10px; border-radius: 14px 14px 14px 1px; font-size: 12px; background: ${a.msgBg}; color: ${a.msgText}; box-shadow: 0 1px 1px 0px rgb(0 0 0 / 30%); transition: all 0.2s ease-in-out; margin-bottom: 8px;`);
+      contentDiv.innerHTML = formatted;
       msgOptDiv.appendChild(contentDiv);
       // Render follow-up buttons below the message bubble if present
       if (latestFollowUpButtons && latestFollowUpButtons.length > 0) {
@@ -424,7 +478,7 @@
           border-radius: 8px;
           padding: 5px 14px;
           font-size: 12px;
-          font-weight: 500;
+          font-weight: 600;
           cursor: pointer;
           box-shadow: 0 1px 4px rgba(0,0,0,0.06);
           backdrop-filter: blur(8px);
@@ -454,6 +508,11 @@
     scrollToBottom(messagesContainer);
 
     // Render follow-up buttons below the message bubble if present
+    chatHistory.push({ role: sender, content });
+    // Save chat history to sessionStorage after every message
+    // try {
+    //   sessionStorage.setItem('rankved_chat_history', JSON.stringify(chatHistory));
+    // } catch (e) {}
   }
 
   // Show follow-up buttons from latest intent-detect response
@@ -503,6 +562,7 @@
       userInput = String(userInput.text || userInput.payload || '');
     }
     if (!userInput.trim()) return;
+    // Always show the user's message in the chat
     addMessage(userInput, 'user');
     chatHistory.push({ role: 'user', content: userInput });
 
@@ -520,7 +580,7 @@
       // For all other cases (including cancellation), send to backend for intent detection
       try {
         const history = chatHistory.slice(-4);
-        const res = await fetch((config.apiUrl || window.location.origin) + '/api/intent-detect', {
+        const res = await fetch((config.apiUrl || window.location.origin) + '/api/intent-detect/' + encodeURIComponent(config.chatbotId), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ message: userInput, history }),
@@ -528,11 +588,11 @@
         if (res.ok) {
           const data = await res.json();
           const bot = data.intent;
-          addMessage(bot.message_text, 'bot');
-          chatHistory.push({ role: 'bot', content: bot.message_text });
-          // Update follow-up buttons and CTA from response
+          // Update follow-up buttons and CTA from response BEFORE rendering message
           latestFollowUpButtons = bot.follow_up_buttons || [];
           latestCtaButton = bot.cta_button || null;
+          addMessage(bot.message_text, 'bot');
+          chatHistory.push({ role: 'bot', content: bot.message_text });
           showSuggestions();
           if (bot.action_collect_contact_info && bot.requested_contact_field) {
             awaitingContactInfo = { field: bot.requested_contact_field };
@@ -559,7 +619,7 @@
     // Normal message flow
     try {
       const history = chatHistory.slice(-4);
-      const res = await fetch((config.apiUrl || window.location.origin) + '/api/intent-detect', {
+      const res = await fetch((config.apiUrl || window.location.origin) + '/api/intent-detect/' + encodeURIComponent(config.chatbotId), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: userInput, history }),
@@ -568,11 +628,11 @@
         const data = await res.json();
         const bot = data.intent;
         removeLoadingIndicator();
-        addMessage(bot.message_text, 'bot');
-        chatHistory.push({ role: 'bot', content: bot.message_text });
-        // Update follow-up buttons and CTA from response
+        // Update follow-up buttons and CTA from response BEFORE rendering message
         latestFollowUpButtons = bot.follow_up_buttons || [];
         latestCtaButton = bot.cta_button || null;
+        addMessage(bot.message_text, 'bot');
+        chatHistory.push({ role: 'bot', content: bot.message_text });
         showSuggestions();
         if (bot.action_collect_contact_info && bot.requested_contact_field) {
           awaitingContactInfo = { field: bot.requested_contact_field };
@@ -597,53 +657,39 @@
     }
   }
 
-  // On initial load, fetch the bot's hello message
-  async function loadInitialBotMessage() {
+  // Store the initial bot message and suggestions before chat window is opened
+  let initialBotMessage = null;
+  let initialFollowUpButtons = [];
+  let initialCtaButton = null;
+
+  // On initial load, fetch the bot's hello message (but don't render)
+  async function preloadInitialBotMessage() {
     try {
-      const res = await fetch((config.apiUrl || window.location.origin) + '/api/intent-detect', {
+      const res = await fetch((config.apiUrl || window.location.origin) + '/api/intent-detect/' + encodeURIComponent(config.chatbotId), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: 'hello', history: [] }),
       });
       if (res.ok) {
         const data = await res.json();
-         const bot = data.intent;
-        addMessage(bot.message_text, 'bot');
-        chatHistory.push({ role: 'bot', content: bot.message_text });
-        // Update follow-up buttons and CTA from response
-        latestFollowUpButtons = bot.follow_up_buttons || [];
-        latestCtaButton = bot.cta_button || null;
-        showSuggestions();
-        if (bot.action_collect_contact_info && bot.requested_contact_field) {
-          awaitingContactInfo = { field: bot.requested_contact_field };
-        } else {
-          awaitingContactInfo = null;
-        }
+        const bot = data.intent;
+        initialBotMessage = bot.message_text;
+        initialFollowUpButtons = bot.follow_up_buttons || [];
+        initialCtaButton = bot.cta_button || null;
       } else {
-        addMessage('Hello! How can I help you today?', 'bot');
-        chatHistory.push({ role: 'bot', content: 'Hello! How can I help you today?' });
-        latestFollowUpButtons = [];
-        latestCtaButton = null;
-        showSuggestions();
+        initialBotMessage = 'Hello! How can I help you today?';
+        initialFollowUpButtons = [];
+        initialCtaButton = null;
       }
     } catch {
-      addMessage('Hello! How can I help you today?', 'bot');
-      chatHistory.push({ role: 'bot', content: 'Hello! How can I help you today?' });
-      latestFollowUpButtons = [];
-      latestCtaButton = null;
-      showSuggestions();
+      initialBotMessage = 'Hello! How can I help you today?';
+      initialFollowUpButtons = [];
+      initialCtaButton = null;
     }
   }
 
-  // Replace old sendMessage logic with new stateless logic
-  window.sendMessageStateless = sendMessageStateless;
-  window.loadInitialBotMessage = loadInitialBotMessage;
-
-  // On chat open, load initial bot message
-  // (Call loadInitialBotMessage() when chat window is created)
-  // Open chat window with animation
+  // On chat open, show the preloaded initial bot message if no session
   async function openChat() {
-    // console.log("hello")
     playOpenCloseSound();
     if (isOpen) return;
     if (!configLoaded) {
@@ -653,23 +699,22 @@
     chatWindow = createChatWindow();
     document.body.appendChild(chatWindow);
     if (bubble) bubble.style.display = 'none';
-
-    // Hide bubble when chat is open
     isOpen = true;
-    // --- Show question flow if it exists, otherwise show welcome message ---
-    // console.log('[RankVed Chat] openChat: questionFlowEnabled:', config.questionFlowEnabled, 'questionFlow:', config.questionFlow, bubble.style);
-    // console.log()
-    if (config.questionFlowEnabled && config.questionFlow && Array.isArray(config.questionFlow.nodes) && config.questionFlow.nodes.length > 0) {
-      // resetQuestionFlow(); // No longer needed
-      // const startNode = config.questionFlow.nodes.find(n => n.id === 'start') || config.questionFlow.nodes[0];
-      // if (startNode) {
-      //   questionFlowState.currentNodeId = startNode.id;
-      //   setTimeout(() => renderQuestionNode(startNode), 500);
-      // }
-      // If question flow is enabled, load initial bot message
-      await loadInitialBotMessage();
-    } else {
-      addMessage(config.welcomeMessage || 'Hello! How can I help you today?', 'bot');
+    // Restore chat history from sessionStorage if available
+    let restored = false;
+    // try {
+    //   const saved = sessionStorage.getItem('rankved_chat_history');
+    //   if (saved) {
+    //     chatHistory = JSON.parse(saved);
+    //     chatHistory.forEach(msg => addMessage(msg.content, msg.role));
+    //     restored = true;
+    //   }
+    // } catch (e) {}
+    if (!restored) {
+      // Show the preloaded initial bot message (do not call API again)
+      latestFollowUpButtons = initialFollowUpButtons;
+      latestCtaButton = initialCtaButton;
+      addMessage(initialBotMessage || config.welcomeMessage || 'Hello! How can I help you today?', 'bot');
       showSuggestions();
     }
     chatWindow.querySelector('#rankved-close-btn').onclick = () => {
@@ -775,21 +820,7 @@
   async function init() {
     injectStyles();
     await fetchChatbotConfig(); // Wait for config to load before rendering bubble
-    // If question flow is enabled and present, preload the first node as a preview (optional)
-    if (config.questionFlowEnabled && config.questionFlow && Array.isArray(config.questionFlow.nodes) && config.questionFlow.nodes.length > 0) {
-      // resetQuestionFlow(); // No longer needed
-      // const startNode = config.questionFlow.nodes.find(n => n.id === 'start') || config.questionFlow.nodes[0];
-      // if (startNode) {
-      //   questionFlowState.currentNodeId = startNode.id;
-      //   // Optionally, show a preview or indicator here
-      //   // e.g., addMessage('Ready for a guided conversation!', 'bot');
-      // }
-      // If question flow is enabled, load initial bot message
-      await loadInitialBotMessage();
-    } else {
-      if (!config.questionFlowEnabled) console.log('Question flow not enabled');
-      if (!config.questionFlow) console.log('No question flow data');
-    }
+    await preloadInitialBotMessage(); // Preload the initial bot message
     bubble = createChatBubble();
     document.body.appendChild(bubble);
   }

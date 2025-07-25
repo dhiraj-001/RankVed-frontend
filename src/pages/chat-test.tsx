@@ -34,6 +34,24 @@ function isValidEmail(text: string) {
   return /\b[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}\b/i.test(text);
 }
 
+// Format bot message for bold, newlines, bullets
+function formatBotMessage(content: string) {
+  // Bold
+  let formatted = content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+  // Newlines
+  formatted = formatted.replace(/\n\n/g, '<br><br>').replace(/\n/g, '<br>');
+  // Bullets
+  formatted = formatted.replace(/^- (.*)$/gm, '<li>$1</li>');
+  if (/<li>/.test(formatted)) {
+    formatted = '<ul style="margin: 0 0 0 1em; padding: 0; list-style: disc inside;">' + formatted.replace(/(<br>)*(<li>)/g, '$2') + '</ul>';
+  }
+  return formatted;
+}
+
+function getChatbotIdFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  return params.get('chatbotId') || 'test-chatbot-id';
+}
 
 export default function ChatTest() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -42,6 +60,7 @@ export default function ChatTest() {
   const [awaitingContactInfo, setAwaitingContactInfo] = useState<null | { field: string }>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const apiUrl = import.meta.env.VITE_API_URL || '';
+  const chatbotId = getChatbotIdFromUrl();
 
   // Initialize chat with welcome message
   useEffect(() => {
@@ -49,7 +68,7 @@ export default function ChatTest() {
       // Fetch the bot's hello message from the backend
       (async () => {
         try {
-          const response = await fetch(`${apiUrl}/api/intent-detect`, {
+          const response = await fetch(`${apiUrl}/api/intent-detect/${chatbotId}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ message: 'hello' }),
@@ -84,7 +103,7 @@ export default function ChatTest() {
         }
       })();
     }
-  }, [messages.length]);
+  }, [messages.length, apiUrl, chatbotId]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -122,7 +141,7 @@ export default function ChatTest() {
       // For all other cases (including cancellation), send to backend for intent detection
       setIsLoading(true);
       try {
-        const response = await fetch(`${apiUrl}/api/intent-detect`, {
+        const response = await fetch(`${apiUrl}/api/intent-detect/${chatbotId}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ message: userInput }),
@@ -168,7 +187,7 @@ export default function ChatTest() {
         role: m.sender === 'user' ? 'user' : 'bot',
         content: m.content
       }));
-      const response = await fetch(`${apiUrl}/api/intent-detect`, {
+      const response = await fetch(`${apiUrl}/api/intent-detect/${chatbotId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: userInput, history }),
@@ -266,9 +285,11 @@ export default function ChatTest() {
                 style={{ backgroundColor: message.sender === 'user' ? '#6366F1' : undefined }}
               >
                 <div className="whitespace-pre-wrap">
-                  {message.content.split('\n').map((line, index) => (
-                    <div key={index}>{line}{index < message.content.split('\n').length - 1 && <br />}</div>
-                  ))}
+                  {message.sender === 'bot'
+                    ? <span dangerouslySetInnerHTML={{ __html: formatBotMessage(message.content) }} />
+                    : message.content.split('\n').map((line, index) => (
+                        <div key={index}>{line}{index < message.content.split('\n').length - 1 && <br />}</div>
+                      ))}
                 </div>
                 {/* Follow-up buttons */}
                 {message.followUpButtons && message.followUpButtons.length > 0 && (

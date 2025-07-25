@@ -88,7 +88,7 @@ export default function Dashboard() {
 
   // Function to handle preview button click
   const handlePreviewChatbot = (chatbot: any) => {
-    window.open(`/chat/${chatbot.id}`, '_blank');
+    window.open(`/chat-test?chatbotId=${chatbot.id}`, '_blank');
   };
 
   // Reset edit mode when dialog closes
@@ -666,7 +666,7 @@ export default function Dashboard() {
                       <Button 
                         variant="outline" 
                         size="sm" 
-                        onClick={() => window.open(`/chat/${activeChatbot.id}`, '_blank')}
+                        onClick={() => handlePreviewChatbot(activeChatbot)}
                         className="bg-blue-100 hover:bg-blue-200 text-blue-900 border-blue-100 hover:border-blue-200"
                       >
                         <Eye className="h-4 w-4 mr-2" />

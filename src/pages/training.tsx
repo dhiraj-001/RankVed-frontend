@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Save, Upload, Brain, Globe, FileText, Trash2, Loader2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -12,6 +12,9 @@ import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Info } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+// @ts-ignore
+import { isEqual } from 'lodash-es';
 
 export default function Training() {
   const { activeChatbot } = useApp();
@@ -24,6 +27,18 @@ export default function Training() {
   });
   const [urls, setUrls] = useState('');
   const [fetchedContent, setFetchedContent] = useState<string[]>([]);
+  const [questionFlow, setQuestionFlow] = useState<any>(null);
+  const [isGeneratingFlow, setIsGeneratingFlow] = useState(false);
+  const [flowError, setFlowError] = useState<string | null>(null);
+  const [editedFlow, setEditedFlow] = useState<string>('');
+  const [isSavingFlow, setIsSavingFlow] = useState(false);
+  const [websiteData, setWebsiteData] = useState<string>('');
+  const [whatsapp, setWhatsapp] = useState('');
+  const [phone, setPhone] = useState('');
+  const [website, setWebsite] = useState('');
+  const [isSavingWebsite, setIsSavingWebsite] = useState(false);
+
+  const savedQuestionFlow = activeChatbot?.trainingData || null;
 
   // Mutation for processing training data
   const processTrainingData = useMutation({
@@ -37,6 +52,18 @@ export default function Training() {
   const fetchUrlContent = useMutation({
     mutationFn: async (url: string) => {
       const response = await apiRequest('POST', '/api/training/fetch-url', { url });
+      return response.json();
+    },
+  });
+
+  // Mutation for generating question flow (AI)
+  const generateQuestionFlow = useMutation({
+    mutationFn: async (content: string) => {
+      const response = await apiRequest('POST', '/api/training/generate', { content });
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err.message || 'Failed to generate question flow');
+      }
       return response.json();
     },
   });
@@ -55,24 +82,29 @@ export default function Training() {
     try {
       processed = await processTrainingData.mutateAsync(trainingData);
     } catch (error) {
-      console.warn('[Training] Training data processing failed, saving anyway:', error);
+      // Training data processing failed, saving anyway
     }
 
     try {
+      // Save both plainData and trainingData (question flow)
+      const parsedFlow = editedFlow ? JSON.parse(editedFlow) : null;
       await updateChatbot.mutateAsync({
         id: activeChatbot.id,
-        data: { trainingData },
+        data: {
+          plainData: trainingData,
+          trainingData: parsedFlow,
+        },
       });
       toast({
-        title: 'Training data saved',
+        title: 'Saved',
         description: processed.processed
-          ? `Successfully processed ${processed.wordCount} words of training data.`
-          : 'Training data saved (processing failed, but data is stored).',
+          ? `Successfully processed ${processed.wordCount} words of training data and saved question flow.`
+          : 'Data saved (processing failed, but data is stored).',
       });
     } catch (error) {
       toast({
         title: 'Error',
-        description: 'Failed to save training data. Please try again.',
+        description: 'Failed to save data. Please try again.',
         variant: 'destructive',
       });
     }
@@ -114,6 +146,29 @@ export default function Training() {
       setFetchedContent(prev => [...prev, ...newContent]);
       setTrainingData(prev => prev + newContent.join(''));
       setUrls('');
+    }
+  };
+
+  // Updated handler for generating question flow (AI)
+  const handleGenerateFlow = async () => {
+    setFlowError(null);
+    setIsGeneratingFlow(true);
+    try {
+      if (!trainingData) {
+        setFlowError('No training data to generate flow from.');
+        setIsGeneratingFlow(false);
+        return;
+      }
+      // Compose content with contact info (fields may be blank)
+      const contactInfo = `\n\nContact Info:\nWhatsApp: ${whatsapp}\nPhone: ${phone}\nWebsite: ${website}`;
+      const contentWithContact = trainingData + contactInfo;
+      const result = await generateQuestionFlow.mutateAsync(contentWithContact);
+      setQuestionFlow(result);
+      setEditedFlow(JSON.stringify(result, null, 2));
+    } catch (error: any) {
+      setFlowError(error.message || 'Failed to generate question flow');
+    } finally {
+      setIsGeneratingFlow(false);
     }
   };
 
@@ -177,6 +232,64 @@ We serve over 1,000+ companies worldwide and are trusted by industry leaders.`;
     setTrainingData(prev => prev + sampleText);
   };
 
+  // When a new questionFlow is generated, update the editable textarea
+  useEffect(() => {
+    if (questionFlow) {
+      setEditedFlow(JSON.stringify(questionFlow, null, 2));
+    }
+  }, [questionFlow]);
+
+  // Sync backend data to frontend state when activeChatbot changes
+  useEffect(() => {
+    if (activeChatbot) {
+      // Load main training data from plainData
+      setTrainingData(activeChatbot.plainData || '');
+      setWebsiteData(activeChatbot.plainData || '');
+      
+      // Load question flow from trainingData if it exists
+      if (activeChatbot.trainingData && typeof activeChatbot.trainingData === 'object') {
+        setQuestionFlow(activeChatbot.trainingData);
+        setEditedFlow(JSON.stringify(activeChatbot.trainingData, null, 2));
+      }
+    }
+  }, [activeChatbot]);
+
+  // Save the edited flow to the chatbot
+
+
+
+  // Save training data to chatbot.plainData
+ 
+
+  // Reset edits to the last AI output
+  const handleResetFlow = () => {
+    if (questionFlow) {
+      setEditedFlow(JSON.stringify(questionFlow, null, 2));
+    }
+  };
+
+  // Check if editedFlow is valid JSON
+  let isValidJson = true;
+  try {
+    if (editedFlow) JSON.parse(editedFlow);
+  } catch {
+    isValidJson = false;
+  }
+
+  // Helper to compare flows
+
+  // Ensure trainingData is a string for word/char count
+  const trainingDataString = typeof trainingData === 'string' ? trainingData : '';
+
+  if (typeof activeChatbot === 'undefined') {
+    return (
+      <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-blue-50 to-white min-h-screen">
+        <div className="text-center">
+          <span className="text-2xl font-bold text-slate-900 mb-2">Loading...</span>
+        </div>
+      </div>
+    );
+  }
   if (!activeChatbot) {
     return (
       <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-blue-50 to-white min-h-screen">
@@ -200,19 +313,25 @@ We serve over 1,000+ companies worldwide and are trusted by industry leaders.`;
           <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">Training Data</h2>
           <p className="text-slate-600 mt-1 text-base font-normal">Provide custom training data for "{activeChatbot.name}" to enhance AI responses</p>
         </div>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button onClick={handleSave} disabled={updateChatbot.isPending || processTrainingData.isPending} className="rounded-full px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white shadow-lg transition-all">
-              {updateChatbot.isPending || processTrainingData.isPending ? (
-                <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-              ) : (
-                <Save className="h-5 w-5 mr-2" />
-              )}
-              {updateChatbot.isPending || processTrainingData.isPending ? 'Processing...' : 'Save'}
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>Save Training Data</TooltipContent>
-        </Tooltip>
+        <div className="flex gap-2 items-center">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button onClick={handleSave} disabled={updateChatbot.isPending || processTrainingData.isPending} className="rounded-full px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white shadow-lg transition-all">
+                {updateChatbot.isPending || processTrainingData.isPending ? (
+                  <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                ) : (
+                  <Save className="h-5 w-5 mr-2" />
+                )}
+                {updateChatbot.isPending || processTrainingData.isPending ? 'Processing...' : 'Save'}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Save Training Data</TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            
+            <TooltipContent>Generate AI-powered question flow from your training data</TooltipContent>
+          </Tooltip>
+        </div>
       </header>
 
       <div className="p-6 max-w-7xl mx-auto">
@@ -246,8 +365,8 @@ We serve over 1,000+ companies worldwide and are trusted by industry leaders.`;
                     />
                   </div>
                   <div className="flex items-center justify-between text-xs text-slate-500 mt-1">
-                    <span>{trainingData.split(/\s+/).filter(word => word.length > 0).length} words</span>
-                    <span>{trainingData.length} characters</span>
+                    <span>{typeof trainingData === 'string' ? trainingData.split(/\s+/).filter(word => word.length > 0).length + ' words' : 'N/A'}</span>
+                    <span>{typeof trainingData === 'string' ? trainingData.length + ' characters' : 'N/A'}</span>
                   </div>
                 </div>
               </CardContent>
@@ -297,6 +416,82 @@ We serve over 1,000+ companies worldwide and are trusted by industry leaders.`;
                 </div>
               </CardContent>
             </Card>
+
+            {/* Contact Info Inputs for AI Generation */}
+            <Card className="mb-4 bg-slate-50 border border-slate-200">
+              <CardHeader>
+                <CardTitle className="text-slate-700">Contact Information for AI Flow</CardTitle>
+              </CardHeader>
+              <CardContent className="flex flex-col gap-4">
+                <div>
+                  <Label htmlFor="whatsapp">WhatsApp Number</Label>
+                  <Input id="whatsapp" value={whatsapp} onChange={e => setWhatsapp(e.target.value)} placeholder="e.g. +919876543210" />
+                </div>
+                <div>
+                  <Label htmlFor="phone">Phone Number</Label>
+                  <Input id="phone" value={phone} onChange={e => setPhone(e.target.value)} placeholder="e.g. +911234567890" />
+                </div>
+                <div>
+                  <Label htmlFor="website">Website URL</Label>
+                  <Input id="website" value={website} onChange={e => setWebsite(e.target.value)} placeholder="e.g. https://yourdomain.com" />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Generate Question Flow Button - now below contact info */}
+            {/* Description above the button */}
+            <div className="mb-2 text-slate-600 text-sm text-center">
+              Generate a question flow for your chatbot using the information above. You can edit the result after generation.
+            </div>
+            <div className="mb-8">
+              <Button
+                onClick={handleGenerateFlow}
+                disabled={isGeneratingFlow}
+                className="w-full py-5 text-lg font-bold shadow-md bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 transition-all duration-150"
+                style={{ letterSpacing: '0.02em' }}
+              >
+                {isGeneratingFlow ? <Loader2 className="mr-3 h-5 w-5 animate-spin" /> : <Brain className="mr-3 h-5 w-5" />}
+                Generate Question Flow (AI)
+              </Button>
+            </div>
+
+            {/* Dedicated Question Flow Section */}
+            <Card className="shadow bg-slate-50 border border-slate-200 rounded-2xl">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-xl font-bold text-slate-700">
+                  <Brain className="h-6 w-6 text-slate-400" /> Question Flow (Saved & Editable)
+                </CardTitle>
+                <p className="text-base text-slate-600 mt-2">
+                  The question flow defines how your chatbot guides users through conversations. You can view the saved flow, edit it, and save changes.
+                </p>
+              </CardHeader>
+              <CardContent>
+                {/* Saved Flow */}
+                
+                {/* Editable Flow */}
+                <div>
+                  <div className="font-semibold text-slate-700 mb-1">Editable Flow</div>
+                  <Textarea
+                    value={editedFlow}
+                    onChange={e => setEditedFlow(e.target.value)}
+                    rows={16}
+                    className="font-mono text-xs rounded-xl border-2 border-slate-200 focus:border-slate-400 focus:ring-2 focus:ring-slate-100 transition-all mb-2 bg-white text-slate-700"
+                    spellCheck={false}
+                  />
+                  {!isValidJson && (
+                    <span className="font-semibold ml-2" style={{ color: '#b91c1c' }}>Invalid JSON</span>
+                  )}
+                  <Button
+                    onClick={handleResetFlow}
+                    disabled={editedFlow === JSON.stringify(questionFlow, null, 2)}
+                    variant="outline"
+                    className="rounded-full px-6 py-2 mt-2"
+                  >
+                    Reset to AI Output
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
           </div>
 
           {/* Sidebar: Quick Actions, Stats, Info */}
@@ -323,8 +518,8 @@ We serve over 1,000+ companies worldwide and are trusted by industry leaders.`;
               </CardHeader>
               <CardContent>
                 <div className="space-y-2 text-sm text-slate-700">
-                  <div><span className="font-semibold">Words:</span> {trainingData.split(/\s+/).filter(word => word.length > 0).length}</div>
-                  <div><span className="font-semibold">Characters:</span> {trainingData.length}</div>
+                  <div><span className="font-semibold">Words:</span> {typeof trainingData === 'string' ? trainingData.split(/\s+/).filter(word => word.length > 0).length : 'N/A'}</div>
+                  <div><span className="font-semibold">Characters:</span> {typeof trainingData === 'string' ? trainingData.length : 'N/A'}</div>
                   <div><span className="font-semibold">Fetched Sources:</span> {fetchedContent.length}</div>
                 </div>
               </CardContent>

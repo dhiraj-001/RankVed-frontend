@@ -245,8 +245,8 @@
 #rankved-chat-window[data-rankved-widget] {
   font-family: 'Inter', 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif !important;
   transition: all 0.3s ease-in-out !important;
-  width: 320px !important;
-  height: 440px !important;
+  width: 380px !important;
+  height: 520px !important;
   min-width: 220px !important;
   min-height: 220px !important;
   position: fixed !important;
@@ -311,7 +311,7 @@
   height: 32px !important;
   min-width: 32px !important;
   flex-shrink: 0 !important;
-  border-radius: 10px !important;
+  
 }
 
 #rankved-suggestions button, #rankved-flow-options button {
@@ -479,7 +479,6 @@
 /* Send button enhancements */
 #rankved-send-btn {
   transition: all 0.2s ease-in-out !important;
-  border-radius: 12px !important;
 }
 
 #rankved-send-btn:hover {
@@ -647,18 +646,17 @@
 
 @media (max-width: 600px) {
   #rankved-chat-window[data-rankved-widget] {
+    width: 100vw !important;
+    height: 100vh !important;
+    max-width: 100vw !important;
+    max-height: 100vh !important;
+    left: 0 !important;
+    right: 0 !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
     position: fixed !important;
-    bottom: 10px !important;
-    right: 10px !important;
-    left: auto !important;
-    top: auto !important;
-    z-index: 2147483647 !important;
-  }
-  #rankved-chat-bubble {
-    position: fixed !important;
-    right: 24px !important;
-    bottom: 24px !important;
-    left: auto !important;
     z-index: 2147483647 !important;
   }
 }

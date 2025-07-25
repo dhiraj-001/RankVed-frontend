@@ -74,7 +74,7 @@ export default function Chatbots() {
 
   // Preview functionality
   const handlePreview = (chatbot: any) => {
-    window.open(`/chat/${chatbot.id}`, '_blank');
+    window.open(`/chat-test?chatbotId=${chatbot.id}`, '_blank');
   };
 
   // Delete functionality

@@ -97,230 +97,119 @@ export function ChatPreview({ chatbot }: ChatPreviewProps) {
   const isDark = appearance.theme === 'dark';
 
   return (
-    <div className="relative border-2 border-slate-200 rounded-2xl p-4 bg-gradient-to-br from-blue-50/60 via-white/80 to-blue-100/60 flex justify-center items-center min-h-[480px] shadow-xl overflow-hidden">
-      {/* Background Pattern */}
-      <div className="absolute inset-0 opacity-5">
-        <div className="absolute top-0 left-0 w-32 h-32 bg-gradient-to-br from-blue-400 to-purple-600 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-0 right-0 w-24 h-24 bg-gradient-to-br from-purple-400 to-pink-600 rounded-full blur-2xl"></div>
-      </div>
-
-      {/* Enhanced Chat Window with Data Attributes */}
+    <div className="relative border-0 rounded-3xl p-0 bg-white flex justify-center items-center min-h-[480px] shadow-xl overflow-hidden" style={{background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #f1f5f9 100%)'}}>
+      {/* Chat Window */}
       <div
-        className="w-full max-w-sm mx-auto border transition-all duration-300 backdrop-blur-md relative z-10 rankved-chat-preview"
-        style={{ 
-          borderRadius: appearance.borderRadius, 
-          background: appearance.backgroundColor,
-          boxShadow: appearance.boxShadow,
-          border: `1px solid ${appearance.inputBorder}`
+        className="w-full max-w-md mx-auto relative z-10"
+        style={{
+          borderRadius: 24,
+          background: 'white',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.10)',
+          border: 'none',
+          minHeight: 480
         }}
         data-rankved-widget="true"
-        data-theme={appearance.theme}
-        data-style={appearance.chatWindowStyle}
-        data-shadow={appearance.shadowStyle}
       >
-        {/* Enhanced Chat Header */}
+        {/* Header */}
         <div
-          className="p-4 rounded-t-2xl flex items-center justify-between shadow-md relative overflow-hidden"
-          style={{ 
-            backgroundColor: appearance.headerBg, 
-            borderTopLeftRadius: appearance.borderRadius, 
-            borderTopRightRadius: appearance.borderRadius 
+          className="flex items-center justify-between px-6 py-4 rounded-t-3xl"
+          style={{
+            background: appearance.primaryColor,
+            borderTopLeftRadius: 24,
+            borderTopRightRadius: 24,
+            color: '#fff',
+            minHeight: 56
           }}
         >
-          {/* Header Background Pattern */}
-          <div className="absolute inset-0 opacity-10">
-            <div className="absolute top-0 right-0 w-16 h-16 bg-white rounded-full blur-xl"></div>
-          </div>
-
-          <div className="flex items-center gap-3 relative z-10">
-            <Avatar className="h-9 w-9 border-2 border-white/30 shadow-lg backdrop-blur-sm">
+          <div className="flex items-center gap-3">
+            <Avatar className="h-10 w-10 border-2 border-white/30 shadow-lg">
               <AvatarImage src={chatbot?.chatWidgetIcon || chatbot?.chatWindowAvatar || undefined} />
-              <AvatarFallback className="bg-white/20 backdrop-blur-sm">
+              <AvatarFallback className="bg-white/20">
                 <Bot className="h-5 w-5 text-white" />
               </AvatarFallback>
             </Avatar>
-            <div className="flex-1 min-w-0">
-              <p className="font-semibold text-base truncate drop-shadow-sm text-white">{title}</p>
-              <div className="flex items-center gap-2 mt-1">
-                <div className="flex items-center gap-1">
-                  <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-                  </span>
-                  <span className="text-xs opacity-90 text-green-100">Online</span>
-                </div>
-                <Badge variant="secondary" className="text-xs bg-white/20 text-white border-white/30">
-                  <Sparkles className="h-3 w-3 mr-1" />
-                  AI Powered
-                </Badge>
+            <div>
+              <div className="font-bold text-lg leading-tight text-white">EduExpress</div>
+              <div className="flex items-center gap-2 mt-0.5">
+                <span className="flex h-2 w-2">
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                </span>
+                <span className="text-xs text-white/80">Online</span>
               </div>
             </div>
           </div>
-
-          {/* Close Button */}
-          <button 
-            id="rankved-close-btn"
-            className="relative z-10 text-white/80 hover:text-white text-2xl font-light transition-all duration-200 hover:scale-110 hover:bg-white/20 rounded-full w-8 h-8 flex items-center justify-center"
-            style={{ fontSize: '24px' }}
-          >
-            ×
-          </button>
+          <button className="text-white/80 hover:text-white text-2xl font-light transition-all duration-200 hover:scale-110 hover:bg-white/20 rounded-full w-8 h-8 flex items-center justify-center" style={{ fontSize: '24px' }} tabIndex={-1} aria-hidden="true">×</button>
         </div>
 
-        {/* Enhanced Chat Messages */}
-        <div 
-          id="rankved-messages"
-          className="p-4 space-y-4 h-64 overflow-y-auto scrollbar-none relative"
-          style={{ 
-            background: appearance.backgroundColor,
-            borderBottomLeftRadius: appearance.borderRadius, 
-            borderBottomRightRadius: appearance.borderRadius 
-          }}
-        >
-          {/* Welcome Message */}
-          <div className="flex space-x-3 items-start animate-in slide-in-from-left duration-300">
-            <Avatar className="h-7 w-7 flex-shrink-0 border-2 border-white/20 shadow-sm">
+        {/* Messages */}
+        <div className="px-4 pt-6 pb-2 space-y-6 min-h-[320px] max-h-[400px] overflow-y-auto" style={{background: 'transparent'}}>
+          {/* Bot Welcome Message */}
+          <div className="flex items-start gap-3">
+            <Avatar className="h-8 w-8 border-2 border-white/20 shadow-sm">
               <AvatarImage src={chatbot?.chatWindowAvatar || chatbot?.chatWidgetIcon || undefined} />
               <AvatarFallback style={{ backgroundColor: appearance.primaryColor }}>
                 <Bot className="h-4 w-4 text-white" />
               </AvatarFallback>
             </Avatar>
-            <div 
-              className="p-3 rounded-2xl text-sm shadow-lg max-w-[80%] backdrop-blur-sm transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
-              style={{ 
-                background: appearance.msgBg, 
-                color: appearance.msgText,
-                boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
-              }}
-            >
-              {welcomeMessage}
+            <div className="bg-gray-50 rounded-2xl shadow p-4 text-[15px] leading-snug text-gray-800 max-w-[90%]" style={{fontWeight: 500}}>
+              Hello! Welcome to <b>EduExpress University</b>, your premier destination for <b>higher education</b>. How can I assist you today?
+              <ul className="list-none mt-2 mb-2 pl-0">
+                <li className="font-semibold">- Admission Information</li>
+                <li className="font-semibold">- Academic Programs</li>
+                <li className="font-semibold">- Student Life</li>
+                <li className="font-semibold">- Contact Support</li>
+              </ul>
+              <div className="mt-2">Click below to <b>Explore EduExpress</b> further!</div>
             </div>
           </div>
-
-          {/* User Message */}
-          <div className="flex justify-end animate-in slide-in-from-right duration-300 delay-200">
-            <div
-              className="p-3 rounded-2xl text-sm max-w-[80%] shadow-lg backdrop-blur-sm transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
-              style={{ 
-                backgroundColor: appearance.userMsgBg, 
-                color: appearance.userMsgText,
-                boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
-              }}
-            >
-              I need help with my account
-            </div>
+          {/* Follow-up Buttons */}
+          <div className="flex flex-wrap gap-2 pl-12">
+            <button className="px-4 py-1 rounded-full bg-blue-100 text-blue-700 text-sm font-medium shadow hover:bg-blue-200 transition">Academic Programs</button>
+            <button className="px-4 py-1 rounded-full bg-blue-100 text-blue-700 text-sm font-medium shadow hover:bg-blue-200 transition">Student Life</button>
+            <button className="px-4 py-1 rounded-full bg-blue-100 text-blue-700 text-sm font-medium shadow hover:bg-blue-200 transition">Contact Support</button>
+            <button className="px-4 py-1 rounded-full border border-blue-400 text-blue-700 text-sm font-medium shadow hover:bg-blue-50 transition flex items-center gap-1"><span>Explore EduExpress</span> <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M7 17L17 7"/><path d="M7 7h10v10"/></svg></button>
           </div>
-
-          {/* Bot Response */}
-          <div className="flex space-x-3 items-start animate-in slide-in-from-left duration-300 delay-400">
-            <Avatar className="h-7 w-7 flex-shrink-0 border-2 border-white/20 shadow-sm">
+          {/* CTA Button */}
+          <div className="flex pl-12">
+            <button className="px-6 py-2 rounded-full bg-blue-600 text-white text-base font-semibold shadow hover:bg-blue-700 transition">Admission Information</button>
+          </div>
+          {/* Second Bot Message */}
+          <div className="flex items-start gap-3">
+            <Avatar className="h-8 w-8 border-2 border-white/20 shadow-sm">
               <AvatarImage src={chatbot?.chatWindowAvatar || chatbot?.chatWidgetIcon || undefined} />
               <AvatarFallback style={{ backgroundColor: appearance.primaryColor }}>
                 <Bot className="h-4 w-4 text-white" />
               </AvatarFallback>
             </Avatar>
-            <div 
-              className="p-3 rounded-2xl text-sm shadow-lg max-w-[80%] backdrop-blur-sm transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
-              style={{ 
-                background: appearance.msgBg, 
-                color: appearance.msgText,
-                boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
-              }}
-            >
-              I'd be happy to help! What specific issue are you experiencing?
-            </div>
-          </div>
-
-          {/* Typing Indicator */}
-          <div className="flex space-x-3 items-start animate-in slide-in-from-left duration-300 delay-600">
-            <Avatar className="h-7 w-7 flex-shrink-0 border-2 border-white/20 shadow-sm">
-              <AvatarImage src={chatbot?.chatWindowAvatar || chatbot?.chatWidgetIcon || undefined} />
-              <AvatarFallback style={{ backgroundColor: appearance.primaryColor }}>
-                <Bot className="h-4 w-4 text-white" />
-              </AvatarFallback>
-            </Avatar>
-            <div 
-              className="p-3 rounded-2xl text-sm shadow-lg max-w-[80%] backdrop-blur-sm"
-              style={{ 
-                background: appearance.msgBg, 
-                color: appearance.msgText,
-                boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
-              }}
-            >
-              <div className="flex items-center gap-1">
-                <span className="inline-block w-2 h-2 bg-current rounded-full animate-bounce"></span>
-                <span className="inline-block w-2 h-2 bg-current rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></span>
-                <span className="inline-block w-2 h-2 bg-current rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></span>
-              </div>
+            <div className="bg-gray-50 rounded-2xl shadow p-4 text-[15px] leading-snug text-gray-800 max-w-[90%]" style={{fontWeight: 500}}>
+              <b>Our <span style={{color: appearance.primaryColor}}>admission process</span></b> is designed to be clear and supportive. What specifically would you like to know about applying to EduExpress?
+              <ul className="list-none mt-2 mb-2 pl-0">
+                <li className="font-semibold text-gray-900">- <span style={{color: appearance.primaryColor}}>Eligibility Criteria</span></li>
+                <li className="font-semibold text-gray-400 line-through">- Application Deadlines</li>
+                <li className="font-semibold text-gray-400 line-through">- Application Steps</li>
+                <li className="font-semibold text-blue-600 underline cursor-pointer">- Contact Admissions Office</li>
+              </ul>
+              <div className="mt-2 text-[13px] text-gray-500">Click below to visit Admissions Page for more info.</div>
             </div>
           </div>
         </div>
-
-        {/* Enhanced Chat Input */}
-        <div 
-          className="p-2 border-t bg-transparent relative overflow-hidden"
-          style={{ 
-            borderBottomLeftRadius: appearance.borderRadius, 
-            borderBottomRightRadius: appearance.borderRadius, 
-            borderTop: `2px solid ${appearance.inputBorder}`,
-            background: appearance.inputBg,
-            boxShadow: isDark ? '0 2px 8px rgba(30,41,59,0.12)' : '0 2px 8px rgba(100,116,139,0.08)'
-          }}
-        >
-          {/* Input Background Pattern */}
-          <div className="absolute inset-0 opacity-5">
-            <div className="absolute bottom-0 left-0 w-20 h-20 bg-gradient-to-tr from-blue-400 to-purple-600 rounded-full blur-2xl"></div>
-          </div>
-
-          <div className="flex space-x-2 relative z-10">
-            <Input
-              id="rankved-input"
-              placeholder={inputPlaceholder}
-              className="flex-1 text-sm h-10 rounded-xl shadow-inner border-0 backdrop-blur-sm transition-all duration-300 focus:ring-2 focus:ring-blue-500/50 focus:scale-105"
-              style={{
-                background: isDark ? 'rgba(30, 41, 59, 0.8)' : 'rgba(255, 255, 255, 0.9)',
-                color: appearance.inputText,
-                border: `1px solid ${appearance.inputBorder}`
-              }}
+        {/* Input Bar */}
+        <div className="px-4 pb-4 pt-2">
+          <div className="flex items-center bg-white rounded-full border border-blue-100 shadow px-4 py-2">
+            <input
+              className="flex-1 bg-transparent outline-none border-none text-[15px] placeholder-gray-400"
+              placeholder="Type your message..."
               disabled
             />
-            <Button 
-              id="rankved-send-btn"
-              size="sm" 
-              className="rounded-xl shadow-lg backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:shadow-xl disabled:opacity-50 active:scale-95" 
-              style={{ backgroundColor: appearance.primaryColor }}
-              disabled
-            >
-              <Send className="h-4 w-4" />
-            </Button>
-          </div>
-
-
-
-          {/* Enhanced Footer */}
-          <div className="mt-1 text-center relative z-10">
-            {chatbot?.poweredByText ? (
-              <span className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'} transition-all duration-200 hover:-translate-y-1`}>
-                {chatbot.poweredByText}
-              </span>
-            ) : (
-              <div className="flex items-center justify-center gap-1">
-                <Zap className="h-3 w-3 text-slate-400" />
-                <span className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'} transition-all duration-200 hover:-translate-y-1`}>
-                  Powered by <span className="font-medium" style={{ color: appearance.primaryColor }}>RankVed</span>
-                </span>
-              </div>
-            )}
+            <button className="ml-2 bg-blue-600 hover:bg-blue-700 text-white rounded-full w-10 h-10 flex items-center justify-center shadow transition">
+              <svg width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24"><path d="M2,21L23,12L2,3V10L17,12L2,14V21Z"/></svg>
+            </button>
           </div>
         </div>
-      </div>
-
-      {/* Floating Elements for Enhanced Visual Appeal */}
-      <div className="absolute top-4 right-4 z-5">
-        <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
-      </div>
-      <div className="absolute bottom-4 left-4 z-5">
-        <div className="w-1 h-1 bg-purple-400 rounded-full animate-ping"></div>
+        {/* Powered by */}
+        <div className="w-full text-center pb-2 pt-0">
+          <span className="text-xs text-blue-400">Powered by <a href="https://rankved.com" className="underline font-medium" target="_blank" rel="noopener noreferrer">RankVed</a></span>
+        </div>
       </div>
     </div>
   );

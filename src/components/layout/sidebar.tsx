@@ -6,7 +6,6 @@ import {
   BarChart3, 
   Settings, 
   Palette, 
-  GitBranch, 
   Brain, 
   Users, 
   Code,
@@ -78,12 +77,11 @@ const navigation = [
   { name: 'Settings', href: '/settings', icon: Settings },
   { name: 'Appearance', href: '/appearance', icon: Palette },
   { name: 'Security', href: '/security', icon: Shield },
-  { name: 'Question Flow', href: '/questions', icon: GitBranch },
-  { name: 'Training Data', href: '/training', icon: Brain },
+  // { name: 'Question Flow', href: '/questions', icon: GitBranch },
+  { name: 'Tune AI', href: '/training', icon: Brain },
   { name: 'Leads', href: '/leads', icon: Users },
   { name: 'Embed Code', href: '/embed', icon: Code },
   { name: 'Profile', href: '/profile', icon: User },
-  { name: 'chat-test', href: '/chat-test', icon: BotIcon },
 ];
 
 interface SidebarProps {

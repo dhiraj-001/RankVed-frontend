@@ -67,6 +67,27 @@
 
   // Initialize the chat widget
   async function init() {
+    // Inject style for font sizes and paddings to match chat-embed
+    if (!document.getElementById('rankved-iframe-style')) {
+      const style = document.createElement('style');
+      style.id = 'rankved-iframe-style';
+      style.textContent = `
+        .rankved-msg-bubble { font-size: 13px !important; }
+        .rankved-suggestion-btn, .rankved-cta-btn {
+          font-size: 13px !important;
+          padding: 8px 14px !important;
+          border-radius: 12px !important;
+        }
+        @media (max-width: 600px) {
+          .rankved-msg-bubble { font-size: 15px !important; }
+          .rankved-suggestion-btn, .rankved-cta-btn {
+            font-size: 15px !important;
+            padding: 10px 18px !important;
+          }
+        }
+      `;
+      document.head.appendChild(style);
+    }
     // Fetch chatbot configuration from server
     try {
       const response = await fetch(`${config.apiUrl}/api/chatbots/${config.chatbotId}/public`);
@@ -356,7 +377,7 @@
             }
           </div>
         ` : ''}
-        <div style="
+        <div class="rankved-msg-bubble" style="
           max-width: 80%;
           padding: 12px 16px;
           border-radius: 18px;
@@ -364,7 +385,6 @@
             ? `background: white; color: #374151; border-bottom-left-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 1px solid #e5e7eb;` 
             : `background: ${config.primaryColor || '#6366F1'}; color: white; border-bottom-right-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.15);`
           }
-          font-size: 14px;
           line-height: 1.4;
           word-wrap: break-word;
           position: relative;
@@ -545,12 +565,10 @@
       suggestions.forEach(suggestion => {
         const button = document.createElement('button');
         button.textContent = suggestion;
+        button.className = 'rankved-suggestion-btn';
         button.style.cssText = `
-          padding: 6px 12px;
           background: white;
           border: 1px solid #d1d5db;
-          border-radius: 16px;
-          font-size: 12px;
           color: #374151;
           cursor: pointer;
           transition: all 0.2s ease;

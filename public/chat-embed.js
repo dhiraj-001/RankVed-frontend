@@ -333,6 +333,30 @@
         };
       }
     }, 0);
+    // Inject mobile-specific styles for close button and font size
+    const mobileStyleId = 'rankved-chat-mobile-style';
+    if (!document.getElementById(mobileStyleId)) {
+      const style = document.createElement('style');
+      style.id = mobileStyleId;
+      style.textContent = `
+        @media (max-width: 600px) {
+          #rankved-chat-window[data-rankved-widget] {
+            font-size: 16px !important;
+          }
+          #rankved-chat-window[data-rankved-widget] #rankved-close-btn {
+            width: 44px !important;
+            height: 44px !important;
+            font-size: 32px !important;
+          }
+          #rankved-chat-window[data-rankved-widget] #rankved-reset-btn {
+            width: 36px !important;
+            height: 36px !important;
+            font-size: 22px !important;
+          }
+        }
+      `;
+      document.head.appendChild(style);
+    }
     return win;
   }
 
@@ -370,7 +394,7 @@
       messageDiv.setAttribute('style', `margin-bottom: 3px; display: flex; justify-content: flex-end;`);
       const contentDiv = document.createElement('div');
       // Sharp bottom-right corner for user
-      contentDiv.setAttribute('style', `max-width: 80%; padding: 8px 10px; border-radius: 14px 14px 4px 14px; font-size: 12px; background: ${a.userMsgBg}; color: ${a.userMsgText}; box-shadow: 0 2px 6px rgba(0,0,0,0.10); transition: all 0.2s ease-in-out; word-break: break-word;`);
+      contentDiv.setAttribute('style', `max-width: 80%; padding: 8px 10px; border-radius: 14px 14px 4px 14px; background: ${a.userMsgBg}; color: ${a.userMsgText}; box-shadow: 0 2px 6px rgba(0,0,0,0.10); transition: all 0.2s ease-in-out; word-break: break-word;`);
       contentDiv.textContent = content;
       messageDiv.appendChild(contentDiv);
     } else {
@@ -399,7 +423,7 @@
         formatted = '<ul style="margin: 0 0 0 1em; padding: 0; list-style: disc inside;">' + formatted.replace(/(<br>)*(<li>)/g, '$2') + '</ul>';
       }
       const contentDiv = document.createElement('div');
-      contentDiv.setAttribute('style', `max-width: 80%; padding: 8px 10px; border-radius: 14px 14px 14px 1px; font-size: 12px; background: ${a.msgBg}; color: ${a.msgText}; box-shadow: 0 1px 1px 0px rgb(0 0 0 / 30%); transition: all 0.2s ease-in-out; margin-bottom: 8px; word-break: break-word;`);
+      contentDiv.setAttribute('style', `max-width: 80%; padding: 8px 10px; border-radius: 14px 14px 14px 1px; background: ${a.msgBg}; color: ${a.msgText}; box-shadow: 0 1px 1px 0px rgb(0 0 0 / 30%); transition: all 0.2s ease-in-out; margin-bottom: 8px; word-break: break-word;`);
       contentDiv.innerHTML = formatted;
       msgOptDiv.appendChild(contentDiv);
       // Render follow-up buttons below the message bubble if present
@@ -419,7 +443,6 @@
             backdrop-filter: blur(8px);
             box-shadow: 0 2px 8px rgba(0,0,0,0.08);
             padding: 3px 8px;
-            font-size: 12px;
             cursor: pointer;
             margin: 0 8px 8px 0;
             transition: background 0.2s;

@@ -429,7 +429,7 @@
       let formatted = content
         .replace(/\n\n/g, '<br><br>') // double newline to double break
         .replace(/\n/g, '<br>') // single newline to break
-        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // bold
+        .replace(/\*\*(.*?)\*\*/g, '<strong style="color: #111;">$1</strong>') // bold
         .replace(/^- (.*)$/gm, '<li>$1</li>'); // bullet points
       // If any <li> found, wrap in <ul>
       if (/<li>/.test(formatted)) {

@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Send, Bot, Loader2 } from 'lucide-react';
+import { Send, Bot, Loader2, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -58,6 +58,7 @@ export default function ChatTest() {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [awaitingContactInfo, setAwaitingContactInfo] = useState<null | { field: string }>(null);
+  const [ctaLoading, setCtaLoading] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const apiUrl = import.meta.env.VITE_API_URL || '';
   const chatbotId = getChatbotIdFromUrl();
@@ -65,7 +66,8 @@ export default function ChatTest() {
   // Initialize chat with welcome message
   useEffect(() => {
     if (messages.length === 0) {
-      // Fetch the bot's hello message from the backend
+      // Show initial loading state
+      setIsLoading(true);
       (async () => {
         try {
           const response = await fetch(`${apiUrl}/api/intent-detect/${chatbotId}`, {
@@ -85,7 +87,6 @@ export default function ChatTest() {
               ctaButton: bot.cta_button,
             }
           ]);
-          // If bot is now asking for contact info, set awaitingContactInfo
           if (bot.action_collect_contact_info && bot.requested_contact_field) {
             setAwaitingContactInfo({ field: bot.requested_contact_field });
           } else {
@@ -100,6 +101,8 @@ export default function ChatTest() {
               timestamp: new Date(),
             }
           ]);
+        } finally {
+          setIsLoading(false);
         }
       })();
     }
@@ -260,6 +263,19 @@ export default function ChatTest() {
       {/* Chat Messages */}
       <ScrollArea className="flex-1 bg-gradient-to-br from-blue-50/60 via-slate-50 to-blue-100 px-2 md:px-0">
         <div className="p-4 md:p-8 space-y-6 max-w-4xl mx-auto">
+          {/* Initial loading state */}
+          {messages.length === 0 && isLoading && (
+            <div className="flex justify-start items-end space-x-2 animate-fadeInLeft">
+              <Avatar className="h-8 w-8 mr-2 shadow-sm">
+                <AvatarFallback style={{ backgroundColor: '#6366F1' }} className="text-white">
+                  <Bot className="h-4 w-4" />
+                </AvatarFallback>
+              </Avatar>
+              <div className="bg-white rounded-2xl rounded-bl-sm px-4 py-2 shadow-md border">
+                <Loader2 className="h-4 w-4 animate-spin text-slate-400" />
+              </div>
+            </div>
+          )}
           {messages.map((message) => (
             <div
               key={message.id}
@@ -311,10 +327,24 @@ export default function ChatTest() {
                   <div className="mt-4">
                     <Button
                       variant="default"
-                      className="w-full"
-                      onClick={() => window.open(message.ctaButton!.link, '_blank')}
+                      className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-base font-semibold py-3 rounded-xl shadow-lg transition-all"
+                      onClick={async () => {
+                        setCtaLoading(message.id);
+                        setTimeout(() => {
+                          window.open(message.ctaButton!.link, '_blank');
+                          setCtaLoading(null);
+                        }, 600);
+                      }}
+                      disabled={ctaLoading === message.id}
                     >
-                      {message.ctaButton.text}
+                      {ctaLoading === message.id ? (
+                        <Loader2 className="h-5 w-5 animate-spin" />
+                      ) : (
+                        <>
+                          {message.ctaButton.text}
+                          <ExternalLink className="h-4 w-4 ml-1" />
+                        </>
+                      )}
                     </Button>
                   </div>
                 )}

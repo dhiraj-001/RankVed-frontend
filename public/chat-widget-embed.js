@@ -130,21 +130,9 @@
     }
 
     // Create chat widget container
-    let container = document.getElementById('chat-widget');
-    if (!container) {
-      container = document.createElement('div');
-      container.id = 'chat-widget';
-      // Responsive positioning only
-      const isMobile = window.innerWidth <= 768;
-      container.style.cssText = `
-        position: fixed;
-        bottom: ${isMobile ? '10px' : '20px'};
-        right: ${isMobile ? '10px' : '20px'};
-        z-index: 9999;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      `;
-      document.body.appendChild(container);
-    }
+    var container = document.createElement('div');
+    container.id = 'chat-widget';
+    // Remove any inline width/height styles here
 
     // Create chat interface
     createChatInterface(container);
@@ -186,87 +174,29 @@
     const theme = getThemeStyles(config.chatWindowTheme || 'light');
     const windowStyle = getWindowStyle(config.chatWindowStyle || 'modern');
     
+    // Remove any inline width/height styles from the chat window creation
+    // Only set class/id for styling
     container.innerHTML = `
-      <div class="chat-widget-window">
-        <!-- Header -->
-        <div class="chat-widget-header" style="background: ${config.primaryColor || '#6366F1'}; color: white; padding: 16px; display: flex; align-items: center; justify-content: space-between; border-radius: ${borderRadius}px ${borderRadius}px 0 0;">
-          <div style="display: flex; align-items: center; gap: 12px;">
-            <div style="width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden;">
-              ${avatarIcon && avatarIcon.trim() ? 
-                `<img src="${avatarIcon}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;" alt="Avatar" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" style="display: none;">
-                   <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                   <circle cx="12" cy="7" r="4"></circle>
-                 </svg>` : 
-                `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-                   <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                   <circle cx="12" cy="7" r="4"></circle>
-                 </svg>`
-              }
-            </div>
-            <div>
-              <div style="font-size: 16px; font-weight: 600; margin: 0;">${config.name || 'Support Bot'}</div>
-              <div style="font-size: 12px; opacity: 0.9; display: flex; align-items: center; gap: 4px; margin-top: 2px;">
-                <span style="width: 8px; height: 8px; background: #10b981; border-radius: 50%; display: inline-block;"></span>
-                Online
-              </div>
-            </div>
-          </div>
-          <button onclick="parent.postMessage({type: 'CLOSE_CHAT'}, '*')" style="background: none; border: none; color: white; cursor: pointer; font-size: 24px; padding: 4px; border-radius: 4px; display: flex; align-items: center; justify-content: center; width: 32px; height: 32px;">×</button>
-        </div>
-        
-        <!-- Messages Container -->
-        <div id="messages-container" class="chat-widget-messages">
-        </div>
-        
-        <!-- Suggested Questions -->
-        <div id="suggestions-container" class="chat-widget-suggestions">
-          <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">Quick questions:</div>
-          <div id="suggestions-list" style="display: flex; flex-wrap: wrap; gap: 6px;"></div>
-        </div>
-
-        <!-- Input Area -->
-        <div class="chat-widget-input-area">
-          <div style="display: flex; gap: 8px; align-items: flex-end;">
-            <input 
-              id="message-input" 
-              type="text" 
-              placeholder="${config.placeholder || 'Type your message...'}"
-              class="chat-widget-input"
-            >
-            <button 
-              id="send-button"
-              class="chat-widget-send-btn"
-              style="background: ${config.primaryColor || '#6366F1'}; color: white; border: none; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.2s ease;"
-              onmouseover="this.style.opacity='0.9'; this.style.transform='scale(1.05)'"
-              onmouseout="this.style.opacity='1'; this.style.transform='scale(1)'"
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="m3 3 3 9-3 9 19-9Z"></path>
-                <path d="m6 12 13 0"></path>
-              </svg>
-            </button>
-          </div>
-          ${config.poweredByText && config.poweredByText.trim() ? `
-            <div style="text-align: center; margin-top: 8px;">
-              ${config.poweredByLink && config.poweredByLink.trim() ? 
-                `<a href="${config.poweredByLink}" target="_blank" style="color: #1d4ed8; text-decoration: none; font-size: 11px; font-weight: 500; transition: color 0.2s;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">${config.poweredByText}</a>` :
-                `<span style="color: #6b7280; font-size: 11px;">${config.poweredByText}</span>`
-              }
-            </div>
-          ` : ''}
-        </div>
+      <div id="chat-widget-window">
+        <div id="chat-widget-header">${config.title || 'Chatbot'}</div>
+        <div id="chat-widget-messages"></div>
+        <form id="chat-widget-form">
+          <input id="chat-widget-input" type="text" placeholder="Type your message..." autocomplete="off" />
+          <button id="chat-widget-send" type="submit">Send</button>
+        </form>
       </div>
     `;
 
     // Setup event listeners
     setupEventListeners();
+    // Do NOT set width/height here
+    container.appendChild(chatWindow);
   }
 
   // Setup event listeners
   function setupEventListeners() {
-    const input = document.getElementById('message-input');
-    const sendButton = document.getElementById('send-button');
+    const input = document.getElementById('chat-widget-input');
+    const sendButton = document.getElementById('chat-widget-send');
 
     // Send message on button click
     sendButton.addEventListener('click', handleSendMessage);
@@ -282,7 +212,7 @@
 
   // Handle sending a message
   async function handleSendMessage() {
-    const input = document.getElementById('message-input');
+    const input = document.getElementById('chat-widget-input');
     const message = input.value.trim();
     
     if (!message || isLoading) return;
@@ -354,7 +284,7 @@
 
   // Add a message to the chat
   function addMessage(content, sender) {
-    const messagesContainer = document.getElementById('messages-container');
+    const messagesContainer = document.querySelector('.chat-messages');
     const messageDiv = document.createElement('div');
     
     const isBot = sender === 'bot';
@@ -419,7 +349,7 @@
 
   // Add typing indicator
   function addTypingIndicator() {
-    const messagesContainer = document.getElementById('messages-container');
+    const messagesContainer = document.querySelector('.chat-messages');
     const typingDiv = document.createElement('div');
     typingDiv.id = 'typing-indicator';
     
@@ -477,8 +407,8 @@
   // Set loading state
   function setLoading(loading) {
     isLoading = loading;
-    const sendButton = document.getElementById('send-button');
-    const input = document.getElementById('message-input');
+    const sendButton = document.getElementById('chat-widget-send');
+    const input = document.getElementById('chat-widget-input');
     
     if (sendButton) {
       sendButton.disabled = loading;
@@ -496,7 +426,7 @@
   function showQuestionNode(node) {
     if (!node) return;
     
-    const messagesContainer = document.querySelector('#chat-messages');
+    const messagesContainer = document.querySelector('.chat-messages');
     if (!messagesContainer) return;
     
     // Add the question as a bot message
@@ -594,7 +524,7 @@
         });
         
         button.addEventListener('click', () => {
-          const input = document.getElementById('message-input');
+          const input = document.getElementById('chat-widget-input');
           input.value = suggestion;
           conversationContext.usingSuggestions = true;
           handleSendMessage();
@@ -642,7 +572,7 @@
 
   // Add a lead collection form
   function addLeadForm(message) {
-    const messagesContainer = document.getElementById('messages-container');
+    const messagesContainer = document.querySelector('.chat-messages');
     const formDiv = document.createElement('div');
     
     formDiv.style.cssText = `

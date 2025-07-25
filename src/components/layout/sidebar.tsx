@@ -13,7 +13,6 @@ import {
   User,
   Shield,
   ChevronLeft, ChevronRight,
-  History,
 } from 'lucide-react';
 import { useClerk } from '@clerk/clerk-react';
 import { useEffect, useState } from 'react';

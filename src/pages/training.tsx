@@ -29,16 +29,10 @@ export default function Training() {
   const [fetchedContent, setFetchedContent] = useState<string[]>([]);
   const [questionFlow, setQuestionFlow] = useState<any>(null);
   const [isGeneratingFlow, setIsGeneratingFlow] = useState(false);
-  const [flowError, setFlowError] = useState<string | null>(null);
   const [editedFlow, setEditedFlow] = useState<string>('');
-  const [isSavingFlow, setIsSavingFlow] = useState(false);
-  const [websiteData, setWebsiteData] = useState<string>('');
   const [whatsapp, setWhatsapp] = useState('');
   const [phone, setPhone] = useState('');
   const [website, setWebsite] = useState('');
-  const [isSavingWebsite, setIsSavingWebsite] = useState(false);
-
-  const savedQuestionFlow = activeChatbot?.trainingData || null;
 
   // Mutation for processing training data
   const processTrainingData = useMutation({
@@ -88,13 +82,21 @@ export default function Training() {
     try {
       // Save both plainData and trainingData (question flow)
       const parsedFlow = editedFlow ? JSON.parse(editedFlow) : null;
-      await updateChatbot.mutateAsync({
+      // --- LOGGING: Log the data being saved ---
+      console.log('[Training] Saving chatbot data:', {
+        id: activeChatbot.id,
+        plainData: trainingData,
+        trainingData: parsedFlow,
+      });
+      const result = await updateChatbot.mutateAsync({
         id: activeChatbot.id,
         data: {
           plainData: trainingData,
           trainingData: parsedFlow,
         },
       });
+      // --- LOGGING: Log the result of the save operation ---
+      console.log('[Training] Save result:', result);
       toast({
         title: 'Saved',
         description: processed.processed
@@ -102,6 +104,8 @@ export default function Training() {
           : 'Data saved (processing failed, but data is stored).',
       });
     } catch (error) {
+      // --- LOGGING: Log the error encountered during saving ---
+      console.error('[Training] Error saving chatbot data:', error);
       toast({
         title: 'Error',
         description: 'Failed to save data. Please try again.',
@@ -151,11 +155,14 @@ export default function Training() {
 
   // Updated handler for generating question flow (AI)
   const handleGenerateFlow = async () => {
-    setFlowError(null);
     setIsGeneratingFlow(true);
     try {
       if (!trainingData) {
-        setFlowError('No training data to generate flow from.');
+        toast({
+          title: 'Error',
+          description: 'No training data to generate flow from.',
+          variant: 'destructive',
+        });
         setIsGeneratingFlow(false);
         return;
       }
@@ -166,7 +173,11 @@ export default function Training() {
       setQuestionFlow(result);
       setEditedFlow(JSON.stringify(result, null, 2));
     } catch (error: any) {
-      setFlowError(error.message || 'Failed to generate question flow');
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to generate question flow',
+        variant: 'destructive',
+      });
     } finally {
       setIsGeneratingFlow(false);
     }
@@ -244,7 +255,6 @@ We serve over 1,000+ companies worldwide and are trusted by industry leaders.`;
     if (activeChatbot) {
       // Load main training data from plainData
       setTrainingData(activeChatbot.plainData || '');
-      setWebsiteData(activeChatbot.plainData || '');
       
       // Load question flow from trainingData if it exists
       if (activeChatbot.trainingData && typeof activeChatbot.trainingData === 'object') {
@@ -279,8 +289,7 @@ We serve over 1,000+ companies worldwide and are trusted by industry leaders.`;
   // Helper to compare flows
 
   // Ensure trainingData is a string for word/char count
-  const trainingDataString = typeof trainingData === 'string' ? trainingData : '';
-
+ 
   if (typeof activeChatbot === 'undefined') {
     return (
       <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-blue-50 to-white min-h-screen">
@@ -441,7 +450,8 @@ We serve over 1,000+ companies worldwide and are trusted by industry leaders.`;
             {/* Generate Question Flow Button - now below contact info */}
             {/* Description above the button */}
             <div className="mb-2 text-slate-600 text-sm text-center">
-              Generate a question flow for your chatbot using the information above. You can edit the result after generation.
+              Generate a question flow for your chatbot using the information above. You can edit the result after generation.<br />
+              <span className="text-xs text-slate-500">Note: Training data generation may take some time depending on the amount of data provided.</span>
             </div>
             <div className="mb-8">
               <Button

@@ -13,7 +13,6 @@ import {
   User,
   Shield,
   ChevronLeft, ChevronRight,
-  BotIcon,
 } from 'lucide-react';
 import { useClerk } from '@clerk/clerk-react';
 import { useEffect, useState } from 'react';

@@ -143,22 +143,7 @@
     if (!/^#([0-9A-F]{3}){1,2}$/i.test(primaryColor)) primaryColor = '#6366F1';
     
     // Enhanced background colors based on theme and style (matching preview)
-    let backgroundColor = theme === 'dark'
-      ? 'linear-gradient(135deg, #1e293b 0%, #334155 50%, #475569 100%)'
-      : 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #f1f5f9 100%)';
-    
-    // Style-specific backgrounds (matching preview exactly)
-    if (chatWindowStyle === 'modern') {
-      backgroundColor = theme === 'dark'
-        ? 'linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(51, 65, 85, 0.8) 100%)'
-        : 'linear-gradient(135deg, rgb(252 243 255 / 90%) 0%, rgb(229 242 255 / 80%) 100%)';
-    } else if (chatWindowStyle === 'classic') {
-      backgroundColor = theme === 'dark' ? '#1e293b' : '#ffffff';
-    } else if (chatWindowStyle === 'minimal') {
-      backgroundColor = theme === 'dark' ? 'rgba(30, 41, 59, 0.95)' : 'rgba(255, 255, 255, 0.95)';
-    } else if (chatWindowStyle === 'floating') {
-      backgroundColor = theme === 'dark' ? 'rgba(30, 41, 59, 0.98)' : 'rgba(255, 255, 255, 0.98)';
-    }
+    let backgroundColor = theme === 'dark' ? '#111' : '#fff';
     
     // Enhanced shadow styles (matching preview exactly)
     let boxShadow = '0 10px 40px rgba(0,0,0,0.15)';
@@ -308,7 +293,7 @@
       <div style="position: absolute; left: 0; right: 0; bottom: 13px; z-index: 10; display: flex; align-items: center; justify-content: center; padding: 8px; background: none; box-shadow: none;">
         <div style="display: flex; align-items: center; width: 100%; background: ${a.theme === 'dark' ? '#23232a' : '#fff'}; border-radius: 25px; border: 1px solid ${a.inputBorder}; box-shadow: 0 1px 4px rgba(0,0,0,0.04); padding: 2px 4px;">
           <input id="rankved-input" placeholder="${config.inputPlaceholder || config.placeholder || 'Type your message...'}" style="flex: 1; border: none; border-radius: 14px; padding: 7px 10px; font-size: 12px; outline: none; color: ${a.inputText}; background: transparent; height: 32px; box-shadow: none; transition: all 0.2s ease-in-out;" />
-          <button id="rankved-send-btn" style="width: 36px; height: 36px; margin-left: 4px; border-radius: 45%; background: ${a.primaryColor}; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+          <button id="rankved-send-btn" style="width: 36px; height: 36px; margin-left: 4px; border-radius: 50%; background: ${a.primaryColor}; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M2,21L23,12L2,3V10L17,12L2,14V21Z"/></svg>
           </button>
         </div>
@@ -711,11 +696,9 @@
     //   }
     // } catch (e) {}
     if (!restored) {
-      // Show the preloaded initial bot message (do not call API again)
-      latestFollowUpButtons = initialFollowUpButtons;
-      latestCtaButton = initialCtaButton;
-      addMessage(initialBotMessage || config.welcomeMessage || 'Hello! How can I help you today?', 'bot');
-      showSuggestions();
+      // Always send 'hello' to backend and print the response
+      console.log('[RankVed Chat] Sending automatic "hello" message to backend on chat open.');
+      sendMessageStateless('hello');
     }
     chatWindow.querySelector('#rankved-close-btn').onclick = () => {
       closeChat();

@@ -196,6 +196,10 @@ export interface InsertChatbot {
   shadowStyle?: string;
   allowedDomains?: string[];
   plainData?: string;
+  // Added contact info fields
+  phone?: string;
+  whatsapp?: string;
+  website?: string;
 }
 
 export interface InsertLead {

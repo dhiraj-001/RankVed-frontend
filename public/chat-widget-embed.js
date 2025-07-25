@@ -1,6 +1,16 @@
 (function() {
   'use strict';
 
+  // Inject chat-widget-embed.css if not already present
+  if (!document.getElementById('rankved-chat-widget-css')) {
+    var link = document.createElement('link');
+    link.id = 'rankved-chat-widget-css';
+    link.rel = 'stylesheet';
+    link.type = 'text/css';
+    link.href = '/chat-widget-embed.css';
+    document.head.appendChild(link);
+  }
+
   // Get configuration from global variable
   const config = window.CHATBOT_CONFIG || {};
   
@@ -124,7 +134,7 @@
     if (!container) {
       container = document.createElement('div');
       container.id = 'chat-widget';
-      // Responsive positioning
+      // Responsive positioning only
       const isMobile = window.innerWidth <= 768;
       container.style.cssText = `
         position: fixed;
@@ -177,9 +187,9 @@
     const windowStyle = getWindowStyle(config.chatWindowStyle || 'modern');
     
     container.innerHTML = `
-      <div style="display: flex; flex-direction: column; height: 450px; max-height: 70vh; width: 350px; ${theme.background}; border-radius: ${borderRadius}px; overflow: hidden; ${shadowStyle}; ${windowStyle.border};">
+      <div class="chat-widget-window">
         <!-- Header -->
-        <div style="background: ${config.primaryColor || '#6366F1'}; color: white; padding: 16px; display: flex; align-items: center; justify-content: space-between; border-radius: ${borderRadius}px ${borderRadius}px 0 0;">
+        <div class="chat-widget-header" style="background: ${config.primaryColor || '#6366F1'}; color: white; padding: 16px; display: flex; align-items: center; justify-content: space-between; border-radius: ${borderRadius}px ${borderRadius}px 0 0;">
           <div style="display: flex; align-items: center; gap: 12px;">
             <div style="width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden;">
               ${avatarIcon && avatarIcon.trim() ? 
@@ -206,27 +216,28 @@
         </div>
         
         <!-- Messages Container -->
-        <div id="messages-container" style="flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; background: #f8fafc;">
+        <div id="messages-container" class="chat-widget-messages">
         </div>
         
         <!-- Suggested Questions -->
-        <div id="suggestions-container" style="display: none; padding: 12px 16px; border-top: 1px solid #e5e7eb; background: #f8fafc;">
+        <div id="suggestions-container" class="chat-widget-suggestions">
           <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">Quick questions:</div>
           <div id="suggestions-list" style="display: flex; flex-wrap: wrap; gap: 6px;"></div>
         </div>
 
         <!-- Input Area -->
-        <div style="padding: 16px; border-top: 1px solid #e5e7eb; background: white;">
+        <div class="chat-widget-input-area">
           <div style="display: flex; gap: 8px; align-items: flex-end;">
             <input 
               id="message-input" 
               type="text" 
               placeholder="${config.placeholder || 'Type your message...'}"
-              style="flex: 1; padding: 12px 16px; border: 1px solid #d1d5db; border-radius: 24px; outline: none; font-size: 14px; resize: none; font-family: inherit;"
+              class="chat-widget-input"
             >
             <button 
               id="send-button"
-              style="background: ${config.primaryColor || '#6366F1'}; color: white; border: none; border-radius: 50%; width: 44px; height: 44px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.2s ease;"
+              class="chat-widget-send-btn"
+              style="background: ${config.primaryColor || '#6366F1'}; color: white; border: none; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.2s ease;"
               onmouseover="this.style.opacity='0.9'; this.style.transform='scale(1.05)'"
               onmouseout="this.style.opacity='1'; this.style.transform='scale(1)'"
             >

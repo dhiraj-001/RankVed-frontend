@@ -22,6 +22,7 @@ import NotFound from "@/pages/not-found";
 import { SignedIn, SignedOut, SignIn } from '@clerk/clerk-react';
 import Profile from "./pages/profile";
 import ChatTest from "./pages/chat-test";
+import ChatHistory from "./pages/chat-history";
 function Router() {
   return (
     <Switch>
@@ -41,6 +42,8 @@ function Router() {
       <Route path="/chat-widget/:chatbotId" component={ChatWidget} />
       <Route path="/chat/:chatbotId" component={ChatStandalone} />
       <Route path="/chat-test" component={ChatTest} />
+      <Route path="/chat-history" component={ChatHistory} />
+
       <Route component={NotFound} />
     </Switch>
   );

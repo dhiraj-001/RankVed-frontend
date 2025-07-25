@@ -363,13 +363,26 @@
   // Helper function for smooth scrolling
   function scrollToBottom(container) {
     if (!container) return;
-    // Use requestAnimationFrame for smooth scrolling
+    // On mobile, add extra offset for input bar
+    const isMobile = window.innerWidth <= 600;
     requestAnimationFrame(() => {
       container.scrollTop = container.scrollHeight;
+      if (isMobile) {
+        // Try to ensure last message is visible above input bar
+        const lastMsg = container.lastElementChild;
+        if (lastMsg) {
+          lastMsg.scrollIntoView({ behavior: 'smooth', block: 'end' });
+        }
+      }
     });
-    // Also try again after a small delay to ensure content is rendered
     setTimeout(() => {
       container.scrollTop = container.scrollHeight;
+      if (isMobile) {
+        const lastMsg = container.lastElementChild;
+        if (lastMsg) {
+          lastMsg.scrollIntoView({ behavior: 'smooth', block: 'end' });
+        }
+      }
     }, 50);
   }
 
@@ -459,6 +472,17 @@
       if (latestCtaButton && latestCtaButton.text && latestCtaButton.link) {
         const ctaBtnWrapper = document.createElement('div');
         ctaBtnWrapper.setAttribute('style', 'width: 100%; display: block; margin-top: 10px;');
+        // Use <a> for the CTA button to ensure link is applied
+        const ctaLink = document.createElement('a');
+        ctaLink.href = latestCtaButton.link;
+        ctaLink.target = '_blank';
+        ctaLink.rel = 'noopener noreferrer';
+        ctaLink.setAttribute('style', `
+          text-decoration: none;
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+        `);
         const ctaBtn = document.createElement('button');
         ctaBtn.innerHTML = `
           <span style="display: inline-flex; align-items: center; gap: 6px;">
@@ -483,11 +507,8 @@
           align-items: center;
           gap: 6px;
         `);
-        ctaBtn.onclick = function(e) {
-          e.stopPropagation();
-          window.open(latestCtaButton.link, '_blank');
-        };
-        ctaBtnWrapper.appendChild(ctaBtn);
+        ctaLink.appendChild(ctaBtn);
+        ctaBtnWrapper.appendChild(ctaLink);
         msgOptDiv.appendChild(ctaBtnWrapper);
         latestCtaButton = null;
       }

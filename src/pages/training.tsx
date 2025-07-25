@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Save, Upload, Brain, Globe, FileText, Trash2, Loader2 } from 'lucide-react';
+import { Save, Upload, Brain, Globe, Trash2, Loader2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -13,6 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Info } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { Switch } from '@/components/ui/switch';
 // @ts-ignore
 import { isEqual } from 'lodash-es';
 
@@ -33,6 +34,23 @@ export default function Training() {
   const [whatsapp, setWhatsapp] = useState('');
   const [phone, setPhone] = useState('');
   const [website, setWebsite] = useState('');
+  const [leadCollectionEnabled, setLeadCollectionEnabled] = useState(
+    typeof activeChatbot?.leadCollectionEnabled === 'boolean' ? activeChatbot.leadCollectionEnabled : true
+  );
+  const [toggleLoading, setToggleLoading] = useState(false);
+
+  // Log initial state
+  useEffect(() => {
+    console.log('[LeadCollection] Initial leadCollectionEnabled:', activeChatbot?.leadCollectionEnabled);
+  }, []);
+
+  // Sync leadCollectionEnabled with activeChatbot changes (like settings page)
+  useEffect(() => {
+    if (typeof activeChatbot?.leadCollectionEnabled === 'boolean') {
+      setLeadCollectionEnabled(activeChatbot.leadCollectionEnabled);
+      console.log('[LeadCollection] Updated from activeChatbot:', activeChatbot.leadCollectionEnabled);
+    }
+  }, [activeChatbot?.id]);
 
   // Mutation for processing training data
   const processTrainingData = useMutation({
@@ -290,6 +308,74 @@ We serve over 1,000+ companies worldwide and are trusted by industry leaders.`;
 
   // Ensure trainingData is a string for word/char count
  
+  // Save contact info handler
+  const handleSaveContactInfo = async () => {
+    if (!activeChatbot) {
+      toast({
+        title: 'Error',
+        description: 'No active chatbot selected.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    try {
+      await updateChatbot.mutateAsync({
+        id: activeChatbot.id,
+        data: {
+          phone,
+          whatsapp,
+          website,
+        },
+      });
+      toast({
+        title: 'Contact Info Saved',
+        description: 'Contact details have been saved successfully.',
+      });
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to save contact details. Please try again.',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  // Save lead collection toggle handler
+  const handleToggleLeadCollection = async (enabled: boolean) => {
+    if (!activeChatbot) {
+      toast({
+        title: 'Error',
+        description: 'No active chatbot selected.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    setToggleLoading(true);
+    console.log('[LeadCollection] Toggling leadCollectionEnabled to:', enabled);
+    try {
+      await updateChatbot.mutateAsync({
+        id: activeChatbot.id,
+        data: { leadCollectionEnabled: enabled },
+      });
+      setLeadCollectionEnabled(enabled); // Trust local state immediately
+      console.log('[LeadCollection] Successfully updated leadCollectionEnabled to:', enabled);
+      toast({
+        title: 'Setting Saved',
+        description: enabled
+          ? 'Lead collection is enabled. Direct contact info will not be shown.'
+          : 'Direct contact info is enabled. Lead collection is disabled.',
+      });
+    } catch (error) {
+      console.error('[LeadCollection] Failed to update leadCollectionEnabled:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to update setting. Please try again.',
+        variant: 'destructive',
+      });
+    }
+    setToggleLoading(false);
+  };
+
   if (typeof activeChatbot === 'undefined') {
     return (
       <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-blue-50 to-white min-h-screen">
@@ -444,8 +530,21 @@ We serve over 1,000+ companies worldwide and are trusted by industry leaders.`;
                   <Label htmlFor="website">Website URL</Label>
                   <Input id="website" value={website} onChange={e => setWebsite(e.target.value)} placeholder="e.g. https://yourdomain.com" />
                 </div>
+                <Button
+                  onClick={handleSaveContactInfo}
+                  disabled={updateChatbot.isPending}
+                  className="mt-2 w-fit bg-blue-600 hover:bg-blue-700 text-white rounded-full px-6 py-2 shadow-md"
+                >
+                  {updateChatbot.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
+                  {updateChatbot.isPending ? 'Saving...' : 'Save Contact Details'}
+                </Button>
               </CardContent>
             </Card>
+
+            {/* Message to save contact info before generating flow */}
+            <div className="mb-2 text-slate-600 text-sm text-center">
+              <span className="font-semibold text-blue-700">Please save your contact details above before generating the AI question flow.</span>
+            </div>
 
             {/* Generate Question Flow Button - now below contact info */}
             {/* Description above the button */}
@@ -504,21 +603,26 @@ We serve over 1,000+ companies worldwide and are trusted by industry leaders.`;
             </Card>
           </div>
 
-          {/* Sidebar: Quick Actions, Stats, Info */}
+          {/* Sidebar: Lead Collection Toggle, Stats, Info */}
           <div className="space-y-8">
-            <Card className="shadow bg-white/90 border-0 rounded-2xl">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-base font-bold">
-                  <FileText className="h-5 w-5 text-blue-600" /> Quick Actions
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-col gap-3">
-                  <Button size="sm" variant="outline" className="rounded-full px-4 py-1 text-xs" onClick={() => addSampleData('faq')}>Add FAQ Sample</Button>
-                  <Button size="sm" variant="outline" className="rounded-full px-4 py-1 text-xs" onClick={() => addSampleData('product')}>Add Product Info</Button>
-                  <Button size="sm" variant="outline" className="rounded-full px-4 py-1 text-xs" onClick={() => addSampleData('company')}>Add Company Info</Button>
-                </div>
-              </CardContent>
+            <Card className="shadow bg-white/90 border-0 rounded-2xl flex flex-col items-center justify-center py-6">
+              <div className="flex flex-col items-center gap-2">
+                <span className="font-bold text-slate-700 text-base mb-1">Enable Lead Collection</span>
+                <Switch
+                  checked={leadCollectionEnabled}
+                  onCheckedChange={checked => {
+                    if (!toggleLoading) handleToggleLeadCollection(checked);
+                  }}
+                  disabled={toggleLoading}
+                  className="data-[state=checked]:bg-blue-600 data-[state=unchecked]:bg-gray-300"
+                  id="enableLeadCollection"
+                />
+                <span className="text-xs text-slate-500 text-center max-w-xs">
+                  {leadCollectionEnabled
+                    ? 'Lead collection is enabled. The chatbot will collect user contact info via a form and will not show direct contact details.'
+                    : 'Direct contact info is enabled. The chatbot may show phone, WhatsApp, or website directly.'}
+                </span>
+              </div>
             </Card>
             <Card className="shadow bg-white/90 border-0 rounded-2xl">
               <CardHeader>

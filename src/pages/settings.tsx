@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Save, Key, MessageSquare, Webhook, Users, BarChart3 } from 'lucide-react';
+import { Save, Key, MessageSquare, Webhook, Users, Eye, EyeOff } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,6 +19,7 @@ export default function Settings() {
   const updateChatbot = useUpdateChatbot();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('basic');
+  const [showApiKey, setShowApiKey] = useState(false);
 
   const [settings, setSettings] = useState({
     // Basic Configuration
@@ -168,10 +169,10 @@ export default function Settings() {
   const tabOptions = [
     { value: 'basic', label: 'Basic' },
     { value: 'messaging', label: 'Messaging' },
-    { value: 'leads', label: 'Lead Collection' },
+    // { value: 'leads', label: 'Lead Collection' },
     { value: 'integrations', label: 'Integrations' },
     { value: 'ai-provider', label: 'AI Provider' },
-    { value: 'limits', label: 'Limits' },
+    // { value: 'limits', label: 'Limits' },
   ];
 
   return (
@@ -201,7 +202,7 @@ export default function Settings() {
           <div className="sm:hidden">
             <Select value={activeTab} onValueChange={setActiveTab}>
               <SelectTrigger className="w-full bg-white border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 rounded-lg shadow-sm">
-                <SelectValue placeholder="Select a tab" />
+                <SelectValue placeholder="Select a tab">{tabOptions.find(tab => tab.value === activeTab)?.label || 'Select a tab'}</SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {tabOptions.map((tab) => (
@@ -227,12 +228,12 @@ export default function Settings() {
             >
               Messaging
             </TabsTrigger>
-            <TabsTrigger
+            {/* <TabsTrigger
               value="leads"
               className="flex-1 text-slate-600 hover:text-blue-600 focus:text-blue-600 font-medium py-3 px-4 rounded-lg data-[state=active]:bg-blue-50 data-[state=active]:text-blue-600 data-[state=active]:shadow-sm transition-all duration-200"
             >
               Lead Collection
-            </TabsTrigger>
+            </TabsTrigger> */}
             <TabsTrigger
               value="integrations"
               className="flex-1 text-slate-600 hover:text-blue-600 focus:text-blue-600 font-medium py-3 px-4 rounded-lg data-[state=active]:bg-blue-50 data-[state=active]:text-blue-600 data-[state=active]:shadow-sm transition-all duration-200"
@@ -245,12 +246,12 @@ export default function Settings() {
             >
               AI Provider
             </TabsTrigger>
-            <TabsTrigger
+            {/* <TabsTrigger
               value="limits"
               className="flex-1 text-slate-600 hover:text-blue-600 focus:text-blue-600 font-medium py-3 px-4 rounded-lg data-[state=active]:bg-blue-50 data-[state=active]:text-blue-600 data-[state=active]:shadow-sm transition-all duration-200"
             >
               Limits
-            </TabsTrigger>
+            </TabsTrigger> */}
           </TabsList>
 
           <TabsContent value="basic" className="space-y-6">
@@ -362,7 +363,7 @@ export default function Settings() {
                 <div className="flex items-center justify-between w-full py-4 px-4 bg-white/60 rounded-lg border border-slate-200">
                   <div>
                     <label htmlFor="leadCollectionEnabled" className="block text-sm font-medium text-slate-700">
-                      Enable Lead Collection
+                      Enable Direct Message
                     </label>
                     <p className="text-xs text-slate-500">Collect visitor contact info after a set number of messages</p>
                   </div>
@@ -377,18 +378,7 @@ export default function Settings() {
                 {settings.leadCollectionEnabled && (
                   <>
                     <div className="space-y-2">
-                      <Label htmlFor="leadCollectionAfterMessages" className="text-slate-700 font-medium">
-                        Collect leads after (number of messages)
-                      </Label>
-                      <Input
-                        id="leadCollectionAfterMessages"
-                        type="number"
-                        min="1"
-                        max="20"
-                        value={settings.leadCollectionAfterMessages}
-                        onChange={(e) => setSettings(prev => ({ ...prev, leadCollectionAfterMessages: parseInt(e.target.value) || 3 }))}
-                        className="border-slate-300 focus:ring-2 focus:ring-green-500 focus:border-green-500 rounded-lg transition-all duration-200 hover:border-green-400"
-                      />
+                      
                       <p className="text-xs text-slate-500">
                         The chatbot will ask for contact information after this many messages
                       </p>
@@ -448,7 +438,21 @@ export default function Settings() {
                     value={settings.businessType}
                     onValueChange={(value) => setSettings(prev => ({ ...prev, businessType: value }))}
                   >
-                    <SelectTrigger className="border-slate-300 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 rounded-lg transition-all duration-200 hover:border-orange-400" />
+                    <SelectTrigger className="border-slate-300 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 rounded-lg transition-all duration-200 hover:border-orange-400 min-w-[160px]">
+                      <SelectValue placeholder="Select business type">
+                        {(() => {
+                          switch (settings.businessType) {
+                            case 'general': return 'General';
+                            case 'ecommerce': return 'E-commerce';
+                            case 'saas': return 'SaaS';
+                            case 'service': return 'Service Business';
+                            case 'healthcare': return 'Healthcare';
+                            case 'education': return 'Education';
+                            default: return 'Select business type';
+                          }
+                        })()}
+                      </SelectValue>
+                    </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="general">General</SelectItem>
                       <SelectItem value="ecommerce">E-commerce</SelectItem>
@@ -460,30 +464,8 @@ export default function Settings() {
                   </Select>
                   <p className="text-xs text-slate-500">Helps customize the chatbot's behavior for your industry</p>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="poweredBy" className="text-slate-700 font-medium">
-                    Powered By Text
-                  </Label>
-                  <Input
-                    id="poweredBy"
-                    value={settings.poweredByText}
-                    onChange={(e) => setSettings(prev => ({ ...prev, poweredByText: e.target.value }))}
-                    placeholder="Powered by ChatBot Pro"
-                    className="border-slate-300 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 rounded-lg transition-all duration-200 hover:border-orange-400"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="poweredByLink" className="text-slate-700 font-medium">
-                    Powered By Link
-                  </Label>
-                  <Input
-                    id="poweredByLink"
-                    value={settings.poweredByLink}
-                    onChange={(e) => setSettings(prev => ({ ...prev, poweredByLink: e.target.value }))}
-                    placeholder="https://chatbotpro.com"
-                    className="border-slate-300 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 rounded-lg transition-all duration-200 hover:border-orange-400"
-                  />
-                </div>
+                
+                
               </CardContent>
             </Card>
           </TabsContent>
@@ -565,7 +547,18 @@ export default function Settings() {
                     value={settings.aiProvider}
                     onValueChange={(value) => setSettings(prev => ({ ...prev, aiProvider: value }))}
                   >
-                    <SelectTrigger className="border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 rounded-lg transition-all duration-200 hover:border-indigo-400" />
+                    <SelectTrigger className="border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 rounded-lg transition-all duration-200 hover:border-indigo-400 min-w-[160px]">
+                      <SelectValue placeholder="Select AI provider">
+                        {(() => {
+                          switch (settings.aiProvider) {
+                            case 'platform': return 'Platform Default';
+                            case 'openai': return 'OpenAI';
+                            case 'google': return 'Google';
+                            default: return 'Select AI provider';
+                          }
+                        })()}
+                      </SelectValue>
+                    </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="platform">Platform Default</SelectItem>
                       <SelectItem value="openai">OpenAI</SelectItem>
@@ -579,22 +572,33 @@ export default function Settings() {
                     <Label htmlFor="customApiKey" className="text-slate-700 font-medium">
                       Custom API Key
                     </Label>
-                    <Input
-                      id="customApiKey"
-                      type="password"
-                      value={settings.customApiKey}
-                      onChange={(e) => setSettings(prev => ({ ...prev, customApiKey: e.target.value }))}
-                      placeholder="sk-..."
-                      className="border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 rounded-lg transition-all duration-200 hover:border-indigo-400"
-                    />
+                    <div className="relative flex items-center">
+                      <Input
+                        id="customApiKey"
+                        type={showApiKey ? 'text' : 'password'}
+                        value={settings.customApiKey}
+                        onChange={(e) => setSettings(prev => ({ ...prev, customApiKey: e.target.value }))}
+                        placeholder="sk-..."
+                        className="border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 rounded-lg transition-all duration-200 hover:border-indigo-400 pr-10"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowApiKey(v => !v)}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-800 focus:outline-none"
+                        tabIndex={-1}
+                        aria-label={showApiKey ? 'Hide API key' : 'Show API key'}
+                      >
+                        {showApiKey ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                      </button>
+                    </div>
                     <p className="text-xs text-slate-500">Your API key for the selected AI provider</p>
                   </div>
                 )}
               </CardContent>
             </Card>
           </TabsContent>
-
-          <TabsContent value="limits" className="space-y-6">
+          {/* chat limit */}
+          {/* <TabsContent value="limits" className="space-y-6">
             <Card className="shadow-xl rounded-2xl border-0 bg-gradient-to-br from-red-50/60 via-white/80 to-red-100/60 relative overflow-hidden">
               <div className="absolute left-0 top-0 bottom-0 w-2 bg-red-400 rounded-l-2xl" />
               <CardHeader>
@@ -635,7 +639,7 @@ export default function Settings() {
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
+          </TabsContent> */}
         </Tabs>
       </div>
     </div>

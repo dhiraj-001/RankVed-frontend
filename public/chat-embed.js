@@ -290,7 +290,7 @@
       <div id="rankved-messages" style="flex: 1; overflow-y: auto; padding: 10px 8px 0 8px; color: ${a.msgText}; display: flex; flex-direction: column; gap: 8px; background: ${a.backgroundColor}; border-bottom-left-radius: ${a.borderRadius}px; border-bottom-right-radius: ${a.borderRadius}px; scroll-behavior: smooth; -webkit-overflow-scrolling: touch; padding-bottom: 110px;">
         <!-- Welcome message removed; will be added by JS only -->
       </div>
-      <div style="position: absolute; left: 0; right: 0; bottom: 13px; z-index: 10; display: flex; align-items: center; justify-content: center; padding: 8px; background: none; box-shadow: none;">
+      <div id="rankved-input-container" style="position: absolute; left: 0; right: 0; bottom: 0; z-index: 10; display: flex; align-items: center; flex-direction: column; justify-content: center; padding: 8px; background: ${a.backgroundColor}; box-shadow: none; margin: 0px 10px 0 10px;">
         <div style="display: flex; align-items: center; width: 100%; background: ${a.theme === 'dark' ? '#23232a' : '#fff'}; border-radius: 25px; border: 1px solid ${a.inputBorder}; box-shadow: 0 1px 4px rgba(0,0,0,0.04); padding: 2px 4px;">
           <input id="rankved-input" placeholder="${config.inputPlaceholder || config.placeholder || 'Type your message...'}" style="flex: 1; border: none; border-radius: 14px; padding: 7px 10px; font-size: 12px; outline: none; color: ${a.inputText}; background: transparent; height: 32px; box-shadow: none; transition: all 0.2s ease-in-out;" />
           <button id="rankved-send-btn" style="width: 36px; height: 36px; margin-left: 4px; border-radius: 50%; background: ${a.primaryColor}; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
@@ -299,39 +299,25 @@
         </div>
       </div>
     `;
-    // Add powered by text at the very bottom, below the input bar
-    const poweredByDiv = document.createElement('div');
-    poweredByDiv.setAttribute('style', `
-      width: 100%;
-      text-align: center;
-      padding: 4px 0 2px 0;
-      font-size: 11px;
-      color: ${a.theme === 'dark' ? '#fff' : '#222'};
-      background: none;
-      position: absolute;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      z-index: 15;
-      pointer-events: none;
-      background: ${a.backgroundColor};
-    `);
-    poweredByDiv.innerHTML =
-      config.poweredByText
-        ? `<span>${config.poweredByLink ? `<a href="${config.poweredByLink}" target="_blank" style="color: ${a.primaryColor}; text-decoration: none; transition: all 0.2s ease-in-out; pointer-events: auto;">${config.poweredByText}</a>` : config.poweredByText}</span>`
-        : `Powered by <a href="https://rankved.com" target="_blank" style="color: ${a.primaryColor}; text-decoration: none; transition: all 0.2s ease-in-out; pointer-events: auto;">RankVed</a>`;
-    win.appendChild(poweredByDiv);
-    // Dynamically set bottom padding for messages container
-    setTimeout(() => {
-      const messagesDiv = win.querySelector('#rankved-messages');
-      const inputBar = win.querySelector('div[style*="position: absolute"]');
-      const poweredBy = poweredByDiv;
-      if (messagesDiv && inputBar && poweredBy) {
-        const inputHeight = inputBar.offsetHeight || 0;
-        const poweredByHeight = poweredBy.offsetHeight || 0;
-        messagesDiv.style.paddingBottom = (inputHeight + poweredByHeight + 5) + 'px';
-      }
-    }, 0);
+    // Add powered by text inside the input bar container
+    const inputBar = win.querySelector('div[style*="position: absolute"]');
+    if (inputBar) {
+      const poweredByDiv = document.createElement('div');
+      poweredByDiv.setAttribute('style', `
+        width: 100%;
+        text-align: center;
+        padding: 2px 0 0 0;
+        font-size: 11px;
+        color: ${a.theme === 'dark' ? '#fff' : '#222'};
+        background: none;
+        pointer-events: auto;
+      `);
+      poweredByDiv.innerHTML =
+        config.poweredByText
+          ? `<span>${config.poweredByLink ? `<a href="${config.poweredByLink}" target="_blank" style="color: ${a.primaryColor}; text-decoration: none; transition: all 0.2s ease-in-out; pointer-events: auto;">${config.poweredByText}</a>` : config.poweredByText}</span>`
+          : `Powered by <a href="https://rankved.com" target="_blank" style="color: ${a.primaryColor}; text-decoration: none; transition: all 0.2s ease-in-out; pointer-events: auto;">RankVed</a>`;
+      inputBar.appendChild(poweredByDiv);
+    }
     setTimeout(() => {
       const resetBtn = win.querySelector('#rankved-reset-btn');
       if (resetBtn) {
@@ -384,7 +370,7 @@
       messageDiv.setAttribute('style', `margin-bottom: 3px; display: flex; justify-content: flex-end;`);
       const contentDiv = document.createElement('div');
       // Sharp bottom-right corner for user
-      contentDiv.setAttribute('style', `max-width: 70%; padding: 8px 10px; border-radius: 14px 14px 4px 14px; font-size: 12px; background: ${a.userMsgBg}; color: ${a.userMsgText}; box-shadow: 0 2px 6px rgba(0,0,0,0.10); transition: all 0.2s ease-in-out;`);
+      contentDiv.setAttribute('style', `max-width: 80%; padding: 8px 10px; border-radius: 14px 14px 4px 14px; font-size: 12px; background: ${a.userMsgBg}; color: ${a.userMsgText}; box-shadow: 0 2px 6px rgba(0,0,0,0.10); transition: all 0.2s ease-in-out; word-break: break-word;`);
       contentDiv.textContent = content;
       messageDiv.appendChild(contentDiv);
     } else {
@@ -413,7 +399,7 @@
         formatted = '<ul style="margin: 0 0 0 1em; padding: 0; list-style: disc inside;">' + formatted.replace(/(<br>)*(<li>)/g, '$2') + '</ul>';
       }
       const contentDiv = document.createElement('div');
-      contentDiv.setAttribute('style', `max-width: 70%; padding: 8px 10px; border-radius: 14px 14px 14px 1px; font-size: 12px; background: ${a.msgBg}; color: ${a.msgText}; box-shadow: 0 1px 1px 0px rgb(0 0 0 / 30%); transition: all 0.2s ease-in-out; margin-bottom: 8px;`);
+      contentDiv.setAttribute('style', `max-width: 80%; padding: 8px 10px; border-radius: 14px 14px 14px 1px; font-size: 12px; background: ${a.msgBg}; color: ${a.msgText}; box-shadow: 0 1px 1px 0px rgb(0 0 0 / 30%); transition: all 0.2s ease-in-out; margin-bottom: 8px; word-break: break-word;`);
       contentDiv.innerHTML = formatted;
       msgOptDiv.appendChild(contentDiv);
       // Render follow-up buttons below the message bubble if present
@@ -440,7 +426,7 @@
           `);
           btn.onclick = function () {
             addMessage(text, 'user');
-            sendMessageStateless(payload);
+            sendMessageStateless(payload, { suppressUserMessage: true });
             if (config.suggestionPersistence !== 'always_visible') btn.style.display = 'none';
           };
           msgOptDiv.appendChild(btn);
@@ -448,6 +434,8 @@
       }
       // Render CTA button below the suggestion buttons if present
       if (latestCtaButton && latestCtaButton.text && latestCtaButton.link) {
+        const ctaBtnWrapper = document.createElement('div');
+        ctaBtnWrapper.setAttribute('style', 'width: 100%; display: block; margin-top: 10px;');
         const ctaBtn = document.createElement('button');
         ctaBtn.innerHTML = `
           <span style="display: inline-flex; align-items: center; gap: 6px;">
@@ -456,7 +444,7 @@
           </span>
         `;
         ctaBtn.setAttribute('style', `
-          margin-top: 4px;
+          margin-top: 0;
           background: ${hexToGlass(getAppearance().primaryColor, 0.12)};
           color: ${getAppearance().primaryColor};
           border: 1.5px solid ${getAppearance().primaryColor};
@@ -476,7 +464,8 @@
           e.stopPropagation();
           window.open(latestCtaButton.link, '_blank');
         };
-        msgOptDiv.appendChild(ctaBtn);
+        ctaBtnWrapper.appendChild(ctaBtn);
+        msgOptDiv.appendChild(ctaBtnWrapper);
         latestCtaButton = null;
       }
       messageDiv.appendChild(msgOptDiv);
@@ -517,7 +506,7 @@
         btn.onclick = function () {
           addMessage(text, 'user');
           console.log('payload', text);
-          sendMessageStateless(payload);
+          sendMessageStateless(payload,{ suppressUserMessage: true });
           if (config.suggestionPersistence !== 'always_visible') btn.style.display = 'none';
         };
         container.appendChild(btn);
@@ -542,14 +531,16 @@
     return cancelPhrases.some(phrase => text.toLowerCase().includes(phrase));
   }
 
-  async function sendMessageStateless(userInput) {
+  async function sendMessageStateless(userInput, options = {}) {
     if (typeof userInput !== 'string') {
       userInput = String(userInput.text || userInput.payload || '');
     }
     if (!userInput.trim()) return;
-    // Always show the user's message in the chat
-    addMessage(userInput, 'user');
-    chatHistory.push({ role: 'user', content: userInput });
+    // Only show the user's message if not suppressed (for auto hello)
+    if (!options.suppressUserMessage) {
+      addMessage(userInput, 'user');
+      chatHistory.push({ role: 'user', content: userInput });
+    }
 
     // Show loading indicator
     showLoadingIndicator();
@@ -573,6 +564,7 @@
         if (res.ok) {
           const data = await res.json();
           const bot = data.intent;
+          console.log("bot", bot)
           // Update follow-up buttons and CTA from response BEFORE rendering message
           latestFollowUpButtons = bot.follow_up_buttons || [];
           latestCtaButton = bot.cta_button || null;
@@ -612,6 +604,7 @@
       if (res.ok) {
         const data = await res.json();
         const bot = data.intent;
+        console.log("bot", bot)
         removeLoadingIndicator();
         // Update follow-up buttons and CTA from response BEFORE rendering message
         latestFollowUpButtons = bot.follow_up_buttons || [];
@@ -698,7 +691,7 @@
     if (!restored) {
       // Always send 'hello' to backend and print the response
       console.log('[RankVed Chat] Sending automatic "hello" message to backend on chat open.');
-      sendMessageStateless('hello');
+      sendMessageStateless('hello', { suppressUserMessage: true });
     }
     chatWindow.querySelector('#rankved-close-btn').onclick = () => {
       closeChat();
@@ -748,10 +741,10 @@
     loadingDiv.innerHTML = `
       <div style="width: 28px; height: 28px;"></div>
       <div style="max-width: 80%; padding: 10px 16px; border-radius: 12px; font-size: 14px; background: #f3f4f6; color: #333; box-shadow: 0 1px 2px rgba(0,0,0,0.08);">
-        <span class="rankved-typing-dots" style="display: inline-block;">
-          <span style="display:inline-block;width:6px;height:6px;background:#6366F1;border-radius:50%;margin-right:2px;animation:rankved-dot-bounce 1s infinite alternate;"></span>
-          <span style="display:inline-block;width:6px;height:6px;background:#6366F1;border-radius:50%;margin-right:2px;animation:rankved-dot-bounce 1s 0.2s infinite alternate;"></span>
-          <span style="display:inline-block;width:6px;height:6px;background:#6366F1;border-radius:50%;animation:rankved-dot-bounce 1s 0.4s infinite alternate;"></span>
+        <span class="rankved-typing-wave" style="display: inline-block;">
+          <span class="wave-dot" style="display:inline-block;width:5px;height:5px;background:#6366F1;border-radius:50%;margin-right:2px;animation:rankved-dot-wave 1.2s infinite;animation-delay:0s;"></span>
+          <span class="wave-dot" style="display:inline-block;width:5px;height:5px;background:#6366F1;border-radius:50%;margin-right:2px;animation:rankved-dot-wave 1.2s infinite;animation-delay:0.2s;"></span>
+          <span class="wave-dot" style="display:inline-block;width:5px;height:5px;background:#6366F1;border-radius:50%;animation:rankved-dot-wave 1.2s infinite;animation-delay:0.4s;"></span>
         </span>
       </div>
     `;
@@ -781,10 +774,10 @@
     loadingMessageDiv.appendChild(avatarDiv);
     const loadingBubble = document.createElement('div');
     loadingBubble.setAttribute('style', `max-width: 70%; padding: 4px 8px; border-radius: 14px 14px 14px 4px; font-size: 11px; background: #f3f4f6; color: #888; box-shadow: 0 1px 1px 0px rgb(0 0 0 / 10%); margin-bottom: 8px; display: flex; align-items: center; min-height: 20px;`);
-    loadingBubble.innerHTML = `<span class="rankved-typing-dots" style="display: inline-block;">
-      <span style="display:inline-block;width:6px;height:6px;background:${getAppearance().primaryColor};border-radius:50%;margin-right:2px;animation:rankved-dot-bounce 1s infinite alternate;"></span>
-      <span style="display:inline-block;width:6px;height:6px;background:${getAppearance().primaryColor};border-radius:50%;margin-right:2px;animation:rankved-dot-bounce 1s 0.2s infinite alternate;"></span>
-      <span style="display:inline-block;width:6px;height:6px;background:${getAppearance().primaryColor};border-radius:50%;animation:rankved-dot-bounce 1s 0.4s infinite alternate;"></span>
+    loadingBubble.innerHTML = `<span class="rankved-typing-wave" style="display: inline-block;">
+      <span class="wave-dot" style="display:inline-block;width:7px;height:7px;background:${getAppearance().primaryColor};border-radius:50%;margin-right:2px;animation:rankved-dot-wave 1.2s infinite;animation-delay:0s;"></span>
+      <span class="wave-dot" style="display:inline-block;width:7px;height:7px;background:${getAppearance().primaryColor};border-radius:50%;margin-right:2px;animation:rankved-dot-wave 1.2s infinite;animation-delay:0.2s;"></span>
+      <span class="wave-dot" style="display:inline-block;width:7px;height:7px;background:${getAppearance().primaryColor};border-radius:50%;animation:rankved-dot-wave 1.2s infinite;animation-delay:0.4s;"></span>
     </span>`;
     loadingMessageDiv.appendChild(loadingBubble);
     messagesContainer.appendChild(loadingMessageDiv);
@@ -805,7 +798,11 @@
     await fetchChatbotConfig(); // Wait for config to load before rendering bubble
     await preloadInitialBotMessage(); // Preload the initial bot message
     bubble = createChatBubble();
-    document.body.appendChild(bubble);
+    playOpenCloseSound(); // Play sound when bubble loads
+    console.log("init");
+    setTimeout(() => {
+      document.body.appendChild(bubble);
+    }, 1000); // 1 second delay
   }
 
   // Start

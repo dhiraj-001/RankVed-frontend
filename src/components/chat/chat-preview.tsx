@@ -35,21 +35,7 @@ export function ChatPreview({ chatbot }: ChatPreviewProps) {
     let primaryColorValue = primaryColor;
     if (!/^#([0-9A-F]{3}){1,2}$/i.test(primaryColorValue)) primaryColorValue = '#6366F1';
     // Enhanced background colors based on theme and style
-    let backgroundColor = theme === 'dark'
-      ? 'linear-gradient(135deg, #1e293b 0%, #334155 50%, #475569 100%)'
-      : 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #f1f5f9 100%)';
-    // Style-specific backgrounds
-    if (chatWindowStyleValue === 'modern') {
-      backgroundColor = theme === 'dark'
-        ? 'linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(51, 65, 85, 0.8) 100%)'
-        : 'linear-gradient(135deg, rgb(252 243 255 / 90%) 0%, rgb(229 242 255 / 80%) 100%)';
-    } else if (chatWindowStyleValue === 'classic') {
-      backgroundColor = theme === 'dark' ? '#1e293b' : '#ffffff';
-    } else if (chatWindowStyleValue === 'minimal') {
-      backgroundColor = theme === 'dark' ? 'rgba(30, 41, 59, 0.95)' : 'rgba(255, 255, 255, 0.95)';
-    } else if (chatWindowStyleValue === 'floating') {
-      backgroundColor = theme === 'dark' ? 'rgba(30, 41, 59, 0.98)' : 'rgba(255, 255, 255, 0.98)';
-    }
+    let backgroundColor = theme === 'dark' ? '#111' : '#fff';
     // Enhanced shadow styles
     const boxShadow = getBoxShadow(shadowStyleValue);
     const textColor = theme === 'dark' ? '#fff' : '#333';
@@ -100,7 +86,7 @@ export function ChatPreview({ chatbot }: ChatPreviewProps) {
         className="w-full max-w-md mx-auto relative z-10"
         style={{
           
-          background: 'white',
+          background: appearance.backgroundColor,
           boxShadow: appearance.boxShadow,
           border: 'none',
           minHeight: 480
@@ -213,9 +199,9 @@ export function ChatPreview({ chatbot }: ChatPreviewProps) {
           </div>
         </div>
         {/* Input Bar */}
-        <div className="px-4 pb-4 pt-2">
-          <div className="flex items-center bg-white rounded-full border border-blue-100 shadow px-4 py-2"
-            style={{ borderRadius: borderRadius, boxShadow: appearance.boxShadow }}
+        <div className="px-4 pb-2 pt-2">
+          <div className="flex items-center bg-white rounded-3xl border border-blue-100 shadow px-4 pr-3 py-2 "
+            style={{  boxShadow: appearance.boxShadow }}
           >
             <input
               className="flex-1 bg-transparent outline-none border-none text-[15px] placeholder-gray-400"
@@ -223,8 +209,8 @@ export function ChatPreview({ chatbot }: ChatPreviewProps) {
               disabled
               style={{ borderRadius: borderRadius }}
             />
-            <button className="ml-2 bg-blue-600 hover:bg-blue-700 text-white rounded-full w-10 h-10 flex items-center justify-center shadow transition">
-              <svg width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24"><path d="M2,21L23,12L2,3V10L17,12L2,14V21Z"/></svg>
+            <button className="ml-2 bg-blue-600 hover:bg-blue-700 text-white rounded-full w-8 h-8 flex items-center justify-center shadow transition">
+              <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24"><path d="M2,21L23,12L2,3V10L17,12L2,14V21Z"/></svg>
             </button>
           </div>
         </div>

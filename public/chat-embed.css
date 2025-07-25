@@ -298,6 +298,19 @@
   padding: 3px 12px !important;
   border-radius: 14px !important;
 }
+#rankved-messages > div >div {
+  max-width: 70vw !important;
+}
+@media (max-width: 600px) {
+  #rankved-messages > div {
+    max-width: 95vw !important;
+  }
+}
+@media (max-width: 600px) {
+  #rankved-messages > div >div {
+    max-width: 70vw !important;
+  }
+}
 
 #rankved-input {
   font-size: 11px !important;
@@ -541,6 +554,20 @@
   }
 }
 
+.rankved-typing-wave .wave-dot {
+  display: inline-block;
+  margin-right: 2px;
+  animation: rankved-dot-wave 1.2s infinite;
+}
+@keyframes rankved-dot-wave {
+  0%, 60%, 100% {
+    transform: translateY(0);
+  }
+  30% {
+    transform: translateY(-8px);
+  }
+}
+
 /* Header enhancements */
 #rankved-chat-window[data-rankved-widget] > div:first-child {
   position: relative;
@@ -659,6 +686,7 @@
     position: fixed !important;
     z-index: 2147483647 !important;
   }
+
 }
 
 /* Blend effect for chat header */

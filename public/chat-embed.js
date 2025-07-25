@@ -486,7 +486,7 @@
         const ctaBtn = document.createElement('button');
         ctaBtn.innerHTML = `
           <span style="display: inline-flex; align-items: center; gap: 6px;">
-            <span>${latestCtaButton.text}</span>
+            <span style="color: ${getAppearance().primaryColor};">${latestCtaButton.text}</span>
             <svg width="15" height="15" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:inline;vertical-align:middle;"><path d="M7 13L13 7M13 7H7M13 7V13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </span>
         `;

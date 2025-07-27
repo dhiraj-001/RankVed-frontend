@@ -64,8 +64,7 @@ export interface Chatbot {
   
   // Lead Collection
   leadCollectionEnabled: boolean;
-  leadCollectionAfterMessages: number;
-  leadCollectionMessage: string;
+  leadCollectionFields?: string[];
   
   // Contact Information
   phone?: string;
@@ -190,8 +189,7 @@ export interface InsertChatbot {
   horizontalOffset?: number;
   verticalOffset?: number;
   leadCollectionEnabled?: boolean;
-  leadCollectionAfterMessages?: number;
-  leadCollectionMessage?: string;
+  leadCollectionFields?: string[];
   dailyChatLimit?: number;
   monthlyChatLimit?: number;
   trainingData?: string;

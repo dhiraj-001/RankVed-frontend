@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Save, Upload, Brain, Globe, Trash2, Loader2, Volume2, Play, Pause, Settings, Trash } from 'lucide-react';
+import { Save, Upload, Brain, Globe, Trash2, Loader2, Volume2, Play, Pause, Settings, Trash, Timer } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -15,6 +15,8 @@ import { Info } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { LeadFieldsManager } from '@/components/lead-fields-manager';
+import { SoundSelector } from '@/components/sound-selector';
 // @ts-ignore
 import { isEqual } from 'lodash-es';
 
@@ -29,16 +31,14 @@ export default function Training() {
   });
   const [urls, setUrls] = useState('');
   const [fetchedContent, setFetchedContent] = useState<string[]>([]);
+  const [fetchingStates, setFetchingStates] = useState<{ [url: string]: 'idle' | 'fetching' | 'success' | 'error' }>({});
+  const [fetchProgress, setFetchProgress] = useState<{ current: number; total: number }>({ current: 0, total: 0 });
   const [questionFlow, setQuestionFlow] = useState<any>(null);
   const [isGeneratingFlow, setIsGeneratingFlow] = useState(false);
   const [editedFlow, setEditedFlow] = useState<string>('');
   const [whatsapp, setWhatsapp] = useState('');
   const [phone, setPhone] = useState('');
   const [website, setWebsite] = useState('');
-  const [leadCollectionEnabled, setLeadCollectionEnabled] = useState(
-    typeof activeChatbot?.leadCollectionEnabled === 'boolean' ? activeChatbot.leadCollectionEnabled : true
-  );
-  const [toggleLoading, setToggleLoading] = useState(false);
 
   // AI Provider Settings
   const [aiProvider, setAiProvider] = useState(activeChatbot?.aiProvider || 'platform');
@@ -47,28 +47,22 @@ export default function Training() {
   // Popup Sound Settings
   const [popupSoundEnabled, setPopupSoundEnabled] = useState(activeChatbot?.popupSoundEnabled ?? true);
   const [popupSoundVolume, setPopupSoundVolume] = useState(activeChatbot?.popupSoundVolume ?? 50);
-  const [customPopupSound, setCustomPopupSound] = useState(activeChatbot?.customPopupSound || '');
+  const [selectedPopupSound, setSelectedPopupSound] = useState(activeChatbot?.customPopupSound || '/openclose.mp3');
   const [isPlayingSound, setIsPlayingSound] = useState(false);
+
+  // Popup Delay Settings
+  const [chatBubblePopupDelay, setChatBubblePopupDelay] = useState(activeChatbot?.popupDelay ?? 3000);
+  const [messagePopupDelay, setMessagePopupDelay] = useState(activeChatbot?.replyDelay ?? 1000);
 
   // Track changes for button states
   const [hasTrainingDataChanges, setHasTrainingDataChanges] = useState(false);
   const [hasContactChanges, setHasContactChanges] = useState(false);
   const [hasAiSettingsChanges, setHasAiSettingsChanges] = useState(false);
   const [hasSoundSettingsChanges, setHasSoundSettingsChanges] = useState(false);
+  const [hasPopupDelayChanges, setHasPopupDelayChanges] = useState(false);
   const [hasFlowChanges, setHasFlowChanges] = useState(false);
 
-  // Log initial state
-  useEffect(() => {
-    console.log('[LeadCollection] Initial leadCollectionEnabled:', activeChatbot?.leadCollectionEnabled);
-  }, []);
 
-  // Sync leadCollectionEnabled with activeChatbot changes (like settings page)
-  useEffect(() => {
-    if (typeof activeChatbot?.leadCollectionEnabled === 'boolean') {
-      setLeadCollectionEnabled(activeChatbot.leadCollectionEnabled);
-      console.log('[LeadCollection] Updated from activeChatbot:', activeChatbot.leadCollectionEnabled);
-    }
-  }, [activeChatbot?.id]);
 
   // Sync AI provider and sound settings with activeChatbot changes
   useEffect(() => {
@@ -77,7 +71,9 @@ export default function Training() {
       setCustomApiKey(activeChatbot.customApiKey || '');
       setPopupSoundEnabled(activeChatbot.popupSoundEnabled ?? true);
       setPopupSoundVolume(activeChatbot.popupSoundVolume ?? 50);
-      setCustomPopupSound(activeChatbot.customPopupSound || '');
+      setSelectedPopupSound(activeChatbot.customPopupSound || '/openclose.mp3');
+      setChatBubblePopupDelay(activeChatbot.popupDelay ?? 3000);
+      setMessagePopupDelay(activeChatbot.replyDelay ?? 1000);
     }
   }, [activeChatbot]);
 
@@ -113,13 +109,23 @@ export default function Training() {
   useEffect(() => {
     const originalSoundEnabled = activeChatbot?.popupSoundEnabled ?? true;
     const originalSoundVolume = activeChatbot?.popupSoundVolume ?? 50;
-    const originalCustomSound = activeChatbot?.customPopupSound || '';
+    const originalCustomSound = activeChatbot?.customPopupSound || '/openclose.mp3';
     setHasSoundSettingsChanges(
       popupSoundEnabled !== originalSoundEnabled ||
       popupSoundVolume !== originalSoundVolume ||
-      customPopupSound !== originalCustomSound
+      selectedPopupSound !== originalCustomSound
     );
-  }, [popupSoundEnabled, popupSoundVolume, customPopupSound, activeChatbot?.popupSoundEnabled, activeChatbot?.popupSoundVolume, activeChatbot?.customPopupSound]);
+  }, [popupSoundEnabled, popupSoundVolume, selectedPopupSound, activeChatbot?.popupSoundEnabled, activeChatbot?.popupSoundVolume, activeChatbot?.customPopupSound]);
+
+  // Track popup delay settings changes
+  useEffect(() => {
+    const originalChatBubbleDelay = activeChatbot?.popupDelay ?? 3000;
+    const originalMessageDelay = activeChatbot?.replyDelay ?? 1000;
+    setHasPopupDelayChanges(
+      chatBubblePopupDelay !== originalChatBubbleDelay ||
+      messagePopupDelay !== originalMessageDelay
+    );
+  }, [chatBubblePopupDelay, messagePopupDelay, activeChatbot?.popupDelay, activeChatbot?.replyDelay]);
 
   // Track flow changes
   useEffect(() => {
@@ -185,7 +191,7 @@ export default function Training() {
 
     setIsPlayingSound(true);
     try {
-      const soundUrl = customPopupSound || '/sounds/popup.mp3';
+      const soundUrl = selectedPopupSound || '/openclose.mp3';
       const audio = new Audio(soundUrl);
       
       // Set volume based on current volume setting
@@ -256,7 +262,7 @@ export default function Training() {
       const reader = new FileReader();
       reader.onload = (e) => {
         const dataUri = e.target?.result as string;
-        setCustomPopupSound(dataUri);
+        setSelectedPopupSound(dataUri);
       };
       reader.readAsDataURL(file);
     }
@@ -264,7 +270,7 @@ export default function Training() {
 
   // Clear file input when custom sound is removed
   const clearCustomSound = () => {
-    setCustomPopupSound('');
+    setSelectedPopupSound('/openclose.mp3');
     // Clear the file input
     const fileInput = document.getElementById('customSound') as HTMLInputElement;
     if (fileInput) {
@@ -308,7 +314,7 @@ export default function Training() {
         data: {
           popupSoundEnabled,
           popupSoundVolume,
-          customPopupSound,
+          customPopupSound: selectedPopupSound,
         },
       });
       setHasSoundSettingsChanges(false);
@@ -320,6 +326,32 @@ export default function Training() {
       toast({
         title: 'Error',
         description: 'Failed to save sound settings. Please try again.',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  // Save popup delay settings
+  const handleSavePopupDelaySettings = async () => {
+    if (!activeChatbot || !hasPopupDelayChanges) return;
+
+    try {
+      await updateChatbot.mutateAsync({
+        id: activeChatbot.id,
+        data: {
+          popupDelay: chatBubblePopupDelay,
+          replyDelay: messagePopupDelay,
+        },
+      });
+      setHasPopupDelayChanges(false);
+      toast({
+        title: 'Popup Delay Settings Saved',
+        description: 'Popup delay settings have been updated successfully.',
+      });
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to save popup delay settings. Please try again.',
         variant: 'destructive',
       });
     }
@@ -391,18 +423,35 @@ export default function Training() {
       return;
     }
 
+    // Initialize fetching states
+    const initialStates: { [url: string]: 'idle' | 'fetching' | 'success' | 'error' } = {};
+    urlList.forEach(url => {
+      initialStates[url.trim()] = 'fetching';
+    });
+    setFetchingStates(initialStates);
+    setFetchProgress({ current: 0, total: urlList.length });
+
     const newContent: string[] = [];
     
-    for (const url of urlList) {
+    for (let i = 0; i < urlList.length; i++) {
+      const url = urlList[i].trim();
+      setFetchProgress({ current: i + 1, total: urlList.length });
+      
       try {
-        const result = await fetchUrlContent.mutateAsync(url.trim());
+        const result = await fetchUrlContent.mutateAsync(url);
         newContent.push(`\n\n--- Content from ${url} ---\n${result.content}`);
+        
+        // Update state to success
+        setFetchingStates(prev => ({ ...prev, [url]: 'success' }));
         
         toast({
           title: 'Content fetched',
           description: `Successfully fetched content from ${url}`,
         });
       } catch (error) {
+        // Update state to error
+        setFetchingStates(prev => ({ ...prev, [url]: 'error' }));
+        
         toast({
           title: 'Fetch error',
           description: `Failed to fetch content from ${url}`,
@@ -416,6 +465,11 @@ export default function Training() {
       setTrainingData(prev => prev + newContent.join(''));
       setUrls('');
     }
+    
+    // Reset progress after completion
+    setTimeout(() => {
+      setFetchProgress({ current: 0, total: 0 });
+    }, 2000);
   };
 
   // Updated handler for generating question flow (AI)
@@ -582,41 +636,7 @@ We serve over 1,000+ companies worldwide and are trusted by industry leaders.`;
     }
   };
 
-  // Save lead collection toggle handler
-  const handleToggleLeadCollection = async (enabled: boolean) => {
-    if (!activeChatbot) {
-      toast({
-        title: 'Error',
-        description: 'No active chatbot selected.',
-        variant: 'destructive',
-      });
-      return;
-    }
-    setToggleLoading(true);
-    console.log('[LeadCollection] Toggling leadCollectionEnabled to:', enabled);
-    try {
-      await updateChatbot.mutateAsync({
-        id: activeChatbot.id,
-        data: { leadCollectionEnabled: enabled },
-      });
-      setLeadCollectionEnabled(enabled); // Trust local state immediately
-      console.log('[LeadCollection] Successfully updated leadCollectionEnabled to:', enabled);
-      toast({
-        title: 'Setting Saved',
-        description: enabled
-          ? 'Lead collection is enabled. Direct contact info will not be shown.'
-          : 'Direct contact info is enabled. Lead collection is disabled.',
-      });
-    } catch (error) {
-      console.error('[LeadCollection] Failed to update leadCollectionEnabled:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to update setting. Please try again.',
-        variant: 'destructive',
-      });
-    }
-    setToggleLoading(false);
-  };
+
 
   if (typeof activeChatbot === 'undefined') {
     return (
@@ -648,7 +668,7 @@ We serve over 1,000+ companies worldwide and are trusted by industry leaders.`;
       <header className="hidden sm:block backdrop-blur-md bg-gradient-to-br from-blue-50 via-white to-white border-b border-blue-50 px-4 sm:px-6 py-2 sm:py-4 sticky top-0 z-20 shadow-lg">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between max-w-7xl mx-auto gap-2 sm:gap-4">
           <div className="text-center sm:text-left">
-            <h2 className="text-xl sm:text-2xl font-bold text-slate-900">Tune Ai</h2>
+            <h2 className="text-xl sm:text-2xl font-bold text-slate-900">Tune AI</h2>
           </div>
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
             <Button 
@@ -693,6 +713,76 @@ We serve over 1,000+ companies worldwide and are trusted by industry leaders.`;
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
+            {/* Training Warnings - Moved to Top */}
+            {(!trainingData || trainingData.trim() === '') && (
+              <Card className="border border-amber-200 bg-gradient-to-br from-amber-50 to-yellow-50/30 shadow-md animate-in fade-in duration-500 ease-in-out">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-base text-amber-700">
+                    <Info className="h-4 w-4 text-amber-600" /> Training Data Required
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <p className="text-sm text-amber-700">
+                      Your chatbot needs training data to provide meaningful responses. Add content to help it understand your business and answer questions effectively.
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        onClick={() => addSampleData('faq')}
+                        className="hover:bg-amber-100 hover:border-amber-300 text-amber-700"
+                      >
+                        + Add FAQ
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        onClick={() => addSampleData('product')}
+                        className="hover:bg-amber-100 hover:border-amber-300 text-amber-700"
+                      >
+                        + Add Product Info
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        onClick={() => addSampleData('company')}
+                        className="hover:bg-amber-100 hover:border-amber-300 text-amber-700"
+                      >
+                        + Add Company Info
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Question Flow Warning - Moved to Top */}
+            {(!questionFlow || Object.keys(questionFlow || {}).length === 0) && trainingData && trainingData.trim() !== '' && (
+              <Card className="border border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50/30 shadow-md animate-in fade-in duration-500 ease-in-out">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-base text-blue-700">
+                    <Brain className="h-4 w-4 text-blue-600" /> Question Flow Missing
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <p className="text-sm text-blue-700">
+                      You have training data but no question flow. Generate a question flow to create structured conversations and improve user experience.
+                    </p>
+                    <Button 
+                      onClick={handleGenerateFlow}
+                      disabled={isGeneratingFlow || !trainingData.trim()}
+                      className="bg-blue-600 hover:bg-blue-700 text-white transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                      size="sm"
+                    >
+                      {isGeneratingFlow ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Brain className="h-4 w-4 mr-2" />}
+                      {isGeneratingFlow ? 'Generating...' : 'Generate Question Flow'}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
             {/* Training Data Editor */}
             <Card className="border border-slate-200 bg-gradient-to-br from-white to-blue-50/30 shadow-sm animate-in fade-in duration-700 ease-in-out">
               <CardHeader>
@@ -769,6 +859,51 @@ We serve over 1,000+ companies worldwide and are trusted by industry leaders.`;
                       rows={3}
                     />
                   </div>
+
+                  {/* Fetch Progress */}
+                  {fetchProgress.total > 0 && (
+                    <div className="space-y-2 animate-in fade-in duration-300 ease-in-out">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="font-medium">Fetching Progress</span>
+                        <span className="text-slate-600">{fetchProgress.current}/{fetchProgress.total} URLs</span>
+                      </div>
+                      <div className="w-full bg-slate-200 rounded-full h-2">
+                        <div 
+                          className="bg-blue-600 h-2 rounded-full transition-all duration-300 ease-in-out"
+                          style={{ width: `${(fetchProgress.current / fetchProgress.total) * 100}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* URL Status List */}
+                  {Object.keys(fetchingStates).length > 0 && (
+                    <div className="space-y-2 animate-in fade-in duration-300 ease-in-out">
+                      <Label className="text-sm font-medium">URL Status</Label>
+                      <div className="space-y-2 max-h-32 overflow-y-auto">
+                        {Object.entries(fetchingStates).map(([url, status]) => (
+                          <div key={url} className="flex items-center gap-2 p-2 rounded-md border bg-slate-50">
+                            <div className={`w-2 h-2 rounded-full ${
+                              status === 'fetching' ? 'bg-blue-500 animate-pulse' :
+                              status === 'success' ? 'bg-green-500' :
+                              status === 'error' ? 'bg-red-500' : 'bg-slate-300'
+                            }`}></div>
+                            <span className="text-xs text-slate-600 flex-1 truncate">{url}</span>
+                            <Badge variant="secondary" className={`text-xs ${
+                              status === 'fetching' ? 'bg-blue-100 text-blue-700' :
+                              status === 'success' ? 'bg-green-100 text-green-700' :
+                              status === 'error' ? 'bg-red-100 text-red-700' : 'bg-slate-100 text-slate-700'
+                            }`}>
+                              {status === 'fetching' ? 'Fetching...' :
+                               status === 'success' ? 'Success' :
+                               status === 'error' ? 'Failed' : 'Idle'}
+                            </Badge>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
                   <Button 
                     onClick={handleFetchUrls} 
                     disabled={fetchUrlContent.isPending || !urls.trim()} 
@@ -777,6 +912,7 @@ We serve over 1,000+ companies worldwide and are trusted by industry leaders.`;
                     {fetchUrlContent.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Upload className="h-4 w-4 mr-2" />}
                     {fetchUrlContent.isPending ? 'Fetching...' : 'Fetch Content'}
                   </Button>
+
                   {fetchedContent.length > 0 && (
                     <div className="space-y-3">
                       <Label className="font-semibold">Fetched Content</Label>
@@ -968,41 +1104,65 @@ We serve over 1,000+ companies worldwide and are trusted by industry leaders.`;
                       </div>
                     </div>
                     
-                    <div className="space-y-2 animate-in fade-in duration-500 ease-in-out delay-500">
-                      <Label htmlFor="customSound" className="text-sm">Custom Sound</Label>
-                      <div className="flex items-center gap-2">
-                        <Input
-                          id="customSound"
-                          type="file"
-                          accept="audio/*"
-                          onChange={handleSoundFileChange}
-                          className="text-xs transition-all duration-300 ease-in-out hover:border-blue-200 focus:ring-2 focus:ring-blue-200 focus:border-blue-200"
-                        />
-                        <Button
-                          onClick={testSound}
-                          disabled={!popupSoundEnabled}
-                          size="sm"
-                          variant="default"
-                          className="hover:bg-blue-100 hover:border-blue-200 transition-colors shadow-sm border-blue-200 border bg-blue-50"
-                        >
-                          {isPlayingSound ? <Pause className="h-3 w-3 text-blue-600" /> : <Play className="h-3 w-3 text-blue-600" />}
-                        </Button>
-                      </div>
-                      {customPopupSound && (
+                    {/* Sound Selection Options */}
+                    <div className="space-y-4 animate-in fade-in duration-500 ease-in-out delay-500">
+                      <Label className="text-sm font-medium">Sound Selection</Label>
+                      
+                      {/* Option 1: Pre-built Sounds */}
+                      <div className="space-y-3">
                         <div className="flex items-center gap-2">
-                          <Badge variant="secondary" className="bg-green-100 text-green-700 text-xs py-2">
-                            Custom sound loaded
-                          </Badge>
+                          <div className="w-3 h-3 bg-blue-600 rounded-full"></div>
+                          <span className="text-sm font-medium">Choose from Pre-built Sounds</span>
+                        </div>
+                        <SoundSelector
+                          selectedSound={selectedPopupSound}
+                          onSoundSelect={setSelectedPopupSound}
+                          title="Select from Available Sounds"
+                          description="Choose from our collection of notification sounds"
+                          volume={popupSoundVolume}
+                        />
+                      </div>
+                      
+                      {/* Option 2: Custom Upload */}
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-2">
+                          <div className="w-3 h-3 bg-green-600 rounded-full"></div>
+                          <span className="text-sm font-medium">Upload Custom Sound</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Input
+                            id="customSound"
+                            type="file"
+                            accept="audio/*"
+                            onChange={handleSoundFileChange}
+                            className="text-xs transition-all duration-300 ease-in-out hover:border-blue-200 focus:ring-2 focus:ring-blue-200 focus:border-blue-200"
+                          />
                           <Button
-                            onClick={clearCustomSound}
+                            onClick={testSound}
+                            disabled={!popupSoundEnabled}
                             size="sm"
-                            variant="outline"
-                            className="text-red-600 hover:text-red-700 text-xs hover:bg-red-50 transition-colors rounded-md"
+                            variant="default"
+                            className="hover:bg-blue-100 hover:border-blue-200 transition-colors shadow-sm border-blue-200 border bg-blue-50"
                           >
-                            <Trash className="h-3 w-3 text-red-600" />
+                            {isPlayingSound ? <Pause className="h-3 w-3 text-blue-600" /> : <Play className="h-3 w-3 text-blue-600" />}
                           </Button>
                         </div>
-                      )}
+                        {selectedPopupSound && selectedPopupSound !== '/openclose.mp3' && selectedPopupSound.startsWith('data:') && (
+                          <div className="flex items-center gap-2">
+                            <Badge variant="secondary" className="bg-green-100 text-green-700 text-xs py-2">
+                              Custom sound loaded
+                            </Badge>
+                            <Button
+                              onClick={clearCustomSound}
+                              size="sm"
+                              variant="outline"
+                              className="text-red-600 hover:text-red-700 text-xs hover:bg-red-50 transition-colors rounded-md"
+                            >
+                              <Trash className="h-3 w-3 text-red-600" />
+                            </Button>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </>
                 )}
@@ -1019,43 +1179,118 @@ We serve over 1,000+ companies worldwide and are trusted by industry leaders.`;
               </CardContent>
             </Card>
 
-            {/* Lead Collection Toggle */}
-            <Card className="border border-slate-200 bg-gradient-to-br from-white to-blue-50/30 shadow-md">
-              <CardContent className="pt-6">
-                <div className="flex flex-col items-center gap-3">
-                  <span className="font-medium text-sm">Lead Collection</span>
-                  <Switch
-                    checked={leadCollectionEnabled}
-                    onCheckedChange={checked => {
-                      if (!toggleLoading) handleToggleLeadCollection(checked);
-                    }}
-                    disabled={toggleLoading}
-                    className="data-[state=checked]:bg-blue-600"
-                  />
-                  <span className="text-xs text-slate-500 text-center">
-                    {leadCollectionEnabled
-                      ? 'Collect user contact info via form'
-                      : 'Show direct contact details'}
-                  </span>
+            {/* Popup Delay Settings */}
+            <Card className="border border-slate-200 bg-gradient-to-br from-white to-blue-50/30 shadow-md animate-in fade-in duration-700 ease-in-out delay-300">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <Timer className="h-4 w-4 text-blue-600 transition-transform duration-500 ease-in-out" /> 
+                  <span className="transition-all duration-500 ease-in-out">Popup Timing</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2 animate-in fade-in duration-500 ease-in-out delay-100">
+                  <Label htmlFor="chatBubblePopupDelay" className="text-sm">Chat Bubble Popup Delay</Label>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                    {[3, 5, 7, 9].map((seconds) => (
+                      <Button
+                        key={seconds}
+                        variant={chatBubblePopupDelay === seconds * 1000 ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setChatBubblePopupDelay(seconds * 1000)}
+                        className={`transition-all duration-300 ease-in-out ${
+                          chatBubblePopupDelay === seconds * 1000 
+                            ? "bg-blue-600 text-white hover:bg-blue-700" 
+                            : "hover:bg-blue-50 hover:border-blue-200"
+                        }`}
+                      >
+                        {seconds}s
+                      </Button>
+                    ))}
+                  </div>
+                  <p className="text-xs text-slate-500">Delay before showing the chat bubble</p>
                 </div>
+                
+                <div className="space-y-2 animate-in fade-in duration-500 ease-in-out delay-200">
+                  <Label htmlFor="messagePopupDelay" className="text-sm">Message Reply Delay</Label>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                    {[1, 2, 3, 4].map((seconds) => (
+                      <Button
+                        key={seconds}
+                        variant={messagePopupDelay === seconds * 1000 ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setMessagePopupDelay(seconds * 1000)}
+                        className={`transition-all duration-300 ease-in-out ${
+                          messagePopupDelay === seconds * 1000 
+                            ? "bg-blue-600 text-white hover:bg-blue-700" 
+                            : "hover:bg-blue-50 hover:border-blue-200"
+                        }`}
+                      >
+                        {seconds}s
+                      </Button>
+                    ))}
+                  </div>
+                  <p className="text-xs text-slate-500">Delay before showing bot messages</p>
+                </div>
+                
+                <Button
+                  onClick={handleSavePopupDelaySettings}
+                  disabled={updateChatbot.isPending || !hasPopupDelayChanges}
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white transition-all duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed animate-in fade-in delay-300"
+                  size="sm"
+                >
+                  {updateChatbot.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2 transition-transform duration-300 ease-in-out" />}
+                  Save Timing Settings
+                </Button>
               </CardContent>
             </Card>
 
-            {/* Training Stats */}
-            <Card className="border border-slate-200 bg-gradient-to-br from-white to-blue-50/30 shadow-md">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-base">
-                  <Brain className="h-4 w-4 text-blue-600" /> Stats
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2 text-sm">
-                  <div><span className="font-medium">Words:</span> {typeof trainingData === 'string' ? trainingData.split(/\s+/).filter(word => word.length > 0).length : 'N/A'}</div>
-                  <div><span className="font-medium">Characters:</span> {typeof trainingData === 'string' ? trainingData.length : 'N/A'}</div>
-                  <div><span className="font-medium">Sources:</span> {fetchedContent.length}</div>
-                </div>
-              </CardContent>
-            </Card>
+            {/* Lead Collection Fields Manager */}
+            <div className="animate-in fade-in duration-500 ease-in-out delay-400">
+              <LeadFieldsManager chatbotId={activeChatbot.id} />
+            </div>
+
+                                  {/* Training Stats */}
+              <Card className="border border-slate-200 bg-gradient-to-br from-white to-blue-50/30 shadow-md">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-base">
+                    <Brain className="h-4 w-4 text-blue-600" /> Training Stats
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div><span className="font-medium">Words:</span> {typeof trainingData === 'string' ? trainingData.split(/\s+/).filter(word => word.length > 0).length : 'N/A'}</div>
+                      <div><span className="font-medium">Characters:</span> {typeof trainingData === 'string' ? trainingData.length : 'N/A'}</div>
+                      <div><span className="font-medium">Sources:</span> {fetchedContent.length}</div>
+                      <div><span className="font-medium">URLs Fetched:</span> {Object.values(fetchingStates).filter(status => status === 'success').length}</div>
+                    </div>
+                    
+                    {/* URL States Summary */}
+                    {Object.keys(fetchingStates).length > 0 && (
+                      <div className="space-y-2 pt-2 border-t border-slate-200">
+                        <div className="text-sm font-medium text-slate-700">URL Fetch Status</div>
+                        <div className="flex flex-wrap gap-2">
+                          {Object.values(fetchingStates).filter(status => status === 'success').length > 0 && (
+                            <Badge variant="secondary" className="bg-green-100 text-green-700 text-xs">
+                              {Object.values(fetchingStates).filter(status => status === 'success').length} Success
+                            </Badge>
+                          )}
+                          {Object.values(fetchingStates).filter(status => status === 'error').length > 0 && (
+                            <Badge variant="secondary" className="bg-red-100 text-red-700 text-xs">
+                              {Object.values(fetchingStates).filter(status => status === 'error').length} Failed
+                            </Badge>
+                          )}
+                          {Object.values(fetchingStates).filter(status => status === 'fetching').length > 0 && (
+                            <Badge variant="secondary" className="bg-blue-100 text-blue-700 text-xs">
+                              {Object.values(fetchingStates).filter(status => status === 'fetching').length} Fetching
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>            
 
             {/* Tips */}
             <Card className="border border-slate-200 bg-gradient-to-br from-white to-blue-50/30 shadow-md">

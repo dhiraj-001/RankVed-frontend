@@ -4,7 +4,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ChatPreview } from '@/components/chat/chat-preview';
@@ -44,7 +43,6 @@ export default function Appearance() {
 
   const [appearance, setAppearance] = useState<{
     title: string;
-    welcomeMessage: string;
     primaryColor: string;
     secondaryColor: string;
     showWelcomePopup: boolean;
@@ -63,7 +61,6 @@ export default function Appearance() {
     shadowStyle: 'none' | 'soft' | 'medium' | 'strong';
   }>({
     title: '',
-    welcomeMessage: '',
     primaryColor: '#6366F1',
     secondaryColor: '#A7C7E7',
     showWelcomePopup: true,
@@ -85,10 +82,18 @@ export default function Appearance() {
   // Sync appearance state with fetchedChatbot
   useEffect(() => {
     if (fetchedChatbot) {
+      console.log('[Appearance] Syncing with fetchedChatbot:', {
+        chatbotId: fetchedChatbot.id,
+        visualBranding: {
+          chatBubbleIcon: fetchedChatbot.chatBubbleIcon ? 'Present' : 'Not set',
+          chatWidgetIcon: fetchedChatbot.chatWidgetIcon ? 'Present' : 'Not set',
+          chatWindowAvatar: fetchedChatbot.chatWindowAvatar ? 'Present' : 'Not set',
+          chatWidgetName: fetchedChatbot.chatWidgetName
+        }
+      });
       
       setAppearance({
         title: fetchedChatbot.title || '',
-        welcomeMessage: fetchedChatbot.welcomeMessage || '',
         primaryColor: fetchedChatbot.primaryColor || '#6366F1',
         secondaryColor: fetchedChatbot.secondaryColor || '#A7C7E7', // now fetched from backend
         showWelcomePopup: fetchedChatbot.showWelcomePopup ?? true,
@@ -122,7 +127,6 @@ export default function Appearance() {
     name:  appearance.chatWidgetName || 'Support Bot',
     primaryColor: appearance.primaryColor,
     secondaryColor: appearance.secondaryColor,
-    welcomeMessage: appearance.welcomeMessage,
     inputPlaceholder: appearance.inputPlaceholder,
     borderRadius: appearance.borderRadius,
     shadowStyle: appearance.shadowStyle,
@@ -164,12 +168,34 @@ export default function Appearance() {
   const handleSave = async () => {
     if (activeChatbot) {
       try {
+        console.log('[Appearance] Saving appearance settings:', {
+          chatbotId: activeChatbot.id,
+          visualBranding: {
+            chatBubbleIcon: appearance.chatBubbleIcon,
+            chatWidgetIcon: appearance.chatWidgetIcon,
+            chatWindowAvatar: appearance.chatWindowAvatar,
+            chatWidgetName: appearance.chatWidgetName
+          },
+          appearance: {
+            primaryColor: appearance.primaryColor,
+            secondaryColor: appearance.secondaryColor,
+            borderRadius: appearance.borderRadius,
+            shadowStyle: appearance.shadowStyle,
+            chatWindowTheme: appearance.chatWindowTheme
+          }
+        });
+
         await updateChatbot.mutateAsync({
           id: activeChatbot.id,
           data: {
-            welcomeMessage: appearance.welcomeMessage,
+            // Visual Branding
+            chatBubbleIcon: appearance.chatBubbleIcon,
+            chatWidgetIcon: appearance.chatWidgetIcon,
+            chatWindowAvatar: appearance.chatWindowAvatar,
+            chatWidgetName: appearance.chatWidgetName,
+            // Appearance Settings
             primaryColor: appearance.primaryColor,
-            secondaryColor: appearance.secondaryColor, // now sent to backend
+            secondaryColor: appearance.secondaryColor,
             showWelcomePopup: appearance.showWelcomePopup,
             suggestionButtons: JSON.stringify(appearance.suggestionButtons),
             suggestionTiming: appearance.suggestionTiming,
@@ -180,16 +206,17 @@ export default function Appearance() {
             chatWindowTheme: appearance.chatWindowTheme,
             borderRadius: appearance.borderRadius,
             shadowStyle: appearance.shadowStyle,
-            // Do not send icon/avatar fields here, they are handled in Visual Branding tab
-            chatWidgetName: appearance.chatWidgetName,
           },
         });
+        
+        console.log('[Appearance] Successfully saved to backend');
         toast({
           title: 'Appearance saved',
           description: 'Your chatbot appearance has been updated successfully.',
         });
         refetch(); // Refetch latest data after save
       } catch (error) {
+        console.error('[Appearance] Error saving to backend:', error);
         toast({
           title: 'Error',
           description: 'Failed to save appearance. Please try again.',
@@ -205,12 +232,15 @@ export default function Appearance() {
   };
 
   const handleFileUpload = async (field: string, file: File) => {
-    console.log('handleFileUpload called', field, file);
+    console.log('[Appearance] handleFileUpload called:', { field, fileName: file.name, fileSize: file.size });
     try {
       // Compress and convert image to data URI
       const dataUri = await compressAndConvertToDataURI(file, 128, 128, 0.7);
+      console.log('[Appearance] Image processed successfully:', { field, dataUriLength: dataUri.length });
       setAppearance(prev => ({ ...prev, [field]: dataUri }));
+      console.log('[Appearance] State updated for field:', field);
     } catch (error) {
+      console.error('[Appearance] Error processing image:', error);
       toast({
         title: 'Error',
         description: 'Failed to upload file. Please try again.',
@@ -311,45 +341,45 @@ export default function Appearance() {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-8">
-                  <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            {/* Mobile Dropdown */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          {/* Mobile Dropdown */}
             <div className="sm:hidden shadow-md">
-              <Select value={activeTab} onValueChange={setActiveTab}>
+            <Select value={activeTab} onValueChange={setActiveTab}>
                 <SelectTrigger className="w-full bg-white border-gray-200 focus:ring-2 focus:ring-blue-200 focus:border-blue-200 rounded-lg shadow-sm transition-all duration-500 ease-in-out">
-                  <SelectValue placeholder="Select a tab" />
-                </SelectTrigger>
+                <SelectValue placeholder="Select a tab" />
+              </SelectTrigger>
                 <SelectContent className="animate-in fade-in duration-700 ease-in-out">
-                  {tabOptions.map((tab) => (
+                {tabOptions.map((tab) => (
                     <SelectItem key={tab.value} value={tab.value} disabled={tab.disabled} className="transition-all duration-300 hover:bg-blue-50">
-                      {tab.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+                    {tab.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
-            {/* Desktop Tabs */}
+          {/* Desktop Tabs */}
             <TabsList className="hidden sm:flex w-full bg-white border border-gray-200 rounded-lg p-1 shadow-sm transition-all duration-500 ease-in-out">
-              <TabsTrigger
-                value="chatbot"
-                disabled={!activeChatbot}
+            <TabsTrigger
+              value="chatbot"
+              disabled={!activeChatbot}
                 className="flex-1 text-gray-600 hover:text-gray-800 focus:text-gray-800 font-medium py-3 px-4 rounded-md data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 data-[state=active]:border-b-2 data-[state=active]:border-blue-500 transition-all duration-500 ease-in-out hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
+            >
                 <div className="flex items-center space-x-2 transition-all duration-500 ease-in-out">
                   <Palette className="h-4 w-4 transition-transform duration-500 ease-in-out data-[state=active]:scale-110" />
                   <span className="transition-all duration-500 ease-in-out">Chatbot Appearance</span>
                 </div>
-              </TabsTrigger>
-              <TabsTrigger
-                value="global"
+            </TabsTrigger>
+            <TabsTrigger
+              value="global"
                 className="flex-1 text-gray-600 hover:text-gray-800 focus:text-gray-800 font-medium py-3 px-4 rounded-md data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 data-[state=active]:border-b-2 data-[state=active]:border-blue-500 transition-all duration-500 ease-in-out hover:bg-gray-50"
-              >
+            >
                 <div className="flex items-center space-x-2 transition-all duration-500 ease-in-out">
                   <Image className="h-4 w-4 transition-transform duration-500 ease-in-out data-[state=active]:scale-110" />
                   <span className="transition-all duration-500 ease-in-out">Visual Branding</span>
                 </div>
-              </TabsTrigger>
-            </TabsList>
+            </TabsTrigger>
+          </TabsList>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
             {/* Settings Panel */}
@@ -420,17 +450,7 @@ export default function Appearance() {
                       </CardHeader>
                       <CardContent className="space-y-4">
                    
-                        <div className="space-y-2">
-                          <Label htmlFor="welcomeMessage" className="text-gray-700 font-medium">Welcome Message</Label>
-                          <Textarea 
-                            id="welcomeMessage" 
-                            value={appearance.welcomeMessage} 
-                            onChange={e => setAppearance(prev => ({ ...prev, welcomeMessage: e.target.value }))} 
-                            placeholder="Hello! How can I help you today?" 
-                            rows={2} 
-                            className="border-gray-200 focus:ring-2 focus:ring-blue-200 focus:border-blue-200 rounded-lg transition-all duration-200 hover:border-blue-200 resize-none"
-                          />
-                        </div>
+
                         <div className="space-y-2">
                           <Label htmlFor="inputPlaceholder" className="text-gray-700 font-medium">Input Placeholder</Label>
                           <Input 
@@ -585,16 +605,22 @@ export default function Appearance() {
                     <div className="space-y-2">
                       <Label className="text-gray-700 font-medium">Chat Bubble Icon</Label>
                       <div className="flex items-center gap-4">
-                        {activeChatbot?.chatBubbleIcon && (
+                        {appearance.chatBubbleIcon && (
                           <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center border-2 border-blue-200">
-                            <img src={activeChatbot.chatBubbleIcon} alt="Chat Bubble Icon" className="w-8 h-8 rounded-full object-cover" />
+                            <img src={appearance.chatBubbleIcon} alt="Chat Bubble Icon" className="w-8 h-8 rounded-full object-cover" />
                           </div>
                         )}
                         <div className="flex-1">
                           <Input 
                             type="file" 
                             accept="image/*" 
-                            onChange={e => { const file = e.target.files?.[0]; if (file) handleFileUpload('chatBubbleIcon', file); }} 
+                            onChange={e => { 
+                              const file = e.target.files?.[0]; 
+                              if (file) {
+                                console.log('[Appearance] Uploading chat bubble icon:', file.name);
+                                handleFileUpload('chatBubbleIcon', file);
+                              }
+                            }} 
                             className="border-gray-200 focus:ring-2 focus:ring-blue-200 focus:border-blue-200 rounded-lg transition-all duration-200 hover:border-blue-200" 
                           />
                           <p className="text-xs text-gray-500 mt-1">32x32px, PNG/JPG</p>
@@ -613,7 +639,13 @@ export default function Appearance() {
                           <Input 
                             type="file" 
                             accept="image/*" 
-                            onChange={e => { const file = e.target.files?.[0]; if (file) handleFileUpload('chatWidgetIcon', file); }} 
+                            onChange={e => { 
+                              const file = e.target.files?.[0]; 
+                              if (file) {
+                                console.log('[Appearance] Uploading chat widget icon:', file.name);
+                                handleFileUpload('chatWidgetIcon', file);
+                              }
+                            }} 
                             className="border-gray-200 focus:ring-2 focus:ring-blue-200 focus:border-blue-200 rounded-lg transition-all duration-200 hover:border-blue-200" 
                           />
                           <p className="text-xs text-gray-500 mt-1">32x32px, PNG/JPG</p>
@@ -642,7 +674,13 @@ export default function Appearance() {
                           <Input 
                             type="file" 
                             accept="image/*" 
-                            onChange={e => { const file = e.target.files?.[0]; if (file) handleFileUpload('chatWindowAvatar', file); }} 
+                            onChange={e => { 
+                              const file = e.target.files?.[0]; 
+                              if (file) {
+                                console.log('[Appearance] Uploading chat window avatar:', file.name);
+                                handleFileUpload('chatWindowAvatar', file);
+                              }
+                            }} 
                             className="border-gray-200 focus:ring-2 focus:ring-blue-200 focus:border-blue-200 rounded-lg transition-all duration-200 hover:border-blue-200" 
                           />
                           <p className="text-xs text-gray-500 mt-1">64x64px, PNG/JPG</p>

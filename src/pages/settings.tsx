@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Save, Key, MessageSquare, Webhook, Users, Eye, EyeOff, Settings as SettingsIcon, Zap } from 'lucide-react';
+import { Save, Key, MessageSquare, Webhook, Eye, EyeOff, Settings as SettingsIcon } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -34,7 +34,7 @@ export default function Settings() {
     
     // Messaging
     welcomeMessage: activeChatbot?.welcomeMessage || '',
-    initialMessageDelay: activeChatbot?.initialMessageDelay || 1000,
+    showWelcomePopup: activeChatbot?.showWelcomePopup ?? true,
     
     // Notifications
     enableNotificationSound: activeChatbot?.enableNotificationSound ?? true,
@@ -55,8 +55,6 @@ export default function Settings() {
     
     // Lead Collection
     leadCollectionEnabled: activeChatbot?.leadCollectionEnabled ?? true,
-    leadCollectionAfterMessages: activeChatbot?.leadCollectionAfterMessages || 3,
-    leadCollectionMessage: activeChatbot?.leadCollectionMessage || 'To help you better, may I have your name and contact information?',
     
     // AI Provider
     aiProvider: activeChatbot?.aiProvider || 'platform',
@@ -70,13 +68,19 @@ export default function Settings() {
   // Sync settings state with activeChatbot changes
   useEffect(() => {
     if (activeChatbot) {
+      console.log('[Settings] Syncing with activeChatbot:', {
+        showWelcomePopup: activeChatbot.showWelcomePopup,
+        welcomeMessage: activeChatbot.welcomeMessage,
+        chatbotId: activeChatbot.id
+      });
+      
       setSettings({
         name: activeChatbot.name || '',
         aiSystemPrompt: activeChatbot.aiSystemPrompt || '',
         chatWindowAvatar: activeChatbot.chatWindowAvatar || '',
         chatBubbleIcon: activeChatbot.chatBubbleIcon || '',
         welcomeMessage: activeChatbot.welcomeMessage || '',
-        initialMessageDelay: activeChatbot.initialMessageDelay || 1000,
+        showWelcomePopup: activeChatbot.showWelcomePopup ?? true,
         enableNotificationSound: activeChatbot.enableNotificationSound ?? true,
         customNotificationSound: activeChatbot.customNotificationSound || '',
         leadsWebhookUrl: activeChatbot.leadsWebhookUrl || '',
@@ -87,8 +91,6 @@ export default function Settings() {
         horizontalOffset: activeChatbot.horizontalOffset || 20,
         verticalOffset: activeChatbot.verticalOffset || 20,
         leadCollectionEnabled: activeChatbot.leadCollectionEnabled ?? true,
-        leadCollectionAfterMessages: activeChatbot.leadCollectionAfterMessages || 3,
-        leadCollectionMessage: activeChatbot.leadCollectionMessage || 'To help you better, may I have your name and contact information?',
         aiProvider: activeChatbot.aiProvider || 'platform',
         customApiKey: activeChatbot.customApiKey || '',
         dailyChatLimit: activeChatbot.dailyChatLimit || 100,
@@ -107,8 +109,15 @@ export default function Settings() {
       return;
     }
 
+    console.log('[Settings] Saving settings to backend:', {
+      chatbotId: activeChatbot.id,
+      showWelcomePopup: settings.showWelcomePopup,
+      welcomeMessage: settings.welcomeMessage,
+      allSettings: settings
+    });
+
     try {
-      await updateChatbot.mutateAsync({
+      const result = await updateChatbot.mutateAsync({
         id: activeChatbot.id,
         data: {
           ...settings,
@@ -118,11 +127,18 @@ export default function Settings() {
         },
       });
       
+      console.log('[Settings] Backend response:', {
+        showWelcomePopup: result.showWelcomePopup,
+        welcomeMessage: result.welcomeMessage,
+        success: true
+      });
+      
       toast({
         title: 'Settings saved',
         description: 'Your chatbot settings have been updated successfully.',
       });
     } catch (error) {
+      console.error('[Settings] Error saving to backend:', error);
       toast({
         title: 'Error',
         description: 'Failed to save settings. Please try again.',
@@ -171,7 +187,7 @@ export default function Settings() {
     { value: 'messaging', label: 'Messaging' },
     // { value: 'leads', label: 'Lead Collection' },
     { value: 'integrations', label: 'Integrations' },
-    { value: 'ai-provider', label: 'AI Provider' },
+    // { value: 'ai-provider', label: 'AI Provider' },
     // { value: 'limits', label: 'Limits' },
   ];
 
@@ -262,15 +278,7 @@ export default function Settings() {
                 <span className="transition-all duration-500 ease-in-out">Integrations</span>
               </div>
             </TabsTrigger>
-            <TabsTrigger
-              value="ai-provider"
-              className="flex-1 text-gray-600 hover:text-gray-800 focus:text-gray-800 font-medium py-3 px-4 rounded-md data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 data-[state=active]:border-b-2 data-[state=active]:border-blue-500 transition-all duration-500 ease-in-out hover:bg-gray-50"
-            >
-              <div className="flex items-center space-x-2 transition-all duration-500 ease-in-out">
-                <Zap className="h-4 w-4 transition-transform duration-500 ease-in-out data-[state=active]:scale-110" />
-                <span className="transition-all duration-500 ease-in-out">AI Provider</span>
-              </div>
-            </TabsTrigger>
+            
           </TabsList>
 
           <TabsContent value="basic" className="space-y-6 animate-in fade-in duration-700 ease-in-out">
@@ -325,31 +333,46 @@ export default function Settings() {
                 <p className="text-slate-600 text-sm">Configure how your chatbot communicates with users</p>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="space-y-2">
-                  <Label htmlFor="welcomeMessage" className="text-slate-700 font-medium">
-                    Welcome Message
-                  </Label>
-                  <Input
-                    id="welcomeMessage"
-                    value={settings.welcomeMessage}
-                    onChange={(e) => setSettings(prev => ({ ...prev, welcomeMessage: e.target.value }))}
-                    placeholder="Hello! How can I help you today?"
-                    className="border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 rounded-lg transition-all duration-200 hover:border-blue-400"
+                <div className="flex items-center justify-between w-full py-4 px-4 bg-white/60 rounded-lg border border-slate-200">
+                  <div>
+                    <label htmlFor="showWelcomePopup" className="block text-sm font-medium text-slate-700">
+                      Show Welcome Message
+                    </label>
+                    <p className="text-xs text-slate-500">Display a welcome message when users first open the chat</p>
+                  </div>
+                  <Switch
+                    id="showWelcomePopup"
+                    checked={settings.showWelcomePopup}
+                    onCheckedChange={checked => {
+                      console.log('[Settings] Welcome message toggle changed:', {
+                        from: settings.showWelcomePopup,
+                        to: checked,
+                        chatbotId: activeChatbot?.id
+                      });
+                      setSettings(prev => ({ ...prev, showWelcomePopup: checked }));
+                    }}
+                    className="data-[state=checked]:bg-blue-600"
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="messageDelay" className="text-slate-700 font-medium">
-                    Initial Message Delay (ms)
-                  </Label>
-                  <Input
-                    id="messageDelay"
-                    type="number"
-                    value={settings.initialMessageDelay}
-                    onChange={(e) => setSettings(prev => ({ ...prev, initialMessageDelay: parseInt(e.target.value) }))}
-                    className="border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 rounded-lg transition-all duration-200 hover:border-blue-400"
-                  />
-                  <p className="text-xs text-slate-500">Delay before showing the welcome message (in milliseconds)</p>
-                </div>
+                {settings.showWelcomePopup && (
+                  <div className="space-y-2">
+                    <Label htmlFor="welcomeMessage" className="text-slate-700 font-medium">
+                      Welcome Message
+                    </Label>
+                    <Input
+                      id="welcomeMessage"
+                      value={settings.welcomeMessage}
+                      onChange={(e) => setSettings(prev => ({ ...prev, welcomeMessage: e.target.value }))}
+                      placeholder="Hello! How can I help you today?"
+                      className="border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 rounded-lg transition-all duration-200 hover:border-blue-400"
+                    />
+                    <div className="flex items-center gap-2">
+                      <p className="text-xs text-amber-600 bg-amber-50 p-2 rounded-md border border-amber-200">
+                        ⚠️ <strong>Recommended:</strong> Leave empty for best AI responses. The AI will generate contextual welcome messages based on user input.
+                      </p>
+                    </div>
+                  </div>
+                )}
                 <div className="flex items-center justify-between w-full py-4 px-4 bg-white/60 rounded-lg border border-slate-200">
                   <div>
                     <label htmlFor="enableSound" className="block text-sm font-medium text-slate-700">
@@ -368,62 +391,7 @@ export default function Settings() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="leads" className="space-y-6">
-            <Card className="shadow-md rounded-2xl border border-gray-200 bg-gradient-to-r from-blue-50 to-gray-50 relative overflow-hidden">
-              <div className="absolute left-0 top-0 bottom-0 w-2 bg-blue-500 rounded-l-2xl" />
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2 text-slate-900 font-semibold text-lg">
-                  <Users className="h-5 w-5 text-green-600" />
-                  <span>Lead Collection Settings</span>
-                </CardTitle>
-                <p className="text-slate-600 text-sm">Configure how and when to collect visitor contact information</p>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="flex items-center justify-between w-full py-4 px-4 bg-white/60 rounded-lg border border-slate-200">
-                  <div>
-                    <label htmlFor="leadCollectionEnabled" className="block text-sm font-medium text-slate-700">
-                      Enable Direct Message
-                    </label>
-                    <p className="text-xs text-slate-500">Collect visitor contact info after a set number of messages</p>
-                  </div>
-                  <Switch
-                    id="leadCollectionEnabled"
-                    checked={settings.leadCollectionEnabled}
-                    onCheckedChange={checked => setSettings(prev => ({ ...prev, leadCollectionEnabled: checked }))}
-                    className="data-[state=checked]:bg-green-600 data-[state=unchecked]:bg-gray-300"
-                  />
-                </div>
 
-                {settings.leadCollectionEnabled && (
-                  <>
-                    <div className="space-y-2">
-                      
-                      <p className="text-xs text-slate-500">
-                        The chatbot will ask for contact information after this many messages
-                      </p>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="leadCollectionMessage" className="text-slate-700 font-medium">
-                        Lead collection message
-                      </Label>
-                      <Textarea
-                        id="leadCollectionMessage"
-                        value={settings.leadCollectionMessage}
-                        onChange={(e) => setSettings(prev => ({ ...prev, leadCollectionMessage: e.target.value }))}
-                        placeholder="To help you better, may I have your name and contact information?"
-                        rows={3}
-                        className="border-slate-300 focus:ring-2 focus:ring-green-500 focus:border-green-500 rounded-lg transition-all duration-200 hover:border-green-400 resize-none"
-                      />
-                      <p className="text-xs text-slate-500">
-                        This message will be shown when requesting visitor contact information
-                      </p>
-                    </div>
-                  </>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
 
           <TabsContent value="integrations" className="space-y-6 animate-in fade-in duration-700 ease-in-out">
             <Card className="shadow-md rounded-2xl border border-gray-200 bg-gradient-to-r from-blue-50 to-gray-50 relative overflow-hidden">

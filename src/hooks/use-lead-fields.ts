@@ -31,7 +31,7 @@ export function useUpdateLeadFields() {
       if (!response.ok) throw new Error('Failed to update lead fields');
       return response.json();
     },
-    onSuccess: (data, { chatbotId }) => {
+    onSuccess: (_, { chatbotId }) => {
       queryClient.invalidateQueries({ queryKey: ['/api/chatbots', chatbotId, 'lead-fields'] });
       queryClient.invalidateQueries({ queryKey: ['/api/chatbots', chatbotId] });
     },

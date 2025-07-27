@@ -66,8 +66,6 @@ export default function ChatTest() {
   // Initialize chat with welcome message
   useEffect(() => {
     if (messages.length === 0) {
-      // Show initial loading state
-      setIsLoading(true);
       (async () => {
         try {
           const response = await fetch(`${apiUrl}/api/intent-detect/${chatbotId}`, {
@@ -101,8 +99,6 @@ export default function ChatTest() {
               timestamp: new Date(),
             }
           ]);
-        } finally {
-          setIsLoading(false);
         }
       })();
     }
@@ -261,21 +257,9 @@ export default function ChatTest() {
       </div>
 
       {/* Chat Messages */}
-      <ScrollArea className="flex-1 bg-gradient-to-br from-blue-50/60 via-slate-50 to-blue-100 px-2 md:px-0">
-        <div className="p-4 md:p-8 space-y-6 max-w-4xl mx-auto">
-          {/* Initial loading state */}
-          {messages.length === 0 && isLoading && (
-            <div className="flex justify-start items-end space-x-2 animate-fadeInLeft">
-              <Avatar className="h-8 w-8 mr-2 shadow-sm">
-                <AvatarFallback style={{ backgroundColor: '#6366F1' }} className="text-white">
-                  <Bot className="h-4 w-4" />
-                </AvatarFallback>
-              </Avatar>
-              <div className="bg-white rounded-2xl rounded-bl-sm px-4 py-2 shadow-md border">
-                <Loader2 className="h-4 w-4 animate-spin text-slate-400" />
-              </div>
-            </div>
-          )}
+      <ScrollArea className="flex-1 bg-gradient-to-br from-blue-50/60 via-slate-50 to-blue-100 px-2 md:px-0 scrollbar-none">
+        <div className="pt-8 pb-4 md:pt-12 md:pb-8 px-4 md:px-8 space-y-6 max-w-4xl mx-auto">
+
           {messages.map((message) => (
             <div
               key={message.id}
@@ -348,13 +332,11 @@ export default function ChatTest() {
                     </Button>
                   </div>
                 )}
-                <div className="text-xs text-slate-400 mt-2 text-right opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                <div className="text-xs text-blue-200 mt-2 text-right font-medium">
                   {message.timestamp instanceof Date ? message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
                 </div>
               </div>
-              {message.sender === 'user' && (
-                <div className="ml-2 h-8 w-8" />
-              )}
+              
             </div>
           ))}
           {isLoading && (
@@ -364,8 +346,12 @@ export default function ChatTest() {
                   <Bot className="h-4 w-4" />
                 </AvatarFallback>
               </Avatar>
-              <div className="bg-white rounded-2xl rounded-bl-sm px-4 py-2 shadow-md border">
-                <Loader2 className="h-4 w-4 animate-spin text-slate-400" />
+              <div className="bg-white rounded-2xl rounded-bl-sm px-4 py-3 shadow-md border">
+                <div className="flex space-x-1">
+                  <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                  <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                  <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                </div>
               </div>
             </div>
           )}
@@ -389,7 +375,7 @@ export default function ChatTest() {
             disabled={!input.trim() || isLoading}
             size="lg"
             className="rounded-full px-5 py-3 shadow-lg transition-all hover:scale-105"
-            style={{ backgroundColor: '#c3c4ef' }}
+            style={{ backgroundColor: '#1116d5' }}
           >
             <Send className="h-5 w-5 text-white" />
           </Button>

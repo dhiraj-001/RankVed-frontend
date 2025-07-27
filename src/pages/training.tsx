@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Save, Upload, Brain, Globe, Trash2, Loader2 } from 'lucide-react';
+import { Save, Upload, Brain, Globe, Trash2, Loader2, Volume2, Play, Pause, Settings, Delete, Trash } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -14,6 +14,8 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { Info } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Slider } from '@/components/ui/slider';
 // @ts-ignore
 import { isEqual } from 'lodash-es';
 
@@ -39,6 +41,24 @@ export default function Training() {
   );
   const [toggleLoading, setToggleLoading] = useState(false);
 
+  // AI Provider Settings
+  const [aiProvider, setAiProvider] = useState(activeChatbot?.aiProvider || 'platform');
+  const [customApiKey, setCustomApiKey] = useState(activeChatbot?.customApiKey || '');
+
+  // Popup Sound Settings
+  const [popupSoundEnabled, setPopupSoundEnabled] = useState(activeChatbot?.popupSoundEnabled ?? true);
+  const [popupSoundVolume, setPopupSoundVolume] = useState(activeChatbot?.popupSoundVolume ?? 50);
+  const [customPopupSound, setCustomPopupSound] = useState(activeChatbot?.customPopupSound || '');
+  const [soundFile, setSoundFile] = useState<File | null>(null);
+  const [isPlayingSound, setIsPlayingSound] = useState(false);
+
+  // Track changes for button states
+  const [hasTrainingDataChanges, setHasTrainingDataChanges] = useState(false);
+  const [hasContactChanges, setHasContactChanges] = useState(false);
+  const [hasAiSettingsChanges, setHasAiSettingsChanges] = useState(false);
+  const [hasSoundSettingsChanges, setHasSoundSettingsChanges] = useState(false);
+  const [hasFlowChanges, setHasFlowChanges] = useState(false);
+
   // Log initial state
   useEffect(() => {
     console.log('[LeadCollection] Initial leadCollectionEnabled:', activeChatbot?.leadCollectionEnabled);
@@ -51,6 +71,71 @@ export default function Training() {
       console.log('[LeadCollection] Updated from activeChatbot:', activeChatbot.leadCollectionEnabled);
     }
   }, [activeChatbot?.id]);
+
+  // Sync AI provider and sound settings with activeChatbot changes
+  useEffect(() => {
+    if (activeChatbot) {
+      setAiProvider(activeChatbot.aiProvider || 'platform');
+      setCustomApiKey(activeChatbot.customApiKey || '');
+      setPopupSoundEnabled(activeChatbot.popupSoundEnabled ?? true);
+      setPopupSoundVolume(activeChatbot.popupSoundVolume ?? 50);
+      setCustomPopupSound(activeChatbot.customPopupSound || '');
+    }
+  }, [activeChatbot]);
+
+  // Track training data changes
+  useEffect(() => {
+    const originalData = activeChatbot?.plainData || '';
+    setHasTrainingDataChanges(trainingData !== originalData);
+  }, [trainingData, activeChatbot?.plainData]);
+
+  // Track contact info changes
+  useEffect(() => {
+    const originalWhatsapp = activeChatbot?.whatsapp || '';
+    const originalPhone = activeChatbot?.phone || '';
+    const originalWebsite = activeChatbot?.website || '';
+    setHasContactChanges(
+      whatsapp !== originalWhatsapp || 
+      phone !== originalPhone || 
+      website !== originalWebsite
+    );
+  }, [whatsapp, phone, website, activeChatbot?.whatsapp, activeChatbot?.phone, activeChatbot?.website]);
+
+  // Track AI settings changes
+  useEffect(() => {
+    const originalAiProvider = activeChatbot?.aiProvider || 'platform';
+    const originalApiKey = activeChatbot?.customApiKey || '';
+    setHasAiSettingsChanges(
+      aiProvider !== originalAiProvider || 
+      customApiKey !== originalApiKey
+    );
+  }, [aiProvider, customApiKey, activeChatbot?.aiProvider, activeChatbot?.customApiKey]);
+
+  // Track sound settings changes
+  useEffect(() => {
+    const originalSoundEnabled = activeChatbot?.popupSoundEnabled ?? true;
+    const originalSoundVolume = activeChatbot?.popupSoundVolume ?? 50;
+    const originalCustomSound = activeChatbot?.customPopupSound || '';
+    setHasSoundSettingsChanges(
+      popupSoundEnabled !== originalSoundEnabled ||
+      popupSoundVolume !== originalSoundVolume ||
+      customPopupSound !== originalCustomSound
+    );
+  }, [popupSoundEnabled, popupSoundVolume, customPopupSound, activeChatbot?.popupSoundEnabled, activeChatbot?.popupSoundVolume, activeChatbot?.customPopupSound]);
+
+  // Track flow changes
+  useEffect(() => {
+    if (questionFlow && editedFlow) {
+      try {
+        const parsedEditedFlow = JSON.parse(editedFlow);
+        setHasFlowChanges(!isEqual(parsedEditedFlow, questionFlow));
+      } catch {
+        setHasFlowChanges(true);
+      }
+    } else {
+      setHasFlowChanges(false);
+    }
+  }, [editedFlow, questionFlow]);
 
   // Mutation for processing training data
   const processTrainingData = useMutation({
@@ -79,6 +164,171 @@ export default function Training() {
       return response.json();
     },
   });
+
+  // Sound testing function with pause support
+  const [audioRef, setAudioRef] = useState<HTMLAudioElement | null>(null);
+  
+  const testSound = async () => {
+    if (!popupSoundEnabled) {
+      toast({
+        title: 'Sound Disabled',
+        description: 'Please enable popup sound first.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // If already playing, pause it
+    if (audioRef && !audioRef.paused) {
+      audioRef.pause();
+      setIsPlayingSound(false);
+      return;
+    }
+
+    setIsPlayingSound(true);
+    try {
+      const soundUrl = customPopupSound || '/sounds/popup.mp3';
+      const audio = new Audio(soundUrl);
+      
+      // Set volume based on current volume setting
+      audio.volume = popupSoundVolume / 100;
+      
+      // Store reference for pause functionality
+      setAudioRef(audio);
+      
+      audio.onended = () => {
+        setIsPlayingSound(false);
+        setAudioRef(null);
+      };
+      
+      audio.onerror = () => {
+        setIsPlayingSound(false);
+        setAudioRef(null);
+        toast({
+          title: 'Sound Error',
+          description: 'Failed to play sound. Please check your sound file.',
+          variant: 'destructive',
+        });
+      };
+      
+      await audio.play();
+    } catch (error) {
+      setIsPlayingSound(false);
+      setAudioRef(null);
+      toast({
+        title: 'Sound Error',
+        description: 'Failed to play sound.',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  // Update volume on existing audio if playing
+  useEffect(() => {
+    if (audioRef && !audioRef.paused) {
+      audioRef.volume = popupSoundVolume / 100;
+    }
+  }, [popupSoundVolume, audioRef]);
+
+  // Handle sound file upload
+  const handleSoundFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('audio/')) {
+        toast({
+          title: 'Invalid File',
+          description: 'Please select an audio file (MP3, WAV, etc.)',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: 'File Too Large',
+          description: 'Sound file must be less than 5MB',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      setSoundFile(file);
+      
+      // Convert to Data URI
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const dataUri = e.target?.result as string;
+        setCustomPopupSound(dataUri);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Clear file input when custom sound is removed
+  const clearCustomSound = () => {
+    setCustomPopupSound('');
+    setSoundFile(null);
+    // Clear the file input
+    const fileInput = document.getElementById('customSound') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.value = '';
+    }
+  };
+
+  // Save AI provider settings
+  const handleSaveAiSettings = async () => {
+    if (!activeChatbot || !hasAiSettingsChanges) return;
+
+    try {
+      await updateChatbot.mutateAsync({
+        id: activeChatbot.id,
+        data: {
+          aiProvider,
+          customApiKey: aiProvider === 'platform' ? '' : customApiKey,
+        },
+      });
+      setHasAiSettingsChanges(false);
+      toast({
+        title: 'AI Settings Saved',
+        description: 'AI provider settings have been updated successfully.',
+      });
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to save AI settings. Please try again.',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  // Save popup sound settings
+  const handleSaveSoundSettings = async () => {
+    if (!activeChatbot || !hasSoundSettingsChanges) return;
+
+    try {
+      await updateChatbot.mutateAsync({
+        id: activeChatbot.id,
+        data: {
+          popupSoundEnabled,
+          popupSoundVolume,
+          customPopupSound,
+        },
+      });
+      setHasSoundSettingsChanges(false);
+      toast({
+        title: 'Sound Settings Saved',
+        description: 'Popup sound settings have been updated successfully.',
+      });
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to save sound settings. Please try again.',
+        variant: 'destructive',
+      });
+    }
+  };
 
   const handleSave = async () => {
     if (!activeChatbot) {
@@ -115,6 +365,8 @@ export default function Training() {
       });
       // --- LOGGING: Log the result of the save operation ---
       console.log('[Training] Save result:', result);
+      setHasTrainingDataChanges(false);
+      setHasFlowChanges(false);
       toast({
         title: 'Saved',
         description: processed.processed
@@ -310,14 +562,8 @@ We serve over 1,000+ companies worldwide and are trusted by industry leaders.`;
  
   // Save contact info handler
   const handleSaveContactInfo = async () => {
-    if (!activeChatbot) {
-      toast({
-        title: 'Error',
-        description: 'No active chatbot selected.',
-        variant: 'destructive',
-      });
-      return;
-    }
+    if (!activeChatbot || !hasContactChanges) return;
+    
     try {
       await updateChatbot.mutateAsync({
         id: activeChatbot.id,
@@ -327,6 +573,7 @@ We serve over 1,000+ companies worldwide and are trusted by industry leaders.`;
           website,
         },
       });
+      setHasContactChanges(false);
       toast({
         title: 'Contact Info Saved',
         description: 'Contact details have been saved successfully.',
@@ -402,51 +649,91 @@ We serve over 1,000+ companies worldwide and are trusted by industry leaders.`;
 
   return (
     <TooltipProvider>
-      {/* Sticky Glassmorphism Header */}
-      <header className="backdrop-blur-md bg-gradient-to-br from-blue-50 to-white/80 border-b border-slate-200 px-6 py-5 sticky top-0 z-20 shadow-lg flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">Tune AI</h2>
-          <p className="text-slate-600 mt-1 text-base font-normal">Provide custom training data for "{activeChatbot.name}" & generate a flow</p>
-        </div>
-        <div className="flex gap-2 items-center">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button onClick={handleSave} disabled={updateChatbot.isPending || processTrainingData.isPending} className="rounded-full px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white shadow-lg transition-all">
-                {updateChatbot.isPending || processTrainingData.isPending ? (
-                  <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                ) : (
-                  <Save className="h-5 w-5 mr-2" />
-                )}
-                {updateChatbot.isPending || processTrainingData.isPending ? 'Processing...' : 'Save'}
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Save Training Data</TooltipContent>
-          </Tooltip>
-          <Tooltip>
-            
-            <TooltipContent>Generate AI-powered question flow from your training data</TooltipContent>
-          </Tooltip>
+      {/* Header */}
+      <header className="hidden sm:block backdrop-blur-md bg-gradient-to-br from-blue-50 via-white to-white border-b border-blue-50 px-4 sm:px-6 py-2 sm:py-4 sticky top-0 z-20 shadow-lg">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between max-w-7xl mx-auto gap-2 sm:gap-4">
+          <div className="text-center sm:text-left">
+            <h2 className="text-xl sm:text-2xl font-bold text-slate-900">Tune Ai</h2>
+          </div>
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+            <Button 
+              onClick={handleSave} 
+              disabled={updateChatbot.isPending || processTrainingData.isPending || (!hasTrainingDataChanges && !hasFlowChanges)}
+              className="bg-blue-600 hover:bg-blue-700 text-white border-none px-3 py-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {updateChatbot.isPending || processTrainingData.isPending ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <Save className="h-4 w-4 mr-2" />
+              )}
+              {updateChatbot.isPending || processTrainingData.isPending ? 'Saving...' : 'Save All'}
+            </Button>
+          </div>
         </div>
       </header>
 
-      <div className="p-6 max-w-7xl mx-auto">
+      {/* Mobile Header */}
+      <div className="sm:hidden bg-white border-b border-gray-200 px-4 py-3 sticky top-0 z-10">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-bold text-slate-900">Training</h2>
+          <div className="flex items-center gap-2">
+            <Button 
+              size="sm"
+              onClick={handleSave} 
+              disabled={updateChatbot.isPending || processTrainingData.isPending || (!hasTrainingDataChanges && !hasFlowChanges)}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {updateChatbot.isPending || processTrainingData.isPending ? (
+                <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+              ) : (
+                <Save className="h-4 w-4 mr-1" />
+              )}
+              {updateChatbot.isPending || processTrainingData.isPending ? 'Saving...' : 'Save'}
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      <div className="p-6 max-w-7xl mx-auto bg-gradient-to-br min-h-screen">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main Training Data Editor & Fetcher */}
-          <div className="lg:col-span-2 space-y-8">
+          {/* Main Content */}
+          <div className="lg:col-span-2 space-y-6">
             {/* Training Data Editor */}
-            <Card className="shadow-lg bg-gradient-to-br from-blue-50 to-white border-0 rounded-2xl">
+            <Card className="border border-slate-200 bg-gradient-to-br from-white to-blue-50/30 shadow-sm animate-in fade-in duration-700 ease-in-out">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg font-bold">
-                  <Brain className="h-6 w-6 text-blue-600" /> Training Content
+                <CardTitle className="flex items-center gap-2">
+                  <Brain className="h-5 w-5 text-blue-600 transition-transform duration-500 ease-in-out" /> 
+                  <span className="transition-all duration-500 ease-in-out">Training Content</span>
                 </CardTitle>
-                <p className="text-sm text-slate-600">Add text content that will help your chatbot provide better, more accurate responses</p>
+                <p className="text-sm text-slate-600 transition-all duration-500 ease-in-out">Add content to help your chatbot provide better responses</p>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  <div className="flex flex-wrap gap-2 mb-2">
-                    <Button size="sm" variant="outline" className="rounded-full px-4 py-1 text-xs" onClick={() => addSampleData('faq')}>+ FAQ Sample</Button>
-                    <Button size="sm" variant="outline" className="rounded-full px-4 py-1 text-xs" onClick={() => addSampleData('product')}>+ Product Info</Button>
-                    <Button size="sm" variant="outline" className="rounded-full px-4 py-1 text-xs" onClick={() => addSampleData('company')}>+ Company Info</Button>
+                  <div className="flex flex-wrap gap-2">
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      onClick={() => addSampleData('faq')}
+                      className="hover:bg-blue-50 hover:border-blue-200 transition-colors"
+                    >
+                      + FAQ
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      onClick={() => addSampleData('product')}
+                      className="hover:bg-blue-50 hover:border-blue-200 transition-colors"
+                    >
+                      + Product Info
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      onClick={() => addSampleData('company')}
+                      className="hover:bg-blue-50 hover:border-blue-200 transition-colors"
+                    >
+                      + Company Info
+                    </Button>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="trainingData">Training Data</Label>
@@ -454,12 +741,12 @@ We serve over 1,000+ companies worldwide and are trusted by industry leaders.`;
                       id="trainingData"
                       value={trainingData}
                       onChange={(e) => setTrainingData(e.target.value)}
-                      placeholder="Enter your training content here... Include FAQs, product information, company policies, and any other relevant information that will help your chatbot provide better responses."
-                      rows={18}
-                      className="font-mono text-sm rounded-xl border-2 border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all"
+                      placeholder="Enter your training content here..."
+                      rows={16}
+                      className="font-mono text-sm"
                     />
                   </div>
-                  <div className="flex items-center justify-between text-xs text-slate-500 mt-1">
+                  <div className="flex items-center justify-between text-xs text-slate-500">
                     <span>{typeof trainingData === 'string' ? trainingData.split(/\s+/).filter(word => word.length > 0).length + ' words' : 'N/A'}</span>
                     <span>{typeof trainingData === 'string' ? trainingData.length + ' characters' : 'N/A'}</span>
                   </div>
@@ -468,12 +755,12 @@ We serve over 1,000+ companies worldwide and are trusted by industry leaders.`;
             </Card>
 
             {/* URL Content Fetcher */}
-            <Card className="shadow-lg bg-gradient-to-br from-green-50 to-white border-0 rounded-2xl">
+            <Card className="border border-slate-200 bg-gradient-to-br from-white to-blue-50/30 shadow-md">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg font-bold">
-                  <Globe className="h-6 w-6 text-green-600" /> Fetch Website Content
+                <CardTitle className="flex items-center gap-2">
+                  <Globe className="h-5 w-5 text-blue-600" /> Fetch Website Content
                 </CardTitle>
-                <p className="text-sm text-slate-600">Paste URLs (one per line) to fetch and add their content to your training data</p>
+                <p className="text-sm text-slate-600">Paste URLs to fetch and add their content</p>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
@@ -484,24 +771,32 @@ We serve over 1,000+ companies worldwide and are trusted by industry leaders.`;
                       value={urls}
                       onChange={(e) => setUrls(e.target.value)}
                       placeholder="https://example.com/about\nhttps://example.com/faq"
-                      rows={4}
-                      className="rounded-xl border-2 border-slate-200 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all"
+                      rows={3}
                     />
                   </div>
-                  <Button onClick={handleFetchUrls} disabled={fetchUrlContent.isPending || !urls.trim()} className="bg-green-600 hover:bg-green-700 text-white rounded-full px-6 py-2 shadow-md">
+                  <Button 
+                    onClick={handleFetchUrls} 
+                    disabled={fetchUrlContent.isPending || !urls.trim()} 
+                    className="bg-blue-600 hover:bg-blue-700 text-white transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
                     {fetchUrlContent.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Upload className="h-4 w-4 mr-2" />}
                     {fetchUrlContent.isPending ? 'Fetching...' : 'Fetch Content'}
                   </Button>
                   {fetchedContent.length > 0 && (
-                    <div className="space-y-4 mt-4">
-                      <Label className="font-semibold text-slate-700">Fetched Content</Label>
+                    <div className="space-y-3">
+                      <Label className="font-semibold">Fetched Content</Label>
                       {fetchedContent.map((content, idx) => (
-                        <Card key={idx} className="bg-white border border-slate-200 rounded-xl p-3 relative">
-                          <Badge className="absolute top-2 right-2 bg-green-100 text-green-700">Source {idx + 1}</Badge>
-                          <Button size="icon" variant="ghost" className="absolute top-2 left-2" onClick={() => removeFetchedContent(idx)} aria-label="Remove fetched content">
+                        <Card key={idx} className="bg-slate-50 border border-slate-200 p-3 relative">
+                          <Badge className="absolute top-2 right-2 bg-blue-100 text-blue-700">Source {idx + 1}</Badge>
+                          <Button 
+                            size="icon" 
+                            variant="ghost" 
+                            onClick={() => removeFetchedContent(idx)}
+                            className="absolute top-2 left-2 hover:bg-red-50 hover:text-red-600 transition-colors"
+                          >
                             <Trash2 className="h-4 w-4 text-red-500" />
                           </Button>
-                          <div className="max-h-40 overflow-y-auto text-xs whitespace-pre-wrap break-all mt-2">
+                          <div className="max-h-32 overflow-y-auto text-xs whitespace-pre-wrap break-all mt-6">
                             {content}
                           </div>
                         </Card>
@@ -512,89 +807,75 @@ We serve over 1,000+ companies worldwide and are trusted by industry leaders.`;
               </CardContent>
             </Card>
 
-            {/* Contact Info Inputs for AI Generation */}
-            <Card className="mb-4 bg-slate-50 border border-slate-200">
+            {/* Contact Info */}
+            <Card className="border border-slate-200 bg-gradient-to-br from-white to-blue-50/30 shadow-md animate-in fade-in duration-700 ease-in-out delay-100">
               <CardHeader>
-                <CardTitle className="text-slate-700">Contact Information for AI Flow</CardTitle>
+                <CardTitle className="transition-all duration-500 ease-in-out">Contact Information</CardTitle>
               </CardHeader>
-              <CardContent className="flex flex-col gap-4">
-                <div>
+              <CardContent className="space-y-4">
+                <div className="animate-in fade-in duration-500 ease-in-out delay-200">
                   <Label htmlFor="whatsapp">WhatsApp Number</Label>
-                  <Input id="whatsapp" value={whatsapp} onChange={e => setWhatsapp(e.target.value)} placeholder="e.g. +919876543210" />
+                  <Input id="whatsapp" value={whatsapp} onChange={e => setWhatsapp(e.target.value)} placeholder="+919876543210" className="transition-all duration-300 ease-in-out hover:border-blue-200 focus:ring-2 focus:ring-blue-200 focus:border-blue-200" />
                 </div>
-                <div>
+                <div className="animate-in fade-in duration-500 ease-in-out delay-300">
                   <Label htmlFor="phone">Phone Number</Label>
-                  <Input id="phone" value={phone} onChange={e => setPhone(e.target.value)} placeholder="e.g. +911234567890" />
+                  <Input id="phone" value={phone} onChange={e => setPhone(e.target.value)} placeholder="+911234567890" className="transition-all duration-300 ease-in-out hover:border-blue-200 focus:ring-2 focus:ring-blue-200 focus:border-blue-200" />
                 </div>
-                <div>
+                <div className="animate-in fade-in duration-500 ease-in-out delay-400">
                   <Label htmlFor="website">Website URL</Label>
-                  <Input id="website" value={website} onChange={e => setWebsite(e.target.value)} placeholder="e.g. https://yourdomain.com" />
+                  <Input id="website" value={website} onChange={e => setWebsite(e.target.value)} placeholder="https://yourdomain.com" className="transition-all duration-300 ease-in-out hover:border-blue-200 focus:ring-2 focus:ring-blue-200 focus:border-blue-200" />
                 </div>
-                <Button
-                  onClick={handleSaveContactInfo}
-                  disabled={updateChatbot.isPending}
-                  className="mt-2 w-fit bg-blue-600 hover:bg-blue-700 text-white rounded-full px-6 py-2 shadow-md"
+                <Button 
+                  onClick={handleSaveContactInfo} 
+                  disabled={updateChatbot.isPending || !hasContactChanges}
+                  className="bg-blue-600 hover:bg-blue-700 text-white transition-all duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed animate-in fade-in duration-500 ease-in-out delay-500"
                 >
-                  {updateChatbot.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
+                  {updateChatbot.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2 transition-transform duration-300 ease-in-out" />}
                   {updateChatbot.isPending ? 'Saving...' : 'Save Contact Details'}
                 </Button>
               </CardContent>
             </Card>
 
-            {/* Message to save contact info before generating flow */}
-            <div className="mb-2 text-slate-600 text-sm text-center">
-              <span className="font-semibold text-blue-700">Please save your contact details above before generating the AI question flow.</span>
-            </div>
-
-            {/* Generate Question Flow Button - now below contact info */}
-            {/* Description above the button */}
-            <div className="mb-2 text-slate-600 text-sm text-center">
-              Generate a question flow for your chatbot using the information above. You can edit the result after generation.<br />
-              <span className="text-xs text-slate-500">Note: Training data generation may take some time depending on the amount of data provided.</span>
-            </div>
-            <div className="mb-8">
+            {/* Generate Flow Button */}
+            <div className="text-center">
               <Button
                 onClick={handleGenerateFlow}
-                disabled={isGeneratingFlow}
-                className="w-full py-5 text-lg font-bold shadow-md bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 transition-all duration-150"
-                style={{ letterSpacing: '0.02em' }}
+                disabled={isGeneratingFlow || !trainingData.trim()}
+                className="w-full py-4 text-lg font-semibold bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isGeneratingFlow ? <Loader2 className="mr-3 h-5 w-5 animate-spin" /> : <Brain className="mr-3 h-5 w-5" />}
                 Generate Question Flow (AI)
               </Button>
             </div>
 
-            {/* Dedicated Question Flow Section */}
-            <Card className="shadow bg-slate-50 border border-slate-200 rounded-2xl">
+            {/* Question Flow Editor */}
+            <Card className="border border-slate-200 bg-gradient-to-br from-white to-blue-50/30 shadow-md animate-in fade-in duration-700 ease-in-out delay-200">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-xl font-bold text-slate-700">
-                  <Brain className="h-6 w-6 text-slate-400" /> Question Flow (Saved & Editable)
+                <CardTitle className="flex items-center gap-2">
+                  <Brain className="h-5 w-5 text-blue-600 transition-transform duration-500 ease-in-out" /> 
+                  <span className="transition-all duration-500 ease-in-out">Question Flow</span>
                 </CardTitle>
-                <p className="text-base text-slate-600 mt-2">
-                  The question flow defines how your chatbot guides users through conversations. You can view the saved flow, edit it, and save changes.
-                </p>
+                <p className="text-sm text-slate-600 transition-all duration-500 ease-in-out">Edit the AI-generated question flow</p>
               </CardHeader>
               <CardContent>
-                {/* Saved Flow */}
-                
-                {/* Editable Flow */}
-                <div>
-                  <div className="font-semibold text-slate-700 mb-1">Editable Flow</div>
+                <div className="space-y-2 animate-in fade-in duration-500 ease-in-out delay-300">
+                  <Label>Flow JSON</Label>
                   <Textarea
                     value={editedFlow}
                     onChange={e => setEditedFlow(e.target.value)}
-                    rows={16}
-                    className="font-mono text-xs rounded-xl border-2 border-slate-200 focus:border-slate-400 focus:ring-2 focus:ring-slate-100 transition-all mb-2 bg-white text-slate-700"
+                    rows={12}
+                    className="font-mono text-xs transition-all duration-300 ease-in-out hover:border-blue-200 focus:ring-2 focus:ring-blue-200 focus:border-blue-200"
                     spellCheck={false}
                   />
                   {!isValidJson && (
-                    <span className="font-semibold ml-2" style={{ color: '#b91c1c' }}>Invalid JSON</span>
+                    <span className="text-red-600 text-sm animate-in fade-in duration-300 ease-in-out">Invalid JSON</span>
                   )}
                   <Button
                     onClick={handleResetFlow}
-                    disabled={editedFlow === JSON.stringify(questionFlow, null, 2)}
+                    disabled={editedFlow === JSON.stringify(questionFlow, null, 2) || !questionFlow}
                     variant="outline"
-                    className="rounded-full px-6 py-2 mt-2"
+                    size="sm"
+                    className="hover:bg-blue-50 hover:border-blue-200 transition-all duration-300 ease-in-out animate-in fade-in duration-500 ease-in-out delay-400"
                   >
                     Reset to AI Output
                   </Button>
@@ -603,54 +884,198 @@ We serve over 1,000+ companies worldwide and are trusted by industry leaders.`;
             </Card>
           </div>
 
-          {/* Sidebar: Lead Collection Toggle, Stats, Info */}
-          <div className="space-y-8">
-            <Card className="shadow bg-white/90 border-0 rounded-2xl flex flex-col items-center justify-center py-6">
-              <div className="flex flex-col items-center gap-2">
-                <span className="font-bold text-slate-700 text-base mb-1">Enable Lead Collection</span>
-                <Switch
-                  checked={leadCollectionEnabled}
-                  onCheckedChange={checked => {
-                    if (!toggleLoading) handleToggleLeadCollection(checked);
-                  }}
-                  disabled={toggleLoading}
-                  className="data-[state=checked]:bg-blue-600 data-[state=unchecked]:bg-gray-300"
-                  id="enableLeadCollection"
-                />
-                <span className="text-xs text-slate-500 text-center max-w-xs">
-                  {leadCollectionEnabled
-                    ? 'Lead collection is enabled. The chatbot will collect user contact info via a form and will not show direct contact details.'
-                    : 'Direct contact info is enabled. The chatbot may show phone, WhatsApp, or website directly.'}
-                </span>
-              </div>
-            </Card>
-            <Card className="shadow bg-white/90 border-0 rounded-2xl">
+          {/* Right Sidebar - Settings */}
+          <div className="space-y-6">
+            {/* AI Provider Settings */}
+            <Card className="border border-slate-200 bg-gradient-to-br from-white to-blue-50/30 shadow-md animate-in fade-in duration-700 ease-in-out">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-base font-bold">
-                  <Brain className="h-5 w-5 text-green-600" /> Training Stats
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <Settings className="h-4 w-4 text-blue-600 transition-transform duration-500 ease-in-out" /> 
+                  <span className="transition-all duration-500 ease-in-out">AI Provider</span>
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-2 text-sm text-slate-700">
-                  <div><span className="font-semibold">Words:</span> {typeof trainingData === 'string' ? trainingData.split(/\s+/).filter(word => word.length > 0).length : 'N/A'}</div>
-                  <div><span className="font-semibold">Characters:</span> {typeof trainingData === 'string' ? trainingData.length : 'N/A'}</div>
-                  <div><span className="font-semibold">Fetched Sources:</span> {fetchedContent.length}</div>
+              <CardContent className="space-y-4">
+                <div className="space-y-2 animate-in fade-in duration-500 ease-in-out delay-100">
+                  <Label htmlFor="aiProvider">Provider</Label>
+                  <Select value={aiProvider} onValueChange={setAiProvider}>
+                    <SelectTrigger className="transition-all duration-300 ease-in-out">
+                      <SelectValue placeholder="Select AI provider" />
+                    </SelectTrigger>
+                    <SelectContent className="animate-in fade-in duration-500 ease-in-out">
+                      <SelectItem value="platform" className="transition-all duration-300 ease-in-out hover:bg-blue-50">Platform AI</SelectItem>
+                      <SelectItem value="openai" className="transition-all duration-300 ease-in-out hover:bg-blue-50">OpenAI GPT</SelectItem>
+                      <SelectItem value="google" className="transition-all duration-300 ease-in-out hover:bg-blue-50">Google Gemini</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                {aiProvider !== 'platform' && (
+                  <div className="space-y-2 animate-in fade-in duration-500 ease-in-out delay-200">
+                    <Label htmlFor="customApiKey">API Key</Label>
+                    <Input
+                      id="customApiKey"
+                      type="password"
+                      value={customApiKey}
+                      onChange={(e) => setCustomApiKey(e.target.value)}
+                      placeholder={`Enter ${aiProvider} API key`}
+                      className="transition-all duration-300 ease-in-out hover:border-blue-200 focus:ring-2 focus:ring-blue-200 focus:border-blue-200"
+                    />
+                  </div>
+                )}
+                
+                <Button
+                  onClick={handleSaveAiSettings}
+                  disabled={updateChatbot.isPending || !hasAiSettingsChanges}
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white transition-all duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed animate-in fade-in duration-500 ease-in-out delay-300"
+                  size="sm"
+                >
+                  {updateChatbot.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2 transition-transform duration-300 ease-in-out" />}
+                  Save AI Settings
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Popup Sound Settings */}
+            <Card className="border border-slate-200 bg-gradient-to-br from-white to-blue-50/30 shadow-md animate-in fade-in duration-700 ease-in-out delay-200">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <Volume2 className="h-4 w-4 text-blue-600 transition-transform duration-500 ease-in-out" /> 
+                  <span className="transition-all duration-500 ease-in-out">Popup Sound</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between animate-in fade-in duration-500 ease-in-out delay-300">
+                  <Label htmlFor="popupSoundEnabled" className="text-sm font-medium">Enable Sound</Label>
+                  <Switch
+                    id="popupSoundEnabled"
+                    checked={popupSoundEnabled}
+                    onCheckedChange={setPopupSoundEnabled}
+                    className="data-[state=checked]:bg-blue-600 transition-all duration-300 ease-in-out"
+                  />
+                </div>
+                
+                {popupSoundEnabled && (
+                  <>
+                    <div className="space-y-2 animate-in fade-in duration-500 ease-in-out delay-400">
+                      <Label htmlFor="popupSoundVolume" className="text-sm">Volume</Label>
+                      <div className="flex items-center gap-3">
+                        <input
+                          id="popupSoundVolume"
+                          type="range"
+                          min={0}
+                          max={100}
+                          step={5}
+                          value={popupSoundVolume}
+                          onChange={(e) => setPopupSoundVolume(Number(e.target.value))}
+                          className="flex-1 accent-blue-500 cursor-pointer transition-all duration-300 ease-in-out"
+                        />
+                        <span className="text-sm font-medium w-8">{popupSoundVolume}%</span>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2 animate-in fade-in duration-500 ease-in-out delay-500">
+                      <Label htmlFor="customSound" className="text-sm">Custom Sound</Label>
+                      <div className="flex items-center gap-2">
+                        <Input
+                          id="customSound"
+                          type="file"
+                          accept="audio/*"
+                          onChange={handleSoundFileChange}
+                          className="text-xs transition-all duration-300 ease-in-out hover:border-blue-200 focus:ring-2 focus:ring-blue-200 focus:border-blue-200"
+                        />
+                        <Button
+                          onClick={testSound}
+                          disabled={!popupSoundEnabled}
+                          size="sm"
+                          variant="default"
+                          className="hover:bg-blue-100 hover:border-blue-200 transition-colors shadow-sm border-blue-200 border bg-blue-50"
+                        >
+                          {isPlayingSound ? <Pause className="h-3 w-3 text-blue-600" /> : <Play className="h-3 w-3 text-blue-600" />}
+                        </Button>
+                      </div>
+                      {customPopupSound && (
+                        <div className="flex items-center gap-2">
+                          <Badge variant="secondary" className="bg-green-100 text-green-700 text-xs py-2">
+                            Custom sound loaded
+                          </Badge>
+                          <Button
+                            onClick={clearCustomSound}
+                            size="sm"
+                            variant="outline"
+                            className="text-red-600 hover:text-red-700 text-xs hover:bg-red-50 transition-colors rounded-md"
+                          >
+                            <Trash className="h-3 w-3 text-red-600" />
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  </>
+                )}
+                
+                <Button
+                  onClick={handleSaveSoundSettings}
+                  disabled={updateChatbot.isPending || !hasSoundSettingsChanges}
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  size="sm"
+                >
+                  {updateChatbot.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
+                  Save Sound Settings
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Lead Collection Toggle */}
+            <Card className="border border-slate-200 bg-gradient-to-br from-white to-blue-50/30 shadow-md">
+              <CardContent className="pt-6">
+                <div className="flex flex-col items-center gap-3">
+                  <span className="font-medium text-sm">Lead Collection</span>
+                  <Switch
+                    checked={leadCollectionEnabled}
+                    onCheckedChange={checked => {
+                      if (!toggleLoading) handleToggleLeadCollection(checked);
+                    }}
+                    disabled={toggleLoading}
+                    className="data-[state=checked]:bg-blue-600"
+                  />
+                  <span className="text-xs text-slate-500 text-center">
+                    {leadCollectionEnabled
+                      ? 'Collect user contact info via form'
+                      : 'Show direct contact details'}
+                  </span>
                 </div>
               </CardContent>
             </Card>
-            <Card className="shadow bg-white/90 border-0 rounded-2xl">
+
+            {/* Training Stats */}
+            <Card className="border border-slate-200 bg-gradient-to-br from-white to-blue-50/30 shadow-md">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-base font-bold">
-                  <Info className="h-5 w-5 text-blue-500" /> Tips for Best Training Data
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <Brain className="h-4 w-4 text-blue-600" /> Stats
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <ul className="text-sm text-slate-600 space-y-2 list-disc pl-5">
-                  <li>Include FAQs, product info, and company policies.</li>
-                  <li>Keep answers clear and concise.</li>
-                  <li>Use real customer questions and answers.</li>
-                  <li>Update regularly as your business evolves.</li>
-                  <li>Test responses in the chatbot after updating.</li>
+                <div className="space-y-2 text-sm">
+                  <div><span className="font-medium">Words:</span> {typeof trainingData === 'string' ? trainingData.split(/\s+/).filter(word => word.length > 0).length : 'N/A'}</div>
+                  <div><span className="font-medium">Characters:</span> {typeof trainingData === 'string' ? trainingData.length : 'N/A'}</div>
+                  <div><span className="font-medium">Sources:</span> {fetchedContent.length}</div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Tips */}
+            <Card className="border border-slate-200 bg-gradient-to-br from-white to-blue-50/30 shadow-md">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <Info className="h-4 w-4 text-blue-600" /> Tips
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="text-xs text-slate-600 space-y-1 list-disc pl-4">
+                  <li>Include FAQs and product info</li>
+                  <li>Keep answers clear and concise</li>
+                  <li>Use real customer questions</li>
+                  <li>Update regularly</li>
+                  <li>Test responses after updating</li>
                 </ul>
               </CardContent>
             </Card>

@@ -192,38 +192,66 @@ export default function Leads() {
         </DialogContent>
       </Dialog>
 
-      {/* Sticky Glassmorphism Header */}
-      <header className="backdrop-blur-md bg-gradient-to-br from-blue-50 to-white/80 border-b border-slate-200 px-6 py-5 sticky top-0 z-20 shadow-lg flex items-center justify-between">
-        <div>
-          <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">Leads</h2>
-          <p className="text-slate-600 mt-1 text-base font-normal">Manage and view leads collected through your chatbots</p>
-        </div>
-        <div className="flex items-center gap-2">
-          {selectedLeads.length > 0 && (
+      {/* Header */}
+      <header className="hidden sm:block backdrop-blur-md bg-gradient-to-br from-blue-50 via-white to-white border-b border-blue-50 px-4 sm:px-6 py-2 sm:py-4 sticky top-0 z-20 shadow-lg">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between max-w-7xl mx-auto gap-2 sm:gap-4">
+          <div className="text-center sm:text-left">
+            <h2 className="text-xl sm:text-2xl text-slate-900 font-bold">Leads</h2>
+          </div>
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+            {selectedLeads.length > 0 && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button 
+                    onClick={() => setShowDeleteDialog(true)} 
+                    disabled={isDeleting}
+                    variant="destructive" 
+                    className="px-3 py-1.5"
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Delete ({selectedLeads.length})
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Delete Selected ({selectedLeads.length})</TooltipContent>
+              </Tooltip>
+            )}
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button 
-                  onClick={() => setShowDeleteDialog(true)} 
-                  disabled={isDeleting}
-                  variant="destructive" 
-                  className="rounded-full p-3 shadow-lg transition-all bg-blue-100"
-                >
-                  <Trash2 className="h-5 w-5" />
+                <Button onClick={exportLeads} disabled={!filteredLeads.length || exporting} className="bg-blue-600 hover:bg-blue-700 text-white border-none px-3 py-1.5">
+                  <Download className="h-4 w-4 mr-2" />
+                  Export
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>Delete Selected ({selectedLeads.length})</TooltipContent>
+              <TooltipContent>Export Leads</TooltipContent>
             </Tooltip>
-          )}
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button onClick={exportLeads} disabled={!filteredLeads.length || exporting} className="rounded-full p-3 bg-blue-600 hover:bg-blue-700 text-white shadow-lg transition-all">
-                <Download className="h-5 w-5" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Export Leads</TooltipContent>
-          </Tooltip>
+          </div>
         </div>
       </header>
+
+      {/* Mobile Header */}
+      <div className="sm:hidden bg-white border-b border-gray-200 px-4 py-3 sticky top-0 z-10">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-bold text-slate-900">Leads</h2>
+          <div className="flex items-center gap-2">
+            {selectedLeads.length > 0 && (
+              <Button 
+                onClick={() => setShowDeleteDialog(true)} 
+                disabled={isDeleting}
+                variant="destructive" 
+                size="sm"
+                className="px-3 py-1.5"
+              >
+                <Trash2 className="h-4 w-4 mr-1" />
+                Delete
+              </Button>
+            )}
+            <Button onClick={exportLeads} disabled={!filteredLeads.length || exporting} size="sm" className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5">
+              <Download className="h-4 w-4 mr-1" />
+              Export
+            </Button>
+          </div>
+        </div>
+      </div>
 
       <div className="p-6 max-w-7xl mx-auto bg-gradient-to-br from-blue-50 to-white min-h-screen flex-1">
         {/* Stats Cards */}

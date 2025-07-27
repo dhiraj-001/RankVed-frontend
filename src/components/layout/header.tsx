@@ -115,7 +115,7 @@ export function Header() {
 
           {/* Active Chatbot Selector */}
           <div className="flex items-center space-x-3">
-            <span className="text-sm font-medium text-slate-600 whitespace-nowrap">Active Chatbot:</span>
+            <span className="text-sm text-blue-900 font-bold whitespace-nowrap">Active Chatbot:</span>
             <Select
               value={activeChatbot?.id || ''}
               onValueChange={(value) => {
@@ -140,8 +140,8 @@ export function Header() {
         {/* Right side - User Profile */}
         <div className="flex items-center space-x-4">
           {/* User Profile */}
-          <div className="flex items-center space-x-3">
-            <div className="hidden lg:block">
+          <div className="flex items-center space-x-3 bg-blue-50 pl-3 py-1 rounded-xl hover:bg-blue-100 transition-colors duration-200">
+            <div className="hidden lg:block ">
               <p className="text-sm font-medium text-slate-900">
                 {user?.primaryEmailAddress?.emailAddress || 'user@example.com'}
               </p>

@@ -40,6 +40,15 @@ export interface Chatbot {
   enableNotificationSound: boolean;
   customNotificationSound?: string;
   
+  // Popup Sound
+  popupSoundEnabled?: boolean;
+  customPopupSound?: string;
+  popupSoundVolume?: number;
+  
+  // Timing & Delays
+  popupDelay?: number;
+  replyDelay?: number;
+  
   // Integrations
   leadsWebhookUrl?: string;
   
@@ -57,6 +66,11 @@ export interface Chatbot {
   leadCollectionEnabled: boolean;
   leadCollectionAfterMessages: number;
   leadCollectionMessage: string;
+  
+  // Contact Information
+  phone?: string;
+  whatsapp?: string;
+  website?: string;
   
   // Usage Limits
   dailyChatLimit: number;
@@ -163,6 +177,11 @@ export interface InsertChatbot {
   initialMessageDelay?: number;
   enableNotificationSound?: boolean;
   customNotificationSound?: string;
+  popupSoundEnabled?: boolean;
+  customPopupSound?: string;
+  popupSoundVolume?: number;
+  popupDelay?: number;
+  replyDelay?: number;
   leadsWebhookUrl?: string;
   businessType?: string;
   poweredByText?: string;

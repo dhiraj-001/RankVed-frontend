@@ -49,6 +49,8 @@ export default function Dashboard() {
     chatWindowTheme: string;
     borderRadius: number;
     shadowStyle: string;
+    popupDelay: number;
+    replyDelay: number;
   }>({
     name: '',
     aiSystemPrompt: '',
@@ -72,7 +74,9 @@ export default function Dashboard() {
     chatWindowStyle: 'modern',
     chatWindowTheme: 'light',
     borderRadius: 16,
-    shadowStyle: 'soft'
+    shadowStyle: 'soft',
+    popupDelay: 2000,
+    replyDelay: 1000
   });
   const { handleCreateChatbot, handleUpdateChatbot, handleDeleteChatbot, createChatbot, updateChatbot } = useChatbotActions({ setShowCreateDialog, setNewChatbot });
   const [editMode, setEditMode] = useState(false);
@@ -118,7 +122,9 @@ export default function Dashboard() {
         chatWindowStyle: 'modern',
         chatWindowTheme: 'light',
         borderRadius: 16,
-        shadowStyle: 'soft'
+        shadowStyle: 'soft',
+        popupDelay: 2000,
+        replyDelay: 1000
       });
     }
   }, [showCreateDialog]);
@@ -251,7 +257,9 @@ export default function Dashboard() {
                   className="focus:ring-2 focus:ring-blue-200 focus:border-blue-200 transition-all rounded-lg border-blue-50 hover:border-blue-100"
                 />
               </div>
-              <div className="border-t border-slate-100 pt-6 flex items-center space-x-2 mt-2">
+              <div className="border-t border-slate-100 pt-6 space-y-4">
+                {/* Active Status */}
+                <div className="flex items-center space-x-2">
                 <Switch
                   id="active"
                   checked={newChatbot.isActive}
@@ -282,6 +290,9 @@ export default function Dashboard() {
                     </>
                   )}
                 </Label>
+                </div>
+
+
               </div>
               <div className="flex justify-end space-x-2 pt-4">
                 <Button variant="outline" onClick={() => setShowCreateDialog(false)} aria-label="Cancel chatbot creation" className="rounded-lg px-5 py-2 border-blue-100">
@@ -316,7 +327,9 @@ export default function Dashboard() {
                         chatWindowStyle: 'modern',
                         chatWindowTheme: 'light',
                         borderRadius: 16,
-                        shadowStyle: 'soft'
+                        shadowStyle: 'soft',
+                        popupDelay: 2000,
+                        replyDelay: 1000
                       });
                     } else {
                       await handleCreateChatbot(newChatbot);
@@ -368,48 +381,77 @@ export default function Dashboard() {
           </DialogContent>
         </Dialog>
         {/* Responsive Header */}
-        <header className="backdrop-blur-md bg-gradient-to-br from-blue-50 via-white to-white border-b border-blue-50 px-6 py-5 sticky top-0 z-20 shadow-lg flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="text-center sm:text-left">
-            <h2 className="text-xl sm:text-2xl font-semibold text-slate-900">Dashboard</h2>
-            <p className="text-sm sm:text-base text-slate-600 mt-1">Monitor your chatbots and analyze performance</p>
-          </div>
-          <div className="flex items-center justify-center sm:justify-end space-x-2 sm:space-x-3">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={exportDashboardStats}
-              aria-label="Export dashboard stats as CSV"
-            >
-              <Download className="h-4 w-4 mr-2" /> Export
-            </Button>
+        <header className="hidden sm:block backdrop-blur-md bg-gradient-to-br from-blue-50 via-white to-white border-b border-blue-50 px-4 sm:px-6 py-2 sm:py-4 sticky top-0 z-20 shadow-lg">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between max-w-7xl mx-auto gap-2 sm:gap-4">
+            <div className="text-center sm:text-left">
+              <h2 className="text-xl sm:text-2xl font-bold text-slate-900">Dashboard</h2>
+            </div>
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={exportDashboardStats}
+                aria-label="Export dashboard stats as CSV"
+                className="px-3 py-1.5 border-blue-200 text-blue-700 hover:bg-blue-50"
+              >
+                <Download className="h-4 w-4 mr-2 " /> Export
+              </Button>
 
-            <Button
-              size="sm"
-              className="flex-1 sm:flex-none bg-blue-600 hover:bg-blue-700 text-white border-none"
-              onClick={() => setShowCreateDialog(true)}
-              aria-label="Create new chatbot"
-            >
-              <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-              <span className="text-xs sm:text-sm">Create</span>
-            </Button>
+              <Button
+                size="sm"
+                className="flex-1 sm:flex-none bg-blue-600 hover:bg-blue-700 text-white border-none px-3 py-1.5"
+                onClick={() => setShowCreateDialog(true)}
+                aria-label="Create new chatbot"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                <span className="text-xs sm:text-sm">Create</span>
+              </Button>
+            </div>
           </div>
         </header>
+
+        {/* Mobile Header */}
+        <div className="sm:hidden bg-white border-b border-gray-200 px-4 py-3 sticky top-0 z-10">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-bold text-slate-900">Dashboard</h2>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={exportDashboardStats}
+                aria-label="Export dashboard stats as CSV"
+                className="px-3 py-1.5 border-blue-200 text-blue-700 hover:bg-blue-50"
+              >
+                <Download className="h-4 w-4 mr-1" /> Export
+              </Button>
+              <Button
+                size="sm"
+                className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5"
+                onClick={() => setShowCreateDialog(true)}
+                aria-label="Create new chatbot"
+              >
+                <Plus className="h-4 w-4 mr-1" />
+                Create
+              </Button>
+            </div>
+          </div>
+        </div>
 
         {/* Dashboard Overview */}
         <div className="p-4 sm:p-6 max-w-7xl mx-auto w-full">
           <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight mb-6">Overview</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {statsData.map((stat, i) => (
-              <Card key={i} className="rounded-2xl shadow-md border border-blue-50 bg-white hover:shadow-xl transition-shadow duration-200 group">
+              <Card key={i} className="shadow-md rounded-lg border border-gray-200 bg-white hover:shadow-lg transition-shadow duration-200 group">
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <CardTitle className="text-sm font-medium text-slate-500">{stat.title}</CardTitle>
-                  <div className={`rounded-full p-3 bg-blue-50 group-hover:scale-110 transition-transform`}>
-                    <stat.icon className={`h-6 w-6 text-blue-400`} />
+                  <CardTitle className="text-sm font-medium text-gray-600">{stat.title}</CardTitle>
+                  <div className={`rounded-full p-3 bg-blue-100 group-hover:scale-110 transition-transform`}>
+                    <stat.icon className={`h-6 w-6 text-blue-600`} />
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-3xl font-bold text-slate-900">{stat.value}</div>
-                  <div className="text-xs text-slate-500 mt-1">{stat.change}</div>
+                  <div className="text-3xl font-bold text-gray-900">{stat.value}</div>
+                  <div className="text-xs text-gray-500 mt-1">{stat.change}</div>
                 </CardContent>
               </Card>
             ))}
@@ -423,46 +465,48 @@ export default function Dashboard() {
             <div className="lg:col-span-2 space-y-6">
               {/* Toggle for Chatbots List */}
               <div 
-                className={`flex items-center gap-3 mt-4 cursor-pointer select-none p-3 rounded-xl transition-all duration-300 hover:shadow-md ${
+                className={`flex items-center gap-3 mt-4 cursor-pointer select-none p-3 rounded-lg transition-all duration-300 hover:shadow-md ${
                   showChatbots 
-                    ? 'bg-blue-50 border-2 border-blue-100 shadow-lg' 
-                    : 'bg-white border-2 border-blue-50 hover:border-blue-100'
+                    ? 'bg-blue-50 border border-blue-100 shadow-md' 
+                    : 'bg-white border border-gray-200 hover:border-blue-300 shadow-md'
                 }`} 
                 onClick={() => setShowChatbots(v => !v)}
               >
                 <div className={`p-2 rounded-lg transition-colors duration-300 ${
-                  showChatbots ? 'bg-blue-200 text-blue-700' : 'bg-blue-50 text-blue-400'
+                  showChatbots ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-600'
                 }`}>
                   <Bot className="h-5 w-5" />
                 </div>
                 <span className={`font-bold text-lg transition-colors duration-300 ${
-                  showChatbots ? 'text-blue-700' : 'text-blue-700'
+                  showChatbots ? 'text-blue-600' : 'text-gray-700'
                 }`}>Active Chatbots</span>
                 <div className={`ml-auto p-1 rounded-full transition-all duration-300 ${
-                  showChatbots ? 'bg-blue-200 text-blue-700' : 'bg-blue-50 text-blue-400'
+                  showChatbots ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-600'
                 }`}>
                   {showChatbots ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                 </div>
               </div>
               <div className={`transition-all duration-700 ease-in-out overflow-hidden ${showChatbots ? 'max-h-[1000px] opacity-100 mt-2' : 'max-h-0 opacity-0 mt-0'}`}> 
                 {showChatbots && (
-                  <Card className="shadow-xl rounded-2xl border-0 bg-gradient-to-br from-blue-50/80 via-white/90 to-white/80 relative overflow-hidden">
-                    <div className="absolute left-0 top-0 bottom-0 w-2 bg-blue-100 rounded-l-2xl" />
+                  <Card className="shadow-md rounded-lg border border-gray-200 bg-white">
                     <CardHeader>
-                      <CardTitle className="text-lg font-semibold text-blue-900">Active Chatbots</CardTitle>
-                      <p className="text-blue-400">Manage and monitor your deployed chatbots</p>
+                      <CardTitle className="flex items-center gap-2 text-lg font-semibold text-gray-900">
+                        <Bot className="h-5 w-5 text-blue-600" />
+                        Active Chatbots
+                      </CardTitle>
+                      <p className="text-gray-600">Manage and monitor your deployed chatbots</p>
                     </CardHeader>
-                    <CardContent className="p-0">
-                      <div className="overflow-x-auto">
+                    <CardContent className="p-0 ">
+                      <div className="overflow-x-auto ">
                         <table className="w-full">
                           <thead>
-                            <tr className="border-b border-blue-50 bg-white/80 sticky top-0 z-10 shadow-sm">
-                              <th className="text-left p-4 font-medium text-slate-600">Name</th>
-                              <th className="text-left p-4 font-medium text-slate-600">Status</th>
-                              <th className="text-left p-4 font-medium text-slate-600">Conversations</th>
-                              <th className="text-left p-4 font-medium text-slate-600">Leads</th>
-                              <th className="text-left p-4 font-medium text-slate-600">Last Active</th>
-                              <th className="text-left p-4 font-medium text-slate-600">Actions</th>
+                            <tr className="border-b border-gray-200 bg-gray-50 sticky top-0 z-10">
+                              <th className="text-left p-4 font-medium text-gray-600">Name</th>
+                              <th className="text-left p-4 font-medium text-gray-600">Status</th>
+                              <th className="text-left p-4 font-medium text-gray-600">Conversations</th>
+                              <th className="text-left p-4 font-medium text-gray-600">Leads</th>
+                              <th className="text-left p-4 font-medium text-gray-600">Last Active</th>
+                              <th className="text-left p-4 font-medium text-gray-600">Actions</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -480,9 +524,9 @@ export default function Dashboard() {
                               <tr>
                                 <td colSpan={6} className="p-8 text-center">
                                   <div className="flex flex-col items-center justify-center gap-2">
-                                    <Bot className="h-10 w-10 text-blue-200 mb-2" />
-                                    <span className="text-lg font-semibold text-slate-400">No chatbots found.</span>
-                                    <span className="text-sm text-slate-400">Create a chatbot to get started!</span>
+                                    <Bot className="h-10 w-10 text-gray-300 mb-2" />
+                                    <span className="text-lg font-semibold text-gray-400">No chatbots found.</span>
+                                    <span className="text-sm text-gray-400">Create a chatbot to get started!</span>
                                   </div>
                                 </td>
                               </tr>
@@ -540,40 +584,39 @@ export default function Dashboard() {
 
               {/* Toggle for Leads List */}
               <div 
-                className={`flex items-center gap-3 mt-4 cursor-pointer select-none p-3 rounded-xl transition-all duration-300 hover:shadow-md ${
+                className={`flex items-center gap-3 mt-4 cursor-pointer select-none p-3 rounded-lg transition-all duration-300 hover:shadow-md ${
                   showLeads 
-                    ? 'bg-blue-50 border-2 border-blue-100 shadow-lg' 
-                    : 'bg-white border-2 border-blue-50 hover:border-blue-100'
+                    ? 'bg-blue-50 border border-blue-200 shadow-md' 
+                    : 'bg-white border border-gray-200 hover:border-blue-300 shadow-md'
                 }`} 
                 onClick={() => setShowLeads(v => !v)}
               >
                 <div className={`p-2 rounded-lg transition-colors duration-300 ${
-                  showLeads ? 'bg-blue-200 text-blue-700' : 'bg-blue-50 text-blue-400'
+                  showLeads ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-600'
                 }`}>
                   <Users className="h-5 w-5" />
                 </div>
                 <span className={`font-bold text-lg transition-colors duration-300 ${
-                  showLeads ? 'text-blue-700' : 'text-blue-700'
+                  showLeads ? 'text-blue-600' : 'text-gray-700'
                 }`}>Recent Leads</span>
                 <div className={`ml-auto p-1 rounded-full transition-all duration-300 ${
-                  showLeads ? 'bg-blue-200 text-blue-700' : 'bg-blue-50 text-blue-400'
+                  showLeads ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-600'
                 }`}>
                   {showLeads ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                 </div>
               </div>
               <div className={`transition-all duration-700 ease-in-out overflow-hidden ${showLeads ? 'max-h-[1000px] opacity-100 mt-2' : 'max-h-0 opacity-0 mt-0'}`}> 
                 {showLeads && (
-                  <Card className="shadow-xl rounded-2xl border-0 bg-gradient-to-br from-blue-50/80 via-white/90 to-white/80 relative overflow-hidden">
-                    <div className="absolute left-0 top-0 bottom-0 w-2 bg-blue-100 rounded-l-2xl" />
-                    <CardHeader className="top-[180px] z-10 bg-white/90 backdrop-blur-md rounded-t-2xl flex flex-row items-center justify-between">
-                      <CardTitle className="flex items-center gap-2 text-lg font-bold">
-                        <Users className="h-5 w-5 text-blue-400" /> Recent Leads
+                  <Card className="shadow-md rounded-lg border border-gray-200 bg-white">
+                    <CardHeader className="flex flex-row items-center justify-between">
+                      <CardTitle className="flex items-center gap-2 text-lg font-semibold text-gray-900">
+                        <Users className="h-5 w-5 text-blue-600" /> Recent Leads
                       </CardTitle>
                       <Button
                         onClick={exportLeads}
-                        variant="default"
+                        variant="outline"
                         size="sm"
-                        className="ml-auto bg-blue-100 hover:bg-blue-200 text-blue-900 rounded-full shadow-md px-4 py-2"
+                        className="border-blue-200 text-blue-700 hover:bg-blue-50"
                         aria-label="Export leads as CSV"
                       >
                         <Download className="h-4 w-4 mr-2" /> Export
@@ -583,13 +626,13 @@ export default function Dashboard() {
                       <div className="overflow-x-auto">
                         <table className="w-full">
                           <thead>
-                            <tr className="border-b border-blue-50 bg-white/80 sticky top-0 z-10 shadow-sm">
-                              <th className="text-left p-4 font-medium text-slate-600">Contact</th>
-                              <th className="text-left p-4 font-medium text-slate-600">Phone</th>
-                              <th className="text-left p-4 font-medium text-slate-600">Email</th>
-                              <th className="text-left p-4 font-medium text-slate-600">Consent</th>
-                              <th className="text-left p-4 font-medium text-slate-600">Chatbot</th>
-                              <th className="text-left p-4 font-medium text-slate-600">Date</th>
+                            <tr className="border-b border-gray-200 bg-gray-50 sticky top-0 z-10">
+                              <th className="text-left p-4 font-medium text-gray-600">Contact</th>
+                              <th className="text-left p-4 font-medium text-gray-600">Phone</th>
+                              <th className="text-left p-4 font-medium text-gray-600">Email</th>
+                              <th className="text-left p-4 font-medium text-gray-600">Consent</th>
+                              <th className="text-left p-4 font-medium text-gray-600">Chatbot</th>
+                              <th className="text-left p-4 font-medium text-gray-600">Date</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -599,9 +642,9 @@ export default function Dashboard() {
                               <tr>
                                 <td colSpan={6} className="p-8 text-center">
                                   <div className="flex flex-col items-center justify-center gap-2">
-                                    <Users className="h-10 w-10 text-blue-200 mb-2" />
-                                    <span className="text-lg font-semibold text-slate-400">No leads found.</span>
-                                    <span className="text-sm text-slate-400">Your leads will appear here as soon as you collect some!</span>
+                                    <Users className="h-10 w-10 text-gray-300 mb-2" />
+                                    <span className="text-lg font-semibold text-gray-400">No leads found.</span>
+                                    <span className="text-sm text-gray-400">Your leads will appear here as soon as you collect some!</span>
                                   </div>
                                 </td>
                               </tr>
@@ -651,23 +694,22 @@ export default function Dashboard() {
             {/* Right Column - Live Preview */}
             <div className="space-y-6">
               {/* Live Chatbot Preview */}
-              <Card className="shadow-xl rounded-2xl border-0 bg-gradient-to-br from-blue-50/80 via-white/90 to-white/80 relative overflow-hidden">
-                <div className="absolute left-0 top-0 bottom-0 w-2 bg-blue-100 rounded-l-2xl" />
+              <Card className="shadow-md rounded-lg border border-gray-200 bg-white">
                 <CardHeader className="pb-4">
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <div>
-                      <CardTitle className="text-lg font-semibold text-blue-900 flex items-center gap-2">
-                        <Bot className="h-5 w-5 text-blue-400" />
+                      <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                        <Bot className="h-5 w-5 text-blue-600" />
                         Live Preview
                       </CardTitle>
-                      <p className="text-sm text-blue-400 mt-1">Test your chatbot in real-time</p>
+                      <p className="text-sm text-gray-600 mt-1">Test your chatbot in real-time</p>
                     </div>
                     {activeChatbot && (
                       <Button 
                         variant="outline" 
                         size="sm" 
                         onClick={() => handlePreviewChatbot(activeChatbot)}
-                        className="bg-blue-100 hover:bg-blue-200 text-blue-900 border-blue-100 hover:border-blue-200"
+                        className="border-blue-200 text-blue-700 hover:bg-blue-50"
                       >
                         <Eye className="h-4 w-4 mr-2" />
                         Try Live
@@ -676,23 +718,23 @@ export default function Dashboard() {
                   </div>
                   {/* Active Chatbot Info */}
                   {activeChatbot && (
-                    <div className="flex items-center gap-3 mt-4 p-3 bg-white/80 rounded-lg border border-blue-50">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-100 via-blue-50 to-white flex items-center justify-center shadow-md">
+                    <div className="flex items-center gap-3 mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                      <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center shadow-md">
                         {typeof activeChatbot.chatWidgetIcon === 'string' && activeChatbot.chatWidgetIcon.trim() !== '' ? (
                           <img src={activeChatbot.chatWidgetIcon} alt="Chatbot Icon" className="w-8 h-8 rounded-full object-cover" />
                         ) : activeChatbot.name ? (
-                          <span className="font-bold text-blue-700 text-lg">{activeChatbot.name.charAt(0).toUpperCase()}</span>
+                          <span className="font-bold text-blue-600 text-lg">{activeChatbot.name.charAt(0).toUpperCase()}</span>
                         ) : (
-                          <Bot className="h-5 w-5 text-blue-400" />
+                          <Bot className="h-5 w-5 text-blue-600" />
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-blue-900 truncate">{activeChatbot.name || 'Unnamed Chatbot'}</p>
+                        <p className="font-semibold text-gray-900 truncate">{activeChatbot.name || 'Unnamed Chatbot'}</p>
                         <div className="flex items-center gap-2 mt-1">
-                          <span className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${activeChatbot.isActive ? 'bg-blue-50 text-blue-700' : 'bg-blue-100 text-blue-400'}`}> 
+                          <span className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${activeChatbot.isActive ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500'}`}> 
                             {activeChatbot.isActive ? 'Active' : 'Paused'}
                           </span>
-                          <span className="text-xs text-blue-300">ID: {activeChatbot.id.slice(0, 8)}...</span>
+                          <span className="text-xs text-gray-500">ID: {activeChatbot.id.slice(0, 8)}...</span>
                         </div>
                       </div>
                     </div>
@@ -700,7 +742,7 @@ export default function Dashboard() {
                 </CardHeader>
                 <CardContent className="p-0">
                   <div className="p-4">
-                    <div className="bg-white rounded-xl border border-blue-50 shadow-sm overflow-hidden">
+                    <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
                       {/* Preview Header */}
                       {/* Preview Content */}
                       <div className="p-2 min-h-[300px] max-h-[400px] overflow-y-auto">
@@ -708,14 +750,14 @@ export default function Dashboard() {
                           <ChatPreview chatbot={activeChatbot} />
                         ) : (
                           <div className="flex flex-col items-center justify-center h-full text-center py-8">
-                            <Bot className="h-12 w-12 text-blue-100 mb-4" />
-                            <p className="text-blue-400 font-medium mb-2">No Active Chatbot</p>
-                            <p className="text-blue-200 text-sm">Select a chatbot from the header to see a live preview</p>
+                            <Bot className="h-12 w-12 text-gray-300 mb-4" />
+                            <p className="text-gray-500 font-medium mb-2">No Active Chatbot</p>
+                            <p className="text-gray-400 text-sm">Select a chatbot from the header to see a live preview</p>
                           </div>
                         )}
                       </div>
                       {/* Preview Input */}
-                      <div className="border-t border-blue-50 p-3 bg-blue-50">
+                      <div className="border-t border-gray-200 p-3 bg-gray-50">
                         <div className="flex items-center gap-2">
                          
                         </div>

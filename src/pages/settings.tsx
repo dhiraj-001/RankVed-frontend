@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Save, Key, MessageSquare, Webhook, Users, Eye, EyeOff } from 'lucide-react';
+import { Save, Key, MessageSquare, Webhook, Users, Eye, EyeOff, Settings as SettingsIcon, Zap } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -178,35 +178,54 @@ export default function Settings() {
   return (
     <div className="flex-1 bg-gradient-to-br from-blue-50 to-white min-h-screen">
       {/* Header */}
-      <header className="backdrop-blur-md bg-gradient-to-br from-blue-50 to-white/80 border-b border-slate-200 px-4 sm:px-6 py-5 sticky top-0 z-20 shadow-lg">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between max-w-7xl mx-auto gap-4">
-          <div>
-            <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Chatbot Settings</h2>
-            <p className="text-slate-600 mt-1 text-sm sm:text-base">Configure "{activeChatbot.name}" settings and behavior</p>
+      <header className="hidden sm:block backdrop-blur-md bg-gradient-to-br from-blue-50 via-white to-white border-b border-blue-50 px-4 sm:px-6 py-2 sm:py-4 sticky top-0 z-20 shadow-lg">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between max-w-7xl mx-auto gap-2 sm:gap-4">
+          <div className="text-center sm:text-left">
+            <h2 className="text-xl sm:text-2xl font-bold text-slate-900">Chatbot Settings</h2>
           </div>
-          <Button
-            onClick={handleSave}
-            disabled={updateChatbot.isPending}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 sm:px-5 py-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 w-full sm:w-auto"
-          >
-            <Save className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
-            {updateChatbot.isPending ? 'Saving...' : 'Save Changes'}
-          </Button>
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+            <Button
+              onClick={handleSave}
+              disabled={updateChatbot.isPending}
+              className="bg-blue-600 hover:bg-blue-700 text-white border-none px-3 py-1.5"
+            >
+              <Save className="h-4 w-4 mr-2" />
+              {updateChatbot.isPending ? 'Saving...' : 'Save'}
+            </Button>
+          </div>
         </div>
       </header>
+
+      {/* Mobile Header */}
+      <div className="sm:hidden bg-white border-b border-gray-200 px-4 py-3 sticky top-0 z-10">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-bold text-slate-900">Settings</h2>
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              onClick={handleSave}
+              disabled={updateChatbot.isPending}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5"
+            >
+              <Save className="h-4 w-4 mr-1" />
+              {updateChatbot.isPending ? 'Saving...' : 'Save'}
+            </Button>
+          </div>
+        </div>
+      </div>
 
       {/* Content */}
       <div className="p-4 sm:p-6 max-w-7xl mx-auto w-full">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           {/* Mobile Dropdown */}
-          <div className="sm:hidden">
+          <div className="sm:hidden shadow-md">
             <Select value={activeTab} onValueChange={setActiveTab}>
-              <SelectTrigger className="w-full bg-white border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 rounded-lg shadow-sm">
+              <SelectTrigger className="w-full bg-white border-blue-100 focus:ring-2 focus:ring-blue-200 focus:border-blue-200 rounded-lg shadow-sm transition-all duration-500 ease-in-out">
                 <SelectValue placeholder="Select a tab">{tabOptions.find(tab => tab.value === activeTab)?.label || 'Select a tab'}</SelectValue>
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="animate-in fade-in duration-700 ease-in-out">
                 {tabOptions.map((tab) => (
-                  <SelectItem key={tab.value} value={tab.value}>
+                  <SelectItem key={tab.value} value={tab.value} className="transition-all duration-300 hover:bg-blue-50">
                     {tab.label}
                   </SelectItem>
                 ))}
@@ -215,48 +234,48 @@ export default function Settings() {
           </div>
 
           {/* Desktop Tabs */}
-          <TabsList className="hidden sm:flex w-full bg-white/80 backdrop-blur-sm border border-slate-200 rounded-xl p-1 shadow-sm">
+          <TabsList className="hidden sm:flex w-full bg-gradient-to-r from-blue-50 to-gray-50 border border-gray-200 rounded-lg p-1 shadow-md transition-all duration-500 ease-in-out">
             <TabsTrigger
               value="basic"
-              className="flex-1 text-slate-600 hover:text-blue-600 focus:text-blue-600 font-medium py-3 px-4 rounded-lg data-[state=active]:bg-blue-50 data-[state=active]:text-blue-600 data-[state=active]:shadow-sm transition-all duration-200"
+              className="flex-1 text-gray-600 hover:text-gray-800 focus:text-gray-800 font-medium py-3 px-4 rounded-md data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 data-[state=active]:border-b-2 data-[state=active]:border-blue-500 transition-all duration-500 ease-in-out hover:bg-gray-50"
             >
-              Basic
+              <div className="flex items-center space-x-2 transition-all duration-500 ease-in-out">
+                <SettingsIcon className="h-4 w-4 transition-transform duration-500 ease-in-out data-[state=active]:scale-110" />
+                <span className="transition-all duration-500 ease-in-out">Basic</span>
+              </div>
             </TabsTrigger>
             <TabsTrigger
               value="messaging"
-              className="flex-1 text-slate-600 hover:text-blue-600 focus:text-blue-600 font-medium py-3 px-4 rounded-lg data-[state=active]:bg-blue-50 data-[state=active]:text-blue-600 data-[state=active]:shadow-sm transition-all duration-200"
+              className="flex-1 text-gray-600 hover:text-gray-800 focus:text-gray-800 font-medium py-3 px-4 rounded-md data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 data-[state=active]:border-b-2 data-[state=active]:border-blue-500 transition-all duration-500 ease-in-out hover:bg-gray-50"
             >
-              Messaging
+              <div className="flex items-center space-x-2 transition-all duration-500 ease-in-out">
+                <MessageSquare className="h-4 w-4 transition-transform duration-500 ease-in-out data-[state=active]:scale-110" />
+                <span className="transition-all duration-500 ease-in-out">Messaging</span>
+              </div>
             </TabsTrigger>
-            {/* <TabsTrigger
-              value="leads"
-              className="flex-1 text-slate-600 hover:text-blue-600 focus:text-blue-600 font-medium py-3 px-4 rounded-lg data-[state=active]:bg-blue-50 data-[state=active]:text-blue-600 data-[state=active]:shadow-sm transition-all duration-200"
-            >
-              Lead Collection
-            </TabsTrigger> */}
             <TabsTrigger
               value="integrations"
-              className="flex-1 text-slate-600 hover:text-blue-600 focus:text-blue-600 font-medium py-3 px-4 rounded-lg data-[state=active]:bg-blue-50 data-[state=active]:text-blue-600 data-[state=active]:shadow-sm transition-all duration-200"
+              className="flex-1 text-gray-600 hover:text-gray-800 focus:text-gray-800 font-medium py-3 px-4 rounded-md data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 data-[state=active]:border-b-2 data-[state=active]:border-blue-500 transition-all duration-500 ease-in-out hover:bg-gray-50"
             >
-              Integrations
+              <div className="flex items-center space-x-2 transition-all duration-500 ease-in-out">
+                <Webhook className="h-4 w-4 transition-transform duration-500 ease-in-out data-[state=active]:scale-110" />
+                <span className="transition-all duration-500 ease-in-out">Integrations</span>
+              </div>
             </TabsTrigger>
             <TabsTrigger
               value="ai-provider"
-              className="flex-1 text-slate-600 hover:text-blue-600 focus:text-blue-600 font-medium py-3 px-4 rounded-lg data-[state=active]:bg-blue-50 data-[state=active]:text-blue-600 data-[state=active]:shadow-sm transition-all duration-200"
+              className="flex-1 text-gray-600 hover:text-gray-800 focus:text-gray-800 font-medium py-3 px-4 rounded-md data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 data-[state=active]:border-b-2 data-[state=active]:border-blue-500 transition-all duration-500 ease-in-out hover:bg-gray-50"
             >
-              AI Provider
+              <div className="flex items-center space-x-2 transition-all duration-500 ease-in-out">
+                <Zap className="h-4 w-4 transition-transform duration-500 ease-in-out data-[state=active]:scale-110" />
+                <span className="transition-all duration-500 ease-in-out">AI Provider</span>
+              </div>
             </TabsTrigger>
-            {/* <TabsTrigger
-              value="limits"
-              className="flex-1 text-slate-600 hover:text-blue-600 focus:text-blue-600 font-medium py-3 px-4 rounded-lg data-[state=active]:bg-blue-50 data-[state=active]:text-blue-600 data-[state=active]:shadow-sm transition-all duration-200"
-            >
-              Limits
-            </TabsTrigger> */}
           </TabsList>
 
-          <TabsContent value="basic" className="space-y-6">
-            <Card className="shadow-xl rounded-2xl border-0 bg-gradient-to-br from-blue-50/60 via-white/80 to-blue-100/60 relative overflow-hidden">
-              <div className="absolute left-0 top-0 bottom-0 w-2 bg-blue-400 rounded-l-2xl" />
+          <TabsContent value="basic" className="space-y-6 animate-in fade-in duration-700 ease-in-out">
+            <Card className="shadow-md rounded-2xl border border-gray-200 bg-gradient-to-r from-blue-50 to-gray-50 relative overflow-hidden">
+              <div className="absolute left-0 top-0 bottom-0 w-2 bg-blue-500 rounded-l-2xl" />
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2 text-slate-900 font-semibold text-lg">
                   <MessageSquare className="h-5 w-5 text-blue-600" />
@@ -295,9 +314,9 @@ export default function Settings() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="messaging" className="space-y-6">
-            <Card className="shadow-xl rounded-2xl border-0 bg-gradient-to-br from-purple-50/60 via-white/80 to-purple-100/60 relative overflow-hidden">
-              <div className="absolute left-0 top-0 bottom-0 w-2 bg-purple-400 rounded-l-2xl" />
+          <TabsContent value="messaging" className="space-y-6 animate-in fade-in duration-700 ease-in-out">
+            <Card className="shadow-md rounded-2xl border border-gray-200 bg-gradient-to-r from-blue-50 to-gray-50 relative overflow-hidden">
+              <div className="absolute left-0 top-0 bottom-0 w-2 bg-blue-500 rounded-l-2xl" />
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2 text-slate-900 font-semibold text-lg">
                   <MessageSquare className="h-5 w-5 text-purple-600" />
@@ -350,8 +369,8 @@ export default function Settings() {
           </TabsContent>
 
           <TabsContent value="leads" className="space-y-6">
-            <Card className="shadow-xl rounded-2xl border-0 bg-gradient-to-br from-green-50/60 via-white/80 to-green-100/60 relative overflow-hidden">
-              <div className="absolute left-0 top-0 bottom-0 w-2 bg-green-400 rounded-l-2xl" />
+            <Card className="shadow-md rounded-2xl border border-gray-200 bg-gradient-to-r from-blue-50 to-gray-50 relative overflow-hidden">
+              <div className="absolute left-0 top-0 bottom-0 w-2 bg-blue-500 rounded-l-2xl" />
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2 text-slate-900 font-semibold text-lg">
                   <Users className="h-5 w-5 text-green-600" />
@@ -406,9 +425,9 @@ export default function Settings() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="integrations" className="space-y-6">
-            <Card className="shadow-xl rounded-2xl border-0 bg-gradient-to-br from-orange-50/60 via-white/80 to-orange-100/60 relative overflow-hidden">
-              <div className="absolute left-0 top-0 bottom-0 w-2 bg-orange-400 rounded-l-2xl" />
+          <TabsContent value="integrations" className="space-y-6 animate-in fade-in duration-700 ease-in-out">
+            <Card className="shadow-md rounded-2xl border border-gray-200 bg-gradient-to-r from-blue-50 to-gray-50 relative overflow-hidden">
+              <div className="absolute left-0 top-0 bottom-0 w-2 bg-blue-500 rounded-l-2xl" />
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2 text-slate-900 font-semibold text-lg">
                   <Webhook className="h-5 w-5 text-orange-600" />
@@ -528,9 +547,9 @@ export default function Settings() {
             </Card>
           </TabsContent> */}
 
-          <TabsContent value="ai-provider" className="space-y-6">
-            <Card className="shadow-xl rounded-2xl border-0 bg-gradient-to-br from-indigo-50/60 via-white/80 to-indigo-100/60 relative overflow-hidden">
-              <div className="absolute left-0 top-0 bottom-0 w-2 bg-indigo-400 rounded-l-2xl" />
+          <TabsContent value="ai-provider" className="space-y-6 animate-in fade-in duration-700 ease-in-out">
+            <Card className="shadow-md rounded-2xl border border-gray-200 bg-gradient-to-r from-blue-50 to-gray-50 relative overflow-hidden">
+              <div className="absolute left-0 top-0 bottom-0 w-2 bg-blue-500 rounded-l-2xl" />
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2 text-slate-900 font-semibold text-lg">
                   <Key className="h-5 w-5 text-indigo-600" />
@@ -599,8 +618,8 @@ export default function Settings() {
           </TabsContent>
           {/* chat limit */}
           {/* <TabsContent value="limits" className="space-y-6">
-            <Card className="shadow-xl rounded-2xl border-0 bg-gradient-to-br from-red-50/60 via-white/80 to-red-100/60 relative overflow-hidden">
-              <div className="absolute left-0 top-0 bottom-0 w-2 bg-red-400 rounded-l-2xl" />
+            <Card className="shadow-md rounded-2xl border border-gray-200 bg-gradient-to-r from-blue-50 to-gray-50 relative overflow-hidden">
+              <div className="absolute left-0 top-0 bottom-0 w-2 bg-blue-500 rounded-l-2xl" />
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2 text-slate-900 font-semibold text-lg">
                   <BarChart3 className="h-5 w-5 text-red-600" />

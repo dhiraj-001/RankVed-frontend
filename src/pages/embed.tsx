@@ -126,22 +126,16 @@ export default ChatWidget;
   return (
     <TooltipProvider>
       <div className="flex-1 bg-gradient-to-br from-blue-50 to-white min-h-screen">
-        {/* Sticky Glassmorphism Header */}
-        <header className="backdrop-blur-md bg-gradient-to-br from-blue-50 to-white/80 border-b border-slate-200 px-4 sm:px-6 py-5 sticky top-0 z-20 shadow-lg">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between max-w-7xl mx-auto gap-4">
-            <div className="flex items-center gap-3">
-              <Code className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600" />
-              <div>
-                <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Embed Code</h2>
-                <p className="text-slate-600 mt-1 text-sm sm:text-base">
-                  Embed <span className="font-semibold">{activeChatbot.name}</span> on your website
-                </p>
-              </div>
+        {/* Header */}
+        <header className="hidden sm:block backdrop-blur-md bg-gradient-to-br from-blue-50 via-white to-white border-b border-blue-50 px-4 sm:px-6 py-2 sm:py-4 sticky top-0 z-20 shadow-lg">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between max-w-7xl mx-auto gap-2 sm:gap-4">
+            <div className="text-center sm:text-left">
+              <h2 className="text-xl sm:text-2xl font-bold text-slate-900">Embed Code</h2>
             </div>
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button variant="outline" asChild className="border-blue-200 text-blue-700 hover:bg-blue-50 rounded-lg transition-all duration-200">
+                  <Button variant="outline" asChild className="px-3 py-1.5 border-blue-200 text-blue-700 hover:bg-blue-50">
                     <a href={`/chat/${activeChatbot.id}`} target="_blank" rel="noopener noreferrer">
                       <Eye className="h-4 w-4 mr-2" />
                       <span className="hidden sm:inline">Preview</span>
@@ -151,59 +145,68 @@ export default ChatWidget;
                 </TooltipTrigger>
                 <TooltipContent>Preview Chatbot</TooltipContent>
               </Tooltip>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="outline" asChild className="border-green-200 text-green-700 hover:bg-green-50 rounded-lg transition-all duration-200">
-                    <a href={`/chat/${activeChatbot.id}`} target="_blank" rel="noopener noreferrer">
-                      <ExternalLink className="h-4 w-4 mr-2" />
-                      <span className="hidden sm:inline">New Tab</span>
-                      <span className="sm:hidden">New Tab</span>
-                    </a>
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Open in New Tab</TooltipContent>
-              </Tooltip>
+              
             </div>
           </div>
         </header>
 
+        {/* Mobile Header */}
+        <div className="sm:hidden bg-white border-b border-gray-200 px-4 py-3 sticky top-0 z-10">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-bold text-slate-900">Embed Code</h2>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" asChild className="border-blue-200 text-blue-700 hover:bg-blue-50">
+                <a href={`/chat/${activeChatbot.id}`} target="_blank" rel="noopener noreferrer">
+                  <Eye className="h-4 w-4 mr-1" />
+                  Preview
+                </a>
+              </Button>
+              <Button variant="outline" size="sm" asChild className="border-blue-200 text-blue-700 hover:bg-blue-50">
+                <a href={`/chat/${activeChatbot.id}`} target="_blank" rel="noopener noreferrer">
+                  <ExternalLink className="h-4 w-4 mr-1" />
+                  New Tab
+                </a>
+              </Button>
+            </div>
+          </div>
+        </div>
+
         <div className="p-4 sm:p-6 max-w-6xl mx-auto space-y-6">
           {/* Chatbot Info Card */}
-          <Card className="shadow-xl rounded-2xl border-0 bg-gradient-to-br from-blue-50/60 via-white/80 to-blue-100/60 relative overflow-hidden">
-            <div className="absolute left-0 top-0 bottom-0 w-2 bg-blue-400 rounded-l-2xl" />
+          <Card className="shadow-md rounded-lg border border-gray-200 bg-white">
             <CardHeader>
               <CardTitle className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
                     <Bot className="h-6 w-6 text-blue-600" />
                   </div>
-                  <span className="font-bold text-lg text-slate-900">Chatbot Information</span>
+                  <span className="font-bold text-lg text-gray-900">Chatbot Information</span>
                 </div>
-                <Badge variant={activeChatbot.isActive ? "default" : "secondary"} className={`${activeChatbot.isActive ? 'bg-green-100 text-green-700 border-green-200' : 'bg-slate-100 text-slate-500 border-slate-200'} border`}>
+                <Badge variant={activeChatbot.isActive ? "default" : "secondary"} className={`${activeChatbot.isActive ? 'bg-green-100 text-green-700 border-green-200' : 'bg-gray-100 text-gray-500 border-gray-200'} border`}>
                   {activeChatbot.isActive ? 'Active' : 'Inactive'}
                 </Badge>
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-                <div className="bg-white/60 rounded-lg p-4 border border-blue-200">
-                  <p className="text-xs font-medium text-slate-600 mb-1">Chatbot Name</p>
-                  <p className="text-base text-slate-900 font-semibold break-words">{activeChatbot.name}</p>
+                <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+                  <p className="text-xs font-medium text-blue-600 mb-1">Chatbot Name</p>
+                  <p className="text-base text-gray-900 font-semibold break-words">{activeChatbot.name}</p>
                 </div>
-                <div className="bg-white/60 rounded-lg p-4 border border-blue-200">
-                  <p className="text-xs font-medium text-slate-600 mb-1">Chatbot ID</p>
-                  <p className="text-sm font-mono text-slate-900 break-all">{activeChatbot.id}</p>
+                <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+                  <p className="text-xs font-medium text-blue-600 mb-1">Chatbot ID</p>
+                  <p className="text-sm font-mono text-gray-900 break-all">{activeChatbot.id}</p>
                 </div>
-                <div className="bg-white/60 rounded-lg p-4 border border-blue-200">
-                  <p className="text-xs font-medium text-slate-600 mb-1">Primary Color</p>
+                <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+                  <p className="text-xs font-medium text-blue-600 mb-1">Primary Color</p>
                   <div className="flex items-center gap-2">
-                    <div className="w-5 h-5 rounded border-2 border-slate-200" style={{ backgroundColor: activeChatbot.primaryColor || '#6366F1' }} />
-                    <p className="text-sm font-mono text-slate-900">{activeChatbot.primaryColor || '#6366F1'}</p>
+                    <div className="w-5 h-5 rounded border-2 border-blue-200" style={{ backgroundColor: activeChatbot.primaryColor || '#6366F1' }} />
+                    <p className="text-sm font-mono text-gray-900">{activeChatbot.primaryColor || '#6366F1'}</p>
                   </div>
                 </div>
-                <div className="bg-white/60 rounded-lg p-4 border border-blue-200">
-                  <p className="text-xs font-medium text-slate-600 mb-1">Status</p>
-                  <p className="text-sm text-slate-900 font-medium">
+                <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+                  <p className="text-xs font-medium text-blue-600 mb-1">Status</p>
+                  <p className="text-sm text-gray-900 font-medium">
                     {activeChatbot.isActive ? 'Ready to Embed' : 'Not Active'}
                   </p>
                 </div>
@@ -213,14 +216,14 @@ export default ChatWidget;
 
           {/* Important Warnings */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <Alert className="bg-yellow-50 border-yellow-200 rounded-lg">
-              <AlertTriangle className="h-4 w-4 text-yellow-600" />
+            <Alert className="bg-gray-50 border-gray-200 rounded-lg">
+              <AlertTriangle className="h-4 w-4 text-gray-600" />
               <AlertDescription className="text-sm">
                 <strong>Local Testing:</strong> The embed code will not work on localhost. Test on a deployed website or use the preview link above.
               </AlertDescription>
             </Alert>
-            <Alert className="bg-green-50 border-green-200 rounded-lg">
-              <CheckCircle className="h-4 w-4 text-green-600" />
+            <Alert className="bg-gray-50 border-gray-200 rounded-lg">
+              <CheckCircle className="h-4 w-4 text-gray-600" />
               <AlertDescription className="text-sm">
                 <strong>HTTPS Required:</strong> For security reasons, the chat widget only works on HTTPS websites in production.
               </AlertDescription>
@@ -228,26 +231,25 @@ export default ChatWidget;
           </div>
 
           {/* Embed Code Options */}
-          <Card className="shadow-xl rounded-2xl border-0 bg-gradient-to-br from-white/80 via-white/90 to-white/80 relative overflow-hidden">
-            <div className="absolute left-0 top-0 bottom-0 w-2 bg-purple-400 rounded-l-2xl" />
+          <Card className="shadow-md rounded-lg border border-gray-200 bg-white">
             <CardHeader>
-              <CardTitle className="flex items-center space-x-2 text-slate-900 font-semibold text-lg">
-                <Code className="h-5 w-5 text-purple-600" />
+              <CardTitle className="flex items-center space-x-2 text-gray-900 font-semibold text-lg">
+                <Code className="h-5 w-5 text-blue-600" />
                 <span>Embed Options</span>
               </CardTitle>
-              <p className="text-slate-600 text-sm">Choose the integration method that works best for your website</p>
+              <p className="text-gray-600 text-sm">Choose the integration method that works best for your website</p>
             </CardHeader>
             <CardContent>
               <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
                 {/* Mobile Dropdown */}
-                <div className="sm:hidden">
+                <div className="sm:hidden shadow-md">
                   <Select value={activeTab} onValueChange={setActiveTab}>
-                    <SelectTrigger className="w-full bg-white border-slate-300 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 rounded-lg shadow-sm">
+                    <SelectTrigger className="w-full bg-white border-blue-100 focus:ring-2 focus:ring-blue-200 focus:border-blue-200 rounded-lg shadow-sm transition-all duration-500 ease-in-out">
                       <SelectValue placeholder="Select embed option" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="animate-in fade-in duration-700 ease-in-out">
                       {tabOptions.map((tab) => (
-                        <SelectItem key={tab.value} value={tab.value}>
+                        <SelectItem key={tab.value} value={tab.value} className="transition-all duration-300 hover:bg-blue-50">
                           {tab.label}
                         </SelectItem>
                       ))}
@@ -256,14 +258,38 @@ export default ChatWidget;
                 </div>
 
                 {/* Desktop Tabs */}
-                <TabsList className="hidden sm:grid w-full grid-cols-3 rounded-xl bg-slate-50 p-1">
-                  <TabsTrigger value="script" className="transition-all text-sm">HTML Script</TabsTrigger>
-                  <TabsTrigger value="recommended-iframe" className="transition-all text-sm">Recommended Iframe</TabsTrigger>
-                  <TabsTrigger value="react" className="transition-all text-sm">React Component</TabsTrigger>
+                <TabsList className="hidden sm:flex w-full bg-white border border-gray-200 rounded-lg p-1 shadow-sm transition-all duration-500 ease-in-out">
+                  <TabsTrigger 
+                    value="script" 
+                    className="flex-1 text-gray-600 hover:text-gray-800 focus:text-gray-800 font-medium py-3 px-4 rounded-md data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 data-[state=active]:border-b-2 data-[state=active]:border-blue-500 transition-all duration-500 ease-in-out hover:bg-gray-50"
+                  >
+                    <div className="flex items-center space-x-2 transition-all duration-500 ease-in-out">
+                      <Code className="h-4 w-4 transition-transform duration-500 ease-in-out data-[state=active]:scale-110" />
+                      <span className="transition-all duration-500 ease-in-out">HTML Script</span>
+                    </div>
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="recommended-iframe" 
+                    className="flex-1 text-gray-600 hover:text-gray-800 focus:text-gray-800 font-medium py-3 px-4 rounded-md data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 data-[state=active]:border-b-2 data-[state=active]:border-blue-500 transition-all duration-500 ease-in-out hover:bg-gray-50"
+                  >
+                    <div className="flex items-center space-x-2 transition-all duration-500 ease-in-out">
+                      <Eye className="h-4 w-4 transition-transform duration-500 ease-in-out data-[state=active]:scale-110" />
+                      <span className="transition-all duration-500 ease-in-out">Recommended Iframe</span>
+                    </div>
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="react" 
+                    className="flex-1 text-gray-600 hover:text-gray-800 focus:text-gray-800 font-medium py-3 px-4 rounded-md data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 data-[state=active]:border-b-2 data-[state=active]:border-blue-500 transition-all duration-500 ease-in-out hover:bg-gray-50"
+                  >
+                    <div className="flex items-center space-x-2 transition-all duration-500 ease-in-out">
+                      <Zap className="h-4 w-4 transition-transform duration-500 ease-in-out data-[state=active]:scale-110" />
+                      <span className="transition-all duration-500 ease-in-out">React Component</span>
+                    </div>
+                  </TabsTrigger>
                 </TabsList>
 
                 {/* Script Tab */}
-                <TabsContent value="script" className="space-y-4">
+                <TabsContent value="script" className="space-y-4 animate-in fade-in duration-700 ease-in-out">
                   <div>
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
                       <h3 className="font-medium text-slate-900">HTML Script Tag (Recommended)</h3>
@@ -300,7 +326,7 @@ export default ChatWidget;
                 </TabsContent>
 
                 {/* React Tab */}
-                <TabsContent value="react" className="space-y-4">
+                <TabsContent value="react" className="space-y-4 animate-in fade-in duration-700 ease-in-out">
                   <div>
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
                       <h3 className="font-medium text-slate-900">React Component</h3>
@@ -311,7 +337,7 @@ export default ChatWidget;
                             size="sm"
                             onClick={() => copyToClipboard(reactComponent, 'react')}
                             aria-label="Copy React code"
-                            className="transition-all border-purple-200 text-purple-700 hover:bg-purple-50"
+                            className="transition-all border-blue-200 text-blue-700 hover:bg-blue-50"
                           >
                             {copiedType === 'react' ? (
                               <CheckCircle className="h-4 w-4 mr-2 text-green-600 animate-bounce" />
@@ -337,7 +363,7 @@ export default ChatWidget;
                 </TabsContent>
 
                 {/* Recommended Iframe Tab */}
-                <TabsContent value="recommended-iframe" className="space-y-4">
+                <TabsContent value="recommended-iframe" className="space-y-4 animate-in fade-in duration-700 ease-in-out">
                   <div>
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
                       <h3 className="font-medium text-slate-900">Recommended HTML Iframe (Production)</h3>
@@ -348,7 +374,7 @@ export default ChatWidget;
                             size="sm"
                             onClick={() => copyToClipboard(recommendedIframeEmbed, 'recommended-iframe')}
                             aria-label="Copy recommended iframe code"
-                            className="transition-all border-green-200 text-green-700 hover:bg-green-50"
+                            className="transition-all border-blue-200 text-blue-700 hover:bg-blue-50"
                           >
                             {copiedType === 'recommended-iframe' ? (
                               <CheckCircle className="h-4 w-4 mr-2 text-green-600 animate-bounce" />
@@ -377,37 +403,36 @@ export default ChatWidget;
           </Card>
 
           {/* Installation Instructions */}
-          <Card className="shadow-xl rounded-2xl border-0 bg-gradient-to-br from-green-50/60 via-white/80 to-green-100/60 relative overflow-hidden">
-            <div className="absolute left-0 top-0 bottom-0 w-2 bg-green-400 rounded-l-2xl" />
+          <Card className="shadow-md rounded-lg border border-gray-200 bg-white">
             <CardHeader>
-              <CardTitle className="flex items-center space-x-2 text-slate-900 font-semibold text-lg">
-                <Zap className="h-5 w-5 text-green-600" />
+              <CardTitle className="flex items-center space-x-2 text-gray-900 font-semibold text-lg">
+                <Zap className="h-5 w-5 text-blue-600" />
                 <span>Installation Instructions</span>
               </CardTitle>
-              <p className="text-slate-600 text-sm">Follow these steps to embed your chatbot</p>
+              <p className="text-gray-600 text-sm">Follow these steps to embed your chatbot</p>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-white/60 rounded-lg p-4 border border-green-200">
+                <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
                   <div className="flex items-center gap-2 mb-3">
-                    <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
-                      <span className="text-green-600 font-bold text-sm">1</span>
+                    <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+                      <span className="text-blue-600 font-bold text-sm">1</span>
                     </div>
-                    <h4 className="font-medium text-slate-900">Copy the Code</h4>
+                    <h4 className="font-medium text-gray-900">Copy the Code</h4>
                   </div>
-                  <p className="text-sm text-slate-600">
+                  <p className="text-sm text-gray-600">
                     Copy the embed code from one of the tabs above that best suits your website platform.
                   </p>
                 </div>
 
-                <div className="bg-white/60 rounded-lg p-4 border border-green-200">
+                <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
                   <div className="flex items-center gap-2 mb-3">
-                    <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
-                      <span className="text-green-600 font-bold text-sm">2</span>
+                    <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+                      <span className="text-blue-600 font-bold text-sm">2</span>
                     </div>
-                    <h4 className="font-medium text-slate-900">Add to Your Website</h4>
+                    <h4 className="font-medium text-gray-900">Add to Your Website</h4>
                   </div>
-                  <ul className="text-sm text-slate-600 space-y-1">
+                  <ul className="text-sm text-gray-600 space-y-1">
                     <li>• HTML: Before &lt;/body&gt; tag</li>
                     <li>• WordPress: Footer.php or plugin</li>
                     <li>• Shopify: Theme.liquid file</li>
@@ -415,14 +440,14 @@ export default ChatWidget;
                   </ul>
                 </div>
 
-                <div className="bg-white/60 rounded-lg p-4 border border-green-200">
+                <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
                   <div className="flex items-center gap-2 mb-3">
-                    <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
-                      <span className="text-green-600 font-bold text-sm">3</span>
+                    <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+                      <span className="text-blue-600 font-bold text-sm">3</span>
                     </div>
-                    <h4 className="font-medium text-slate-900">Test</h4>
+                    <h4 className="font-medium text-gray-900">Test</h4>
                   </div>
-                  <p className="text-sm text-slate-600">
+                  <p className="text-sm text-gray-600">
                     Visit your website and look for the chat bubble in the bottom-right corner. Click it to test the chatbot functionality.
                   </p>
                 </div>

@@ -120,17 +120,17 @@ export default function Chatbots() {
 
   return (
     <div className="flex-1 bg-gradient-to-br from-blue-50 to-white min-h-screen">
-      {/* Header */}
-      <header className="backdrop-blur-md bg-gradient-to-br from-blue-50 to-white/80 border-b border-slate-200 px-6 py-5 sticky top-0 z-20 shadow-lg flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-          <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">Chatbots</h2>
-          <p className="text-slate-600 mt-1 text-base font-normal">Manage your chatbots and their settings</p>
+            {/* Header */}
+      <header className="hidden sm:block backdrop-blur-md bg-gradient-to-br from-blue-50 via-white to-white border-b border-blue-50 px-4 sm:px-6 py-2 sm:py-4 sticky top-0 z-20 shadow-lg">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between max-w-7xl mx-auto gap-2 sm:gap-4">
+          <div className="text-center sm:text-left">
+            <h2 className="text-xl sm:text-2xl text-slate-900 font-bold">Chatbots</h2>
           </div>
-        <div className="flex items-center gap-2">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
           
           <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
             <DialogTrigger asChild>
-              <Button className="rounded-lg px-5 py-2 shadow-sm font-semibold text-base">
+              <Button className="rounded-lg px-5 py-2 shadow-sm font-semibold text-base border-blue-200 text-blue-700 hover:bg-blue-50 border">
                 <Plus className="h-4 w-4 mr-2" />
                 Create Chatbot
               </Button>
@@ -205,8 +205,24 @@ export default function Chatbots() {
               </div>
             </DialogContent>
           </Dialog>
+          </div>
         </div>
       </header>
+
+      {/* Mobile Header */}
+      <div className="sm:hidden bg-white border-b border-gray-200 px-4 py-3 sticky top-0 z-10">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-bold text-slate-900">Chatbots</h2>
+          <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+            <DialogTrigger asChild>
+              <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 border-blue-200 text-blue-700 hover:bg-blue-50 border">
+                <Plus className="h-4 w-4 mr-1" />
+                Create
+              </Button>
+            </DialogTrigger>
+          </Dialog>
+        </div>
+      </div>
 
       {/* Content */}
       <div className="p-4 sm:p-6 max-w-7xl mx-auto w-full">
@@ -223,16 +239,16 @@ export default function Chatbots() {
           </div>
           {/* Filter Button */}
           <Menu as="div" className="relative inline-block text-left">
-            <Menu.Button className="inline-flex items-center px-4 py-2 bg-white border border-slate-300 rounded-lg shadow-sm hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+            <Menu.Button className="inline-flex items-center px-4 py-2 bg-white border border-slate-300 rounded-lg shadow-sm hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300 ease-in-out">
               <Filter className="h-5 w-5 mr-2 text-blue-600" />
               <span className="font-medium text-slate-700">{filter === 'all' ? 'All' : filter === 'active' ? 'Active' : 'Paused'}</span>
-              <svg className="ml-2 h-4 w-4 text-slate-400" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clipRule="evenodd" /></svg>
+              <svg className="ml-2 h-4 w-4 text-slate-400 transition-transform duration-300 ease-in-out" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clipRule="evenodd" /></svg>
             </Menu.Button>
-            <Menu.Items className="absolute right-0 mt-2 w-40 origin-top-right bg-white border border-slate-200 divide-y divide-slate-100 rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
+            <Menu.Items className="absolute right-0 mt-2 w-40 origin-top-right bg-white border border-slate-200 divide-y divide-slate-100 rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50 animate-in fade-in duration-500 ease-in-out">
               <Menu.Item>
                 {({ active }: { active: boolean }) => (
                   <button
-                    className={`w-full text-left px-4 py-2 text-sm rounded ${filter === 'all' ? 'bg-blue-100 text-blue-700' : active ? 'bg-slate-100' : ''}`}
+                    className={`w-full text-left px-4 py-2 text-sm rounded transition-all duration-300 ease-in-out ${filter === 'all' ? 'bg-blue-100 text-blue-700' : active ? 'bg-slate-100' : ''}`}
                     onClick={() => setFilter('all')}
                   >
                     All
@@ -242,7 +258,7 @@ export default function Chatbots() {
               <Menu.Item>
                 {({ active }: { active: boolean }) => (
                   <button
-                    className={`w-full text-left px-4 py-2 text-sm rounded ${filter === 'active' ? 'bg-green-100 text-green-700' : active ? 'bg-slate-100' : ''}`}
+                    className={`w-full text-left px-4 py-2 text-sm rounded transition-all duration-300 ease-in-out ${filter === 'active' ? 'bg-green-100 text-green-700' : active ? 'bg-slate-100' : ''}`}
                     onClick={() => setFilter('active')}
                   >
                     Active
@@ -252,7 +268,7 @@ export default function Chatbots() {
               <Menu.Item>
                 {({ active }: { active: boolean }) => (
                   <button
-                    className={`w-full text-left px-4 py-2 text-sm rounded ${filter === 'paused' ? 'bg-gray-200 text-gray-700' : active ? 'bg-slate-100' : ''}`}
+                    className={`w-full text-left px-4 py-2 text-sm rounded transition-all duration-300 ease-in-out ${filter === 'paused' ? 'bg-gray-200 text-gray-700' : active ? 'bg-slate-100' : ''}`}
                     onClick={() => setFilter('paused')}
                   >
                     Paused

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Save, Upload, Brain, Globe, Trash2, Loader2, Volume2, Play, Pause, Settings, Delete, Trash } from 'lucide-react';
+import { Save, Upload, Brain, Globe, Trash2, Loader2, Volume2, Play, Pause, Settings, Trash } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -10,12 +10,11 @@ import { useUpdateChatbot } from '@/hooks/use-chatbots';
 import { useMutation } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { TooltipProvider } from '@/components/ui/tooltip';
 import { Info } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Slider } from '@/components/ui/slider';
 // @ts-ignore
 import { isEqual } from 'lodash-es';
 
@@ -49,7 +48,6 @@ export default function Training() {
   const [popupSoundEnabled, setPopupSoundEnabled] = useState(activeChatbot?.popupSoundEnabled ?? true);
   const [popupSoundVolume, setPopupSoundVolume] = useState(activeChatbot?.popupSoundVolume ?? 50);
   const [customPopupSound, setCustomPopupSound] = useState(activeChatbot?.customPopupSound || '');
-  const [soundFile, setSoundFile] = useState<File | null>(null);
   const [isPlayingSound, setIsPlayingSound] = useState(false);
 
   // Track changes for button states
@@ -254,8 +252,6 @@ export default function Training() {
         return;
       }
 
-      setSoundFile(file);
-      
       // Convert to Data URI
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -269,7 +265,6 @@ export default function Training() {
   // Clear file input when custom sound is removed
   const clearCustomSound = () => {
     setCustomPopupSound('');
-    setSoundFile(null);
     // Clear the file input
     const fileInput = document.getElementById('customSound') as HTMLInputElement;
     if (fileInput) {
@@ -828,7 +823,7 @@ We serve over 1,000+ companies worldwide and are trusted by industry leaders.`;
                 <Button 
                   onClick={handleSaveContactInfo} 
                   disabled={updateChatbot.isPending || !hasContactChanges}
-                  className="bg-blue-600 hover:bg-blue-700 text-white transition-all duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed animate-in fade-in duration-500 ease-in-out delay-500"
+                  className="bg-blue-600 hover:bg-blue-700 text-white transition-all duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed animate-in fade-in  delay-500"
                 >
                   {updateChatbot.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2 transition-transform duration-300 ease-in-out" />}
                   {updateChatbot.isPending ? 'Saving...' : 'Save Contact Details'}
@@ -875,7 +870,7 @@ We serve over 1,000+ companies worldwide and are trusted by industry leaders.`;
                     disabled={editedFlow === JSON.stringify(questionFlow, null, 2) || !questionFlow}
                     variant="outline"
                     size="sm"
-                    className="hover:bg-blue-50 hover:border-blue-200 transition-all duration-300 ease-in-out animate-in fade-in duration-500 ease-in-out delay-400"
+                    className="hover:bg-blue-50 hover:border-blue-200 transition-all duration-300 ease-in-out animate-in fade-in delay-400"
                   >
                     Reset to AI Output
                   </Button>
@@ -926,7 +921,7 @@ We serve over 1,000+ companies worldwide and are trusted by industry leaders.`;
                 <Button
                   onClick={handleSaveAiSettings}
                   disabled={updateChatbot.isPending || !hasAiSettingsChanges}
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white transition-all duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed animate-in fade-in duration-500 ease-in-out delay-300"
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white transition-all duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed animate-in fade-in delay-300"
                   size="sm"
                 >
                   {updateChatbot.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2 transition-transform duration-300 ease-in-out" />}

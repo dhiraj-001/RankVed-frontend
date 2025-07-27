@@ -215,7 +215,7 @@ export default function Chatbots() {
           <h2 className="text-lg font-bold text-slate-900">Chatbots</h2>
           <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
             <DialogTrigger asChild>
-              <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 border-blue-200 text-blue-700 hover:bg-blue-50 border">
+              <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 border-blue-200 border">
                 <Plus className="h-4 w-4 mr-1" />
                 Create
               </Button>

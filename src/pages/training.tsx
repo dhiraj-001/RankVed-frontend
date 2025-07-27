@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Save, Upload, Brain, Globe, Trash2, Loader2, Volume2, Play, Pause, Settings, Trash, Timer } from 'lucide-react';
+import { Save, Upload, Brain, Globe, Loader2, Volume2, Play, Pause, Settings, Trash, Timer } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -36,9 +36,9 @@ export default function Training() {
   const [questionFlow, setQuestionFlow] = useState<any>(null);
   const [isGeneratingFlow, setIsGeneratingFlow] = useState(false);
   const [editedFlow, setEditedFlow] = useState<string>('');
-  const [whatsapp, setWhatsapp] = useState('');
-  const [phone, setPhone] = useState('');
-  const [website, setWebsite] = useState('');
+  const [whatsapp, setWhatsapp] = useState(activeChatbot?.whatsapp || '');
+  const [phone, setPhone] = useState(activeChatbot?.phone || '');
+  const [website, setWebsite] = useState(activeChatbot?.website || '');
 
   // AI Provider Settings
   const [aiProvider, setAiProvider] = useState(activeChatbot?.aiProvider || 'platform');
@@ -132,12 +132,21 @@ export default function Training() {
     if (questionFlow && editedFlow) {
       try {
         const parsedEditedFlow = JSON.parse(editedFlow);
-        setHasFlowChanges(!isEqual(parsedEditedFlow, questionFlow));
+        const hasChanges = !isEqual(parsedEditedFlow, questionFlow);
+        setHasFlowChanges(hasChanges);
+        console.log('[Training] Flow changes tracked:', { hasChanges, editedFlowLength: editedFlow.length, questionFlowKeys: Object.keys(questionFlow || {}) });
       } catch {
+        // If JSON is invalid, consider it changed
         setHasFlowChanges(true);
+        console.log('[Training] Flow changes tracked: Invalid JSON, marked as changed');
       }
+    } else if (editedFlow && editedFlow.trim() !== '') {
+      // If there's edited flow but no original flow, consider it changed
+      setHasFlowChanges(true);
+      console.log('[Training] Flow changes tracked: Has edited flow but no original flow');
     } else {
       setHasFlowChanges(false);
+      console.log('[Training] Flow changes tracked: No changes');
     }
   }, [editedFlow, questionFlow]);
 
@@ -387,7 +396,7 @@ export default function Training() {
         id: activeChatbot.id,
         data: {
           plainData: trainingData,
-          trainingData: parsedFlow,
+          trainingData: parsedFlow ? JSON.stringify(parsedFlow) : undefined,
         },
       });
       // --- LOGGING: Log the result of the save operation ---
@@ -502,11 +511,6 @@ export default function Training() {
     }
   };
 
-  const removeFetchedContent = (index: number) => {
-    const contentToRemove = fetchedContent[index];
-    setFetchedContent(prev => prev.filter((_, i) => i !== index));
-    setTrainingData(prev => prev.replace(contentToRemove, ''));
-  };
 
   const addSampleData = (type: string) => {
     let sampleText = '';
@@ -572,13 +576,50 @@ We serve over 1,000+ companies worldwide and are trusted by industry leaders.`;
   // Sync backend data to frontend state when activeChatbot changes
   useEffect(() => {
     if (activeChatbot) {
+      console.log('[Training] Syncing data from activeChatbot:', {
+        id: activeChatbot.id,
+        hasPlainData: !!activeChatbot.plainData,
+        hasTrainingData: !!activeChatbot.trainingData,
+        whatsapp: activeChatbot.whatsapp,
+        phone: activeChatbot.phone,
+        website: activeChatbot.website
+      });
+      
       // Load main training data from plainData
       setTrainingData(activeChatbot.plainData || '');
       
+      // Load contact information
+      setWhatsapp(activeChatbot.whatsapp || '');
+      setPhone(activeChatbot.phone || '');
+      setWebsite(activeChatbot.website || '');
+      
       // Load question flow from trainingData if it exists
-      if (activeChatbot.trainingData && typeof activeChatbot.trainingData === 'object') {
-        setQuestionFlow(activeChatbot.trainingData);
-        setEditedFlow(JSON.stringify(activeChatbot.trainingData, null, 2));
+      if (activeChatbot.trainingData) {
+        try {
+          // trainingData is stored as a JSON string, so we need to parse it
+          const parsedTrainingData = typeof activeChatbot.trainingData === 'string' 
+            ? JSON.parse(activeChatbot.trainingData) 
+            : activeChatbot.trainingData;
+          
+          if (parsedTrainingData && typeof parsedTrainingData === 'object') {
+            setQuestionFlow(parsedTrainingData);
+            setEditedFlow(JSON.stringify(parsedTrainingData, null, 2));
+            console.log('[Training] Loaded question flow from backend:', parsedTrainingData);
+          } else {
+            setQuestionFlow(null);
+            setEditedFlow('');
+            console.log('[Training] No valid question flow found in trainingData');
+          }
+        } catch (error) {
+          console.error('[Training] Error parsing trainingData:', error);
+          setQuestionFlow(null);
+          setEditedFlow('');
+        }
+      } else {
+        // Reset flow state if no training data
+        setQuestionFlow(null);
+        setEditedFlow('');
+        console.log('[Training] No trainingData found in activeChatbot');
       }
     }
   }, [activeChatbot]);
@@ -913,27 +954,7 @@ We serve over 1,000+ companies worldwide and are trusted by industry leaders.`;
                     {fetchUrlContent.isPending ? 'Fetching...' : 'Fetch Content'}
                   </Button>
 
-                  {fetchedContent.length > 0 && (
-                    <div className="space-y-3">
-                      <Label className="font-semibold">Fetched Content</Label>
-                      {fetchedContent.map((content, idx) => (
-                        <Card key={idx} className="bg-slate-50 border border-slate-200 p-3 relative">
-                          <Badge className="absolute top-2 right-2 bg-blue-100 text-blue-700">Source {idx + 1}</Badge>
-                          <Button 
-                            size="icon" 
-                            variant="ghost" 
-                            onClick={() => removeFetchedContent(idx)}
-                            className="absolute top-2 left-2 hover:bg-red-50 hover:text-red-600 transition-colors"
-                          >
-                            <Trash2 className="h-4 w-4 text-red-500" />
-                          </Button>
-                          <div className="max-h-32 overflow-y-auto text-xs whitespace-pre-wrap break-all mt-6">
-                            {content}
-                          </div>
-                        </Card>
-                      ))}
-                    </div>
-                  )}
+                
                 </div>
               </CardContent>
             </Card>

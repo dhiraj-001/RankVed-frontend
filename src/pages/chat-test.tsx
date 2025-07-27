@@ -20,6 +20,7 @@ interface BotResponse {
   cta_button?: CtaButton;
   action_collect_contact_info?: boolean;
   requested_contact_field?: string;
+  lead?: boolean; // Flag to indicate if lead form should be shown
 }
 interface Message {
   id: string;
@@ -28,6 +29,7 @@ interface Message {
   timestamp: Date;
   followUpButtons?: FollowUpButton[];
   ctaButton?: CtaButton;
+  lead?: boolean; // Flag to indicate if lead form should be shown
 }
 
 function isValidEmail(text: string) {
@@ -65,17 +67,16 @@ export default function ChatTest() {
 
   // Initialize chat with welcome message
   useEffect(() => {
-    if (messages.length === 0) {
-      (async () => {
-        try {
-          const response = await fetch(`${apiUrl}/api/intent-detect/${chatbotId}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message: 'hello' }),
-          });
-          const data = await response.json();
-          const bot: BotResponse = data.intent;
-          setMessages([
+    (async () => {
+      try {
+        const response = await fetch(`${apiUrl}/api/intent-detect/${chatbotId}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: 'hello' }),
+        });
+        const data = await response.json();
+        const bot: BotResponse = data.intent;
+                  setMessages([
             {
               id: 'welcome',
               content: bot.message_text,
@@ -83,26 +84,26 @@ export default function ChatTest() {
               timestamp: new Date(),
               followUpButtons: bot.follow_up_buttons,
               ctaButton: bot.cta_button,
+              lead: bot.lead,
             }
           ]);
-          if (bot.action_collect_contact_info && bot.requested_contact_field) {
-            setAwaitingContactInfo({ field: bot.requested_contact_field });
-          } else {
-            setAwaitingContactInfo(null);
-          }
-        } catch {
-          setMessages([
-            {
-              id: 'welcome',
-              content: 'Hello! How can I help you today?',
-              sender: 'bot',
-              timestamp: new Date(),
-            }
-          ]);
+        if (bot.action_collect_contact_info && bot.requested_contact_field) {
+          setAwaitingContactInfo({ field: bot.requested_contact_field });
+        } else {
+          setAwaitingContactInfo(null);
         }
-      })();
-    }
-  }, [messages.length, apiUrl, chatbotId]);
+      } catch {
+        setMessages([
+          {
+            id: 'welcome',
+            content: 'Hello! How can I help you today?',
+            sender: 'bot',
+            timestamp: new Date(),
+          }
+        ]);
+      }
+    })();
+  }, [apiUrl, chatbotId]); // Removed messages.length from dependencies
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -156,6 +157,7 @@ export default function ChatTest() {
             timestamp: new Date(),
             followUpButtons: bot.follow_up_buttons,
             ctaButton: bot.cta_button,
+            lead: bot.lead,
           }
         ]);
         if (bot.action_collect_contact_info && bot.requested_contact_field) {
@@ -202,6 +204,7 @@ export default function ChatTest() {
           timestamp: new Date(),
           followUpButtons: bot.follow_up_buttons,
           ctaButton: bot.cta_button,
+          lead: bot.lead,
         }
       ]);
       // If bot is now asking for contact info, set awaitingContactInfo

@@ -450,7 +450,7 @@ export default function Appearance() {
                       </CardHeader>
                       <CardContent className="space-y-4">
                    
-
+                   
                         <div className="space-y-2">
                           <Label htmlFor="inputPlaceholder" className="text-gray-700 font-medium">Input Placeholder</Label>
                           <Input 

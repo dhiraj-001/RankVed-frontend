@@ -37,8 +37,8 @@ export default function Settings() {
     showWelcomePopup: activeChatbot?.showWelcomePopup ?? true,
     
     // Notifications
-    enableNotificationSound: activeChatbot?.enableNotificationSound ?? true,
-    customNotificationSound: activeChatbot?.customNotificationSound || '',
+    popupSoundEnabled: activeChatbot?.popupSoundEnabled ?? true,
+    customPopupSound: activeChatbot?.customPopupSound || '',
     
     // Integrations
     leadsWebhookUrl: activeChatbot?.leadsWebhookUrl || '',
@@ -71,6 +71,7 @@ export default function Settings() {
       console.log('[Settings] Syncing with activeChatbot:', {
         showWelcomePopup: activeChatbot.showWelcomePopup,
         welcomeMessage: activeChatbot.welcomeMessage,
+        popupSoundEnabled: activeChatbot.popupSoundEnabled,
         chatbotId: activeChatbot.id
       });
       
@@ -81,8 +82,8 @@ export default function Settings() {
         chatBubbleIcon: activeChatbot.chatBubbleIcon || '',
         welcomeMessage: activeChatbot.welcomeMessage || '',
         showWelcomePopup: activeChatbot.showWelcomePopup ?? true,
-        enableNotificationSound: activeChatbot.enableNotificationSound ?? true,
-        customNotificationSound: activeChatbot.customNotificationSound || '',
+        popupSoundEnabled: activeChatbot.popupSoundEnabled ?? true,
+        customPopupSound: activeChatbot.customPopupSound || '',
         leadsWebhookUrl: activeChatbot.leadsWebhookUrl || '',
         businessType: activeChatbot.businessType || 'general',
         poweredByText: activeChatbot.poweredByText || '',
@@ -113,6 +114,7 @@ export default function Settings() {
       chatbotId: activeChatbot.id,
       showWelcomePopup: settings.showWelcomePopup,
       welcomeMessage: settings.welcomeMessage,
+      popupSoundEnabled: settings.popupSoundEnabled,
       allSettings: settings
     });
 
@@ -121,9 +123,6 @@ export default function Settings() {
         id: activeChatbot.id,
         data: {
           ...settings,
-          // If your backend expects snake_case, map it here:
-          // enable_notification_sound: settings.enableNotificationSound,
-          enableNotificationSound: settings.enableNotificationSound,
         },
       });
       
@@ -282,30 +281,29 @@ export default function Settings() {
           </TabsList>
 
           <TabsContent value="basic" className="space-y-6 animate-in fade-in duration-700 ease-in-out">
-            <Card className="shadow-md rounded-2xl border border-gray-200 bg-gradient-to-r from-blue-50 to-gray-50 relative overflow-hidden">
-              <div className="absolute left-0 top-0 bottom-0 w-2 bg-blue-500 rounded-l-2xl" />
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2 text-slate-900 font-semibold text-lg">
+            <Card className="shadow-md rounded-lg border border-gray-200 bg-white p-6">
+              <CardHeader className="pb-2">
+                <CardTitle className="flex items-center space-x-2 text-gray-900 font-semibold text-lg">
                   <MessageSquare className="h-5 w-5 text-blue-600" />
                   <span>Basic Configuration</span>
                 </CardTitle>
-                <p className="text-slate-600 text-sm">Set up your chatbot's core identity and behavior</p>
+                <p className="text-gray-600 text-sm">Set up your chatbot's core identity and behavior</p>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="name" className="text-slate-700 font-medium">
-                    Bot Name
-                  </Label>
+                                      <Label htmlFor="name" className="text-gray-700 font-medium">
+                      Bot Name
+                    </Label>
                   <Input
                     id="name"
                     value={settings.name}
                     onChange={(e) => setSettings(prev => ({ ...prev, name: e.target.value }))}
                     placeholder="Customer Support Bot"
-                    className="border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 rounded-lg transition-all duration-200 hover:border-blue-400"
+                    className="border-gray-200 focus:ring-2 focus:ring-blue-200 focus:border-blue-200 rounded-lg transition-all duration-200 hover:border-blue-200"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="systemPrompt" className="text-slate-700 font-medium">
+                  <Label htmlFor="systemPrompt" className="text-gray-700 font-medium">
                     AI System Prompt
                   </Label>
                   <Textarea
@@ -314,31 +312,30 @@ export default function Settings() {
                     onChange={(e) => setSettings(prev => ({ ...prev, aiSystemPrompt: e.target.value }))}
                     placeholder="You are a helpful customer service assistant..."
                     rows={4}
-                    className="border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 rounded-lg transition-all duration-200 hover:border-blue-400 resize-none"
+                    className="border-gray-200 focus:ring-2 focus:ring-blue-200 focus:border-blue-200 rounded-lg transition-all duration-200 hover:border-blue-200 resize-none"
                   />
-                  <p className="text-xs text-slate-500">Define how your AI assistant should behave and respond to users</p>
+                                      <p className="text-xs text-gray-500">Define how your AI assistant should behave and respond to users</p>
                 </div>
               </CardContent>
             </Card>
           </TabsContent>
 
           <TabsContent value="messaging" className="space-y-6 animate-in fade-in duration-700 ease-in-out">
-            <Card className="shadow-md rounded-2xl border border-gray-200 bg-gradient-to-r from-blue-50 to-gray-50 relative overflow-hidden">
-              <div className="absolute left-0 top-0 bottom-0 w-2 bg-blue-500 rounded-l-2xl" />
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2 text-slate-900 font-semibold text-lg">
+            <Card className="shadow-md rounded-lg border border-gray-200 bg-white p-6">
+              <CardHeader className="pb-2">
+                <CardTitle className="flex items-center space-x-2 text-gray-900 font-semibold text-lg">
                   <MessageSquare className="h-5 w-5 text-purple-600" />
                   <span>Messaging & Notifications</span>
                 </CardTitle>
-                <p className="text-slate-600 text-sm">Configure how your chatbot communicates with users</p>
+                <p className="text-gray-600 text-sm">Configure how your chatbot communicates with users</p>
               </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="flex items-center justify-between w-full py-4 px-4 bg-white/60 rounded-lg border border-slate-200">
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between w-full py-4 px-4 bg-white/60 rounded-lg border border-blue-300">
                   <div>
-                    <label htmlFor="showWelcomePopup" className="block text-sm font-medium text-slate-700">
+                    <label htmlFor="showWelcomePopup" className="block text-sm font-medium text-gray-700">
                       Show Welcome Message
                     </label>
-                    <p className="text-xs text-slate-500">Display a welcome message when users first open the chat</p>
+                    <p className="text-xs text-gray-500">Display a welcome message when users first open the chat</p>
                   </div>
                   <Switch
                     id="showWelcomePopup"
@@ -354,36 +351,79 @@ export default function Settings() {
                     className="data-[state=checked]:bg-blue-600"
                   />
                 </div>
-                {settings.showWelcomePopup && (
-                  <div className="space-y-2">
-                    <Label htmlFor="welcomeMessage" className="text-slate-700 font-medium">
-                      Welcome Message
-                    </Label>
-                    <Input
-                      id="welcomeMessage"
-                      value={settings.welcomeMessage}
-                      onChange={(e) => setSettings(prev => ({ ...prev, welcomeMessage: e.target.value }))}
-                      placeholder="Hello! How can I help you today?"
-                      className="border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 rounded-lg transition-all duration-200 hover:border-blue-400"
-                    />
-                    <div className="flex items-center gap-2">
-                      <p className="text-xs text-amber-600 bg-amber-50 p-2 rounded-md border border-amber-200">
-                        ⚠️ <strong>Recommended:</strong> Leave empty for best AI responses. The AI will generate contextual welcome messages based on user input.
-                      </p>
+                <div className="space-y-4">
+                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                    <div className="flex items-start gap-3">
+                      <div className="flex-shrink-0">
+                        <div className="w-6 h-6 bg-amber-100 rounded-full flex items-center justify-center">
+                          <span className="text-amber-600 text-sm font-bold">!</span>
+                        </div>
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="text-sm font-semibold text-amber-800 mb-1">Custom Welcome Message Warning</h4>
+                        <p className="text-xs text-amber-700 leading-relaxed">
+                          <strong>Recommended:</strong> Leave the welcome message empty for optimal AI performance. 
+                          When empty, the AI will generate contextual, personalized welcome messages based on user behavior, 
+                          page content, and conversation context. Custom messages may limit the AI's ability to provide 
+                          dynamic, relevant responses.
+                        </p>
+                      </div>
                     </div>
                   </div>
-                )}
-                <div className="flex items-center justify-between w-full py-4 px-4 bg-white/60 rounded-lg border border-slate-200">
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="welcomeMessage" className="text-gray-700 font-medium">
+                      Custom Welcome Message
+                    </Label>
+                    <Textarea
+                      id="welcomeMessage"
+                      value={settings.welcomeMessage}
+                      onChange={(e) => {
+                        console.log('[Settings] Welcome message changed:', {
+                          from: settings.welcomeMessage,
+                          to: e.target.value,
+                          length: e.target.value.length,
+                          chatbotId: activeChatbot?.id
+                        });
+                        setSettings(prev => ({ ...prev, welcomeMessage: e.target.value }));
+                      }}
+                      placeholder="Hello! How can I help you today?"
+                      rows={3}
+                                              className="border-gray-200 focus:ring-2 focus:ring-blue-200 focus:border-blue-200 rounded-lg transition-all duration-200 hover:border-blue-200 resize-none"
+                    />
+                    <div className="flex items-center justify-between">
+                                              <p className="text-xs text-gray-500">
+                          {settings.welcomeMessage.length > 0 
+                            ? `Message length: ${settings.welcomeMessage.length} characters`
+                            : 'Leave empty for AI-generated contextual messages'
+                          }
+                        </p>
+                      {settings.welcomeMessage.length > 0 && (
+                        <p className="text-xs text-amber-600 font-medium">
+                          ⚠️ Custom message set
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between w-full py-4 px-4 bg-white/60 rounded-lg border border-blue-300">
                   <div>
-                    <label htmlFor="enableSound" className="block text-sm font-medium text-slate-700">
+                    <label htmlFor="enableSound" className="block text-sm font-medium text-gray-700">
                       Enable Sound
                     </label>
-                    <p className="text-xs text-slate-500">Play a sound when users open the chatbot</p>
+                    <p className="text-xs text-gray-500">Play a sound when the chatbot appears</p>
                   </div>
                   <Switch
                     id="enableSound"
-                    checked={settings.enableNotificationSound}
-                    onCheckedChange={checked => setSettings(prev => ({ ...prev, enableNotificationSound: checked }))}
+                    checked={settings.popupSoundEnabled}
+                    onCheckedChange={checked => {
+                      console.log('[Settings] Enable sound toggle changed:', {
+                        from: settings.popupSoundEnabled,
+                        to: checked,
+                        chatbotId: activeChatbot?.id
+                      });
+                      setSettings(prev => ({ ...prev, popupSoundEnabled: checked }));
+                    }}
                     className="data-[state=checked]:bg-blue-600"
                   />
                 </div>
@@ -394,18 +434,17 @@ export default function Settings() {
 
 
           <TabsContent value="integrations" className="space-y-6 animate-in fade-in duration-700 ease-in-out">
-            <Card className="shadow-md rounded-2xl border border-gray-200 bg-gradient-to-r from-blue-50 to-gray-50 relative overflow-hidden">
-              <div className="absolute left-0 top-0 bottom-0 w-2 bg-blue-500 rounded-l-2xl" />
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2 text-slate-900 font-semibold text-lg">
+            <Card className="shadow-md rounded-lg border border-gray-200 bg-white p-6">
+              <CardHeader className="pb-2">
+                <CardTitle className="flex items-center space-x-2 text-gray-900 font-semibold text-lg">
                   <Webhook className="h-5 w-5 text-orange-600" />
                   <span>Integrations</span>
                 </CardTitle>
-                <p className="text-slate-600 text-sm">Connect your chatbot with external services and customize branding</p>
+                <p className="text-gray-600 text-sm">Connect your chatbot with external services and customize branding</p>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="webhookUrl" className="text-slate-700 font-medium">
+                  <Label htmlFor="webhookUrl" className="text-gray-700 font-medium">
                     Leads Webhook URL
                   </Label>
                   <Input
@@ -413,19 +452,19 @@ export default function Settings() {
                     value={settings.leadsWebhookUrl}
                     onChange={(e) => setSettings(prev => ({ ...prev, leadsWebhookUrl: e.target.value }))}
                     placeholder="https://your-site.com/webhook/leads"
-                    className="border-slate-300 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 rounded-lg transition-all duration-200 hover:border-orange-400"
+                    className="border-gray-200 focus:ring-2 focus:ring-orange-200 focus:border-orange-200 rounded-lg transition-all duration-200 hover:border-orange-200"
                   />
-                  <p className="text-xs text-slate-500">Receive lead data via webhook when visitors submit contact information</p>
+                                      <p className="text-xs text-gray-500">Receive lead data via webhook when visitors submit contact information</p>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="businessType" className="text-slate-700 font-medium">
+                  <Label htmlFor="businessType" className="text-gray-700 font-medium">
                     Business Type
                   </Label>
                   <Select
                     value={settings.businessType}
                     onValueChange={(value) => setSettings(prev => ({ ...prev, businessType: value }))}
                   >
-                    <SelectTrigger className="border-slate-300 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 rounded-lg transition-all duration-200 hover:border-orange-400 min-w-[160px]">
+                    <SelectTrigger className="border-gray-200 focus:ring-2 focus:ring-orange-200 focus:border-orange-200 rounded-lg transition-all duration-200 hover:border-orange-200 min-w-[160px]">
                       <SelectValue placeholder="Select business type">
                         {(() => {
                           switch (settings.businessType) {
@@ -449,7 +488,7 @@ export default function Settings() {
                       <SelectItem value="education">Education</SelectItem>
                     </SelectContent>
                   </Select>
-                  <p className="text-xs text-slate-500">Helps customize the chatbot's behavior for your industry</p>
+                  <p className="text-xs text-gray-500">Helps customize the chatbot's behavior for your industry</p>
                 </div>
                 
                 

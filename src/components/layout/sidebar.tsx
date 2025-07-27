@@ -13,6 +13,7 @@ import {
   User,
   Shield,
   ChevronLeft, ChevronRight,
+  History,
 } from 'lucide-react';
 import { useClerk } from '@clerk/clerk-react';
 import { useEffect, useState } from 'react';
@@ -79,9 +80,9 @@ const navigation = [
   // { name: 'Question Flow', href: '/questions', icon: GitBranch },
   { name: 'Tune AI', href: '/training', icon: Brain },
   { name: 'Leads', href: '/leads', icon: Users },
+  { name: 'Chat History', href: '/chat-history', icon: History },
   { name: 'Embed Code', href: '/embed', icon: Code },
   { name: 'Profile', href: '/profile', icon: User },
-  // { name: 'Chat History', href: '/chat-history', icon : History },
 ];
 
 interface SidebarProps {

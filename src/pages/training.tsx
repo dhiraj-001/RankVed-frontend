@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { useApp } from '@/contexts/app-context';
 import { useUpdateChatbot } from '@/hooks/use-chatbots';
+import { useCustomSounds, type CustomSound } from '@/hooks/use-custom-sounds';
 import { useMutation } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
@@ -24,6 +25,7 @@ export default function Training() {
   const { activeChatbot } = useApp();
   const updateChatbot = useUpdateChatbot();
   const { toast } = useToast();
+  const { data: customSounds = [], refetch: refetchCustomSounds } = useCustomSounds();
 
   const [trainingData, setTrainingData] = useState(() => {
     const initial = activeChatbot?.trainingData || '';
@@ -49,6 +51,8 @@ export default function Training() {
   const [popupSoundVolume, setPopupSoundVolume] = useState(activeChatbot?.popupSoundVolume ?? 50);
   const [selectedPopupSound, setSelectedPopupSound] = useState(activeChatbot?.customPopupSound || '/openclose.mp3');
   const [isPlayingSound, setIsPlayingSound] = useState(false);
+  const [playingSoundId, setPlayingSoundId] = useState<string | null>(null);
+  const [audioRefs, setAudioRefs] = useState<{ [key: string]: HTMLAudioElement }>({});
 
   // Popup Delay Settings
   const [chatBubblePopupDelay, setChatBubblePopupDelay] = useState(activeChatbot?.popupDelay ?? 3000);
@@ -74,8 +78,11 @@ export default function Training() {
       setSelectedPopupSound(activeChatbot.customPopupSound || '/openclose.mp3');
       setChatBubblePopupDelay(activeChatbot.popupDelay ?? 3000);
       setMessagePopupDelay(activeChatbot.replyDelay ?? 1000);
+      
+      // Refresh custom sounds when chatbot changes
+      refetchCustomSounds();
     }
-  }, [activeChatbot]);
+  }, [activeChatbot, refetchCustomSounds]);
 
   // Track training data changes
   useEffect(() => {
@@ -248,20 +255,21 @@ export default function Training() {
     const file = event.target.files?.[0];
     if (file) {
       // Validate file type
-      if (!file.type.startsWith('audio/')) {
+      const allowedTypes = ['audio/mp3', 'audio/wav', 'audio/ogg', 'audio/m4a', 'audio/mpeg', 'audio/x-m4a'];
+      if (!allowedTypes.includes(file.type) && !file.name.toLowerCase().match(/\.(mp3|wav|ogg|m4a)$/)) {
         toast({
           title: 'Invalid File',
-          description: 'Please select an audio file (MP3, WAV, etc.)',
+          description: 'Please select a supported audio file (MP3, WAV, OGG, M4A)',
           variant: 'destructive',
         });
         return;
       }
 
-      // Validate file size (max 5MB)
-      if (file.size > 5 * 1024 * 1024) {
+      // Validate file size (max 3MB)
+      if (file.size > 3 * 1024 * 1024) {
         toast({
           title: 'File Too Large',
-          description: 'Sound file must be less than 5MB',
+          description: 'Sound file must be less than 3MB',
           variant: 'destructive',
         });
         return;
@@ -284,6 +292,36 @@ export default function Training() {
     const fileInput = document.getElementById('customSound') as HTMLInputElement;
     if (fileInput) {
       fileInput.value = '';
+    }
+  };
+
+  // Delete custom sound from database
+  const handleDeleteCustomSound = async () => {
+    try {
+      // Remove the custom popup sound from the chatbot
+      await updateChatbot.mutateAsync({
+        id: activeChatbot!.id,
+        data: {
+          customPopupSound: '/openclose.mp3', // Reset to default
+        },
+      });
+      
+      setHasSoundSettingsChanges(true);
+      toast({
+        title: 'Sound deleted',
+        description: 'Custom sound has been removed successfully.',
+      });
+      
+      // Reset selected sound if it was the deleted one
+      if (selectedPopupSound !== '/openclose.mp3') {
+        setSelectedPopupSound('/openclose.mp3');
+      }
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to delete custom sound. Please try again.',
+        variant: 'destructive',
+      });
     }
   };
 
@@ -327,6 +365,10 @@ export default function Training() {
         },
       });
       setHasSoundSettingsChanges(false);
+      
+      // Refresh custom sounds after saving
+      refetchCustomSounds();
+      
       toast({
         title: 'Sound Settings Saved',
         description: 'Popup sound settings have been updated successfully.',
@@ -1128,6 +1170,7 @@ We serve over 1,000+ companies worldwide and are trusted by industry leaders.`;
                     {/* Sound Selection Options */}
                     <div className="space-y-4 animate-in fade-in duration-500 ease-in-out delay-500">
                       <Label className="text-sm font-medium">Sound Selection</Label>
+                      <div className="space-y-4">
                       
                       {/* Option 1: Pre-built Sounds */}
                       <div className="space-y-3">
@@ -1144,45 +1187,187 @@ We serve over 1,000+ companies worldwide and are trusted by industry leaders.`;
                         />
                       </div>
                       
-                      {/* Option 2: Custom Upload */}
+                      {/* Option 2: Custom Sounds from Database */}
+                      {customSounds.length > 0 && (
+                        <div className="space-y-3">
+                          <div className="flex items-center gap-2">
+                            <div className="w-3 h-3 bg-purple-600 rounded-full"></div>
+                            <span className="text-sm font-medium">Previously Uploaded Sounds</span>
+                          </div>
+                          <div className="space-y-2 max-h-32 overflow-y-auto border border-gray-200 rounded-md p-2">
+                            {customSounds.map((sound: CustomSound) => (
+                              <div
+                                key={sound.id}
+                                className={`flex items-center justify-between p-2 rounded-md cursor-pointer transition-colors ${
+                                  selectedPopupSound === sound.soundUrl
+                                    ? 'bg-purple-100 border border-purple-300'
+                                    : 'bg-gray-50 hover:bg-gray-100'
+                                }`}
+                                onClick={() => {
+                                  setSelectedPopupSound(sound.soundUrl);
+                                  // Update the chatbot's custom popup sound
+                                  if (activeChatbot) {
+                                    updateChatbot.mutate({
+                                      id: activeChatbot.id,
+                                      data: {
+                                        customPopupSound: sound.soundUrl,
+                                      },
+                                    }, {
+                                      onSuccess: () => {
+                                        setHasSoundSettingsChanges(true);
+                                        toast({
+                                          title: 'Sound Selected',
+                                          description: `${sound.name} has been set as the popup sound.`,
+                                        });
+                                      },
+                                      onError: () => {
+                                        toast({
+                                          title: 'Error',
+                                          description: 'Failed to update sound setting.',
+                                          variant: 'destructive',
+                                        });
+                                      }
+                                    });
+                                  }
+                                }}
+                              >
+                                <div className="flex items-center gap-2 min-w-0 flex-1">
+                                  <span className="text-xs font-medium text-gray-700 truncate">
+                                    {sound.name}
+                                  </span>
+                                  <Badge variant="secondary" className="bg-purple-100 text-purple-700 text-xs flex-shrink-0">
+                                    <span className="hidden sm:inline">Database</span>
+                                    <span className="sm:hidden">DB</span>
+                                  </Badge>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      
+                                      // If this sound is already playing, pause it
+                                      if (playingSoundId === sound.id && audioRefs[sound.id]) {
+                                        audioRefs[sound.id].pause();
+                                        setPlayingSoundId(null);
+                                        return;
+                                      }
+                                      
+                                      // Stop any currently playing sound
+                                      if (playingSoundId && audioRefs[playingSoundId]) {
+                                        audioRefs[playingSoundId].pause();
+                                      }
+                                      
+                                      try {
+                                        const audio = new Audio(sound.soundUrl);
+                                        audio.volume = popupSoundVolume / 100;
+                                        
+                                        // Set up event listeners
+                                        audio.onended = () => {
+                                          setPlayingSoundId(null);
+                                        };
+                                        
+                                        audio.onerror = () => {
+                                          setPlayingSoundId(null);
+                                          toast({
+                                            title: 'Playback Error',
+                                            description: 'Could not play the sound. Please check the file format.',
+                                            variant: 'destructive',
+                                          });
+                                        };
+                                        
+                                        // Store audio reference and play
+                                        setAudioRefs(prev => ({ ...prev, [sound.id]: audio }));
+                                        setPlayingSoundId(sound.id);
+                                        
+                                        audio.play().catch((error) => {
+                                          console.error('Error playing sound:', error);
+                                          setPlayingSoundId(null);
+                                          toast({
+                                            title: 'Playback Error',
+                                            description: 'Could not play the sound. Please check the file format.',
+                                            variant: 'destructive',
+                                          });
+                                        });
+                                      } catch (error) {
+                                        console.error('Error creating audio:', error);
+                                        setPlayingSoundId(null);
+                                        toast({
+                                          title: 'Audio Error',
+                                          description: 'Invalid sound file format.',
+                                          variant: 'destructive',
+                                        });
+                                      }
+                                    }}
+                                    className="h-6 w-6 p-0 hover:bg-purple-200"
+                                  >
+                                    {playingSoundId === sound.id ? (
+                                      <Pause className="h-3 w-3 text-purple-600" />
+                                    ) : (
+                                      <Play className="h-3 w-3 text-purple-600" />
+                                    )}
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleDeleteCustomSound();
+                                    }}
+                                    className="h-6 w-6 p-0 hover:bg-red-200 text-red-600"
+                                  >
+                                    <Trash className="h-3 w-3" />
+                                  </Button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {/* Option 3: Custom Upload */}
                       <div className="space-y-3">
                         <div className="flex items-center gap-2">
                           <div className="w-3 h-3 bg-green-600 rounded-full"></div>
                           <span className="text-sm font-medium">Upload Custom Sound</span>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <p className="text-xs text-slate-500">Sound file must be less than 3MB. Supported formats: MP3, WAV, OGG, M4A</p>
+                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                           <Input
                             id="customSound"
                             type="file"
                             accept="audio/*"
                             onChange={handleSoundFileChange}
-                            className="text-xs transition-all duration-300 ease-in-out hover:border-blue-200 focus:ring-2 focus:ring-blue-200 focus:border-blue-200"
+                            className="text-xs transition-all duration-300 ease-in-out hover:border-blue-200 focus:ring-2 focus:ring-blue-200 focus:border-blue-200 flex-1"
                           />
                           <Button
                             onClick={testSound}
                             disabled={!popupSoundEnabled}
                             size="sm"
                             variant="default"
-                            className="hover:bg-blue-100 hover:border-blue-200 transition-colors shadow-sm border-blue-200 border bg-blue-50"
+                            className="hover:bg-blue-100 hover:border-blue-200 transition-colors shadow-sm border-blue-200 border bg-blue-50 flex-shrink-0"
                           >
                             {isPlayingSound ? <Pause className="h-3 w-3 text-blue-600" /> : <Play className="h-3 w-3 text-blue-600" />}
                           </Button>
                         </div>
                         {selectedPopupSound && selectedPopupSound !== '/openclose.mp3' && selectedPopupSound.startsWith('data:') && (
-                          <div className="flex items-center gap-2">
+                          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
                             <Badge variant="secondary" className="bg-green-100 text-green-700 text-xs py-2">
-                              Custom sound loaded
+                              <span className="hidden sm:inline">Custom sound loaded</span>
+                              <span className="sm:hidden">Custom loaded</span>
                             </Badge>
                             <Button
                               onClick={clearCustomSound}
                               size="sm"
                               variant="outline"
-                              className="text-red-600 hover:text-red-700 text-xs hover:bg-red-50 transition-colors rounded-md"
+                              className="text-red-600 hover:text-red-700 text-xs hover:bg-red-50 transition-colors rounded-md flex-shrink-0"
                             >
                               <Trash className="h-3 w-3 text-red-600" />
                             </Button>
                           </div>
                         )}
+                      </div>
                       </div>
                     </div>
                   </>

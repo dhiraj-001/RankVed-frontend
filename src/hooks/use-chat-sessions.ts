@@ -90,7 +90,7 @@ export function useDeleteChatSession() {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async ({ sessionId, chatbotId }: { sessionId: string; chatbotId: string }) => {
+    mutationFn: async ({ sessionId }: { sessionId: string; chatbotId: string }) => {
       const response = await apiRequest('DELETE', `/api/chat-sessions/${sessionId}`);
       
       if (!response.ok) {

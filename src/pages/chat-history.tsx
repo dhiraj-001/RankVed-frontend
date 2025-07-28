@@ -188,11 +188,11 @@ export default function ChatHistory() {
 
   if (!activeChatbot && chatbots.length === 0) {
     return (
-      <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-blue-50 to-white min-h-screen">
-        <div className="text-center">
+      <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-blue-50 to-white min-h-screen p-4">
+        <div className="text-center max-w-md">
           <MessageSquare className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">No Chatbots Available</h2>
-          <p className="text-gray-600">Create a chatbot to start viewing chat sessions.</p>
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">No Chatbots Available</h2>
+          <p className="text-gray-600 text-sm sm:text-base">Create a chatbot to start viewing chat sessions.</p>
         </div>
       </div>
     );
@@ -294,17 +294,17 @@ export default function ChatHistory() {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto p-4 sm:p-6 space-y-6">
+      <div className="max-w-7xl mx-auto p-3 sm:p-6 space-y-4 sm:space-y-6">
         {/* Filters */}
         <Card className="bg-white shadow-md border-0 rounded-lg">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-              <Filter className="h-5 w-5 text-blue-600" />
+          <CardHeader className="pb-3 sm:pb-4">
+            <CardTitle className="text-base sm:text-lg font-semibold text-gray-900 flex items-center gap-2">
+              <Filter className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
               Filters
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
               {/* Chatbot Selector */}
               <div className="space-y-2">
                 <Label htmlFor="chatbot-select" className="text-sm font-medium text-gray-700">Chatbot</Label>
@@ -372,9 +372,9 @@ export default function ChatHistory() {
             </div>
 
             {/* Lead Collection Filter */}
-            <div className="flex items-center gap-4 pt-2">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 pt-2">
               <Label className="text-sm font-medium text-gray-700">Lead Collection:</Label>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 <Button
                   variant={filters.leadCollected === undefined ? "default" : "outline"}
                   size="sm"
@@ -407,7 +407,7 @@ export default function ChatHistory() {
         {/* Sessions List */}
         <Card className="bg-white shadow-md border-0 rounded-lg">
           <CardHeader>
-            <CardTitle className="text-lg font-semibold text-gray-900">
+            <CardTitle className="text-base sm:text-lg font-semibold text-gray-900">
               Chat Sessions ({sessions.length})
             </CardTitle>
           </CardHeader>
@@ -441,7 +441,7 @@ export default function ChatHistory() {
                 </p>
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 {sessions.map((session: ChatSessionSummary) => (
                   <SessionCard
                     key={session.sessionId}
@@ -485,28 +485,28 @@ function SessionCard({
 
   return (
     <Card className="border border-gray-200 hover:border-gray-300 transition-colors bg-white">
-      <CardContent className="p-4">
+      <CardContent className="p-3 sm:p-4">
         {/* Session Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
             <div className="flex items-center gap-2">
-              <MessageSquare className="h-5 w-5 text-blue-500" />
-              <span className="font-medium text-gray-900">
+              <MessageSquare className="h-4 w-4 sm:h-5 sm:w-5 text-blue-500" />
+              <span className="font-medium text-gray-900 text-sm sm:text-base">
                 Session {session.sessionId.slice(-8)}
               </span>
             </div>
             
-            <div className="flex items-center gap-4 text-sm text-gray-600">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-600">
               <div className="flex items-center gap-1">
-                <Clock className="h-4 w-4" />
-                {formatDate(session.firstMessage)}
+                <Clock className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="truncate">{formatDate(session.firstMessage)}</span>
               </div>
               <div className="flex items-center gap-1">
-                <MessageSquare className="h-4 w-4" />
+                <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4" />
                 {session.messageCount} messages
               </div>
               <div className="flex items-center gap-1">
-                <Clock className="h-4 w-4" />
+                <Clock className="h-3 w-3 sm:h-4 sm:w-4" />
                 {formatDuration(session.duration)}
               </div>
             </div>
@@ -514,9 +514,10 @@ function SessionCard({
 
           <div className="flex items-center gap-2">
             {session.leadCollected && (
-              <Badge variant="secondary" className="bg-green-100 text-green-800 border-green-200">
+              <Badge variant="secondary" className="bg-green-100 text-green-800 border-green-200 text-xs">
                 <Mail className="h-3 w-3 mr-1" />
-                Lead Collected
+                <span className="hidden sm:inline">Lead Collected</span>
+                <span className="sm:hidden">Lead</span>
               </Badge>
             )}
             
@@ -561,17 +562,17 @@ function SessionCard({
         {/* Lead Information */}
         {(session.userName || session.userEmail) && (
           <div className="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-100">
-            <div className="flex items-center gap-4 text-sm">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm">
               {session.userName && (
                 <div className="flex items-center gap-1">
                   <User className="h-4 w-4 text-blue-600" />
-                  <span className="font-medium text-blue-900">{session.userName}</span>
+                  <span className="font-medium text-blue-900 truncate">{session.userName}</span>
                 </div>
               )}
               {session.userEmail && (
                 <div className="flex items-center gap-1">
                   <Mail className="h-4 w-4 text-blue-600" />
-                  <span className="font-medium text-blue-900">{session.userEmail}</span>
+                  <span className="font-medium text-blue-900 truncate">{session.userEmail}</span>
                 </div>
               )}
             </div>
@@ -610,7 +611,7 @@ function MessageBubble({ message, formatDate }: MessageBubbleProps) {
   
   return (
     <div className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
-      <div className={`max-w-xs lg:max-w-md rounded-lg px-4 py-2 shadow-sm ${
+      <div className={`max-w-[85%] sm:max-w-xs lg:max-w-md rounded-lg px-3 sm:px-4 py-2 shadow-sm ${
         isUser 
           ? 'bg-blue-500 text-white' 
           : 'bg-gray-100 text-gray-900'
@@ -621,7 +622,7 @@ function MessageBubble({ message, formatDate }: MessageBubbleProps) {
           {isUser ? <User className="h-3 w-3 inline mr-1" /> : <Bot className="h-3 w-3 inline mr-1" />}
           {isUser ? 'User' : 'Bot'} • {formatDate(new Date(message.createdAt))}
         </div>
-        <div className="whitespace-pre-wrap">{message.content}</div>
+        <div className="whitespace-pre-wrap break-words text-sm">{message.content}</div>
       </div>
     </div>
   );

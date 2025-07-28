@@ -93,12 +93,12 @@ export function SoundSelector({
                   {selectedSoundOption ? selectedSoundOption.name : 'No Sound'}
                 </span>
                 {selectedSoundOption && (
-                  <Badge variant="secondary" className="text-xs">
+                  <Badge variant="secondary" className="text-xs hidden sm:block">
                     {selectedSoundOption.category}
                   </Badge>
                 )}
               </div>
-              <p className="text-xs text-slate-500 mt-1">
+              <p className="text-xs text-slate-500 mt-1 ">
                 {selectedSoundOption ? selectedSoundOption.description : 'Disable sound notifications'}
               </p>
             </div>
@@ -114,7 +114,7 @@ export function SoundSelector({
                   }
                 }
               }}
-              className="hover:bg-blue-50 hover:border-blue-200"
+              className="hover:bg-blue-50 hover:border-blue-200 border-blue-200"
               disabled={!selectedSoundOption}
             >
               {selectedSoundOption && isPlaying(selectedSoundOption) ? (
@@ -169,11 +169,11 @@ export function SoundSelector({
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-medium">{sound.name}</span>
-                      <Badge variant="secondary" className="text-xs">
+                      <Badge variant="secondary" className="text-xs hidden sm:block">
                         {sound.category}
                       </Badge>
                     </div>
-                    <p className="text-xs text-slate-500 mt-1">{sound.description}</p>
+                    <p className="text-xs text-slate-500 mt-1 hidden sm:block">{sound.description}</p>
                   </div>
 
                   {/* Play Button */}
@@ -188,7 +188,7 @@ export function SoundSelector({
                         handlePlaySound(sound);
                       }
                     }}
-                    className="hover:bg-blue-50 hover:border-blue-200"
+                    className="hover:bg-blue-50 hover:border-blue-200 border-blue-200"
                   >
                     {isPlaying(sound) ? (
                       <Pause className="h-3 w-3 text-blue-600" />

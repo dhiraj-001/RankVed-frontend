@@ -792,19 +792,19 @@ We serve over 1,000+ companies worldwide and are trusted by industry leaders.`;
         </div>
       </div>
 
-      <div className="p-6 max-w-7xl mx-auto bg-gradient-to-br min-h-screen">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="p-3 sm:p-6 max-w-7xl mx-auto bg-gradient-to-br min-h-screen">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-8">
           {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-4 sm:space-y-6">
             {/* Training Warnings - Moved to Top */}
             {(!trainingData || trainingData.trim() === '') && (
               <Card className="border border-amber-200 bg-gradient-to-br from-amber-50 to-yellow-50/30 shadow-md animate-in fade-in duration-500 ease-in-out">
-                <CardHeader>
+                <CardHeader className="p-4 sm:p-6">
                   <CardTitle className="flex items-center gap-2 text-base text-amber-700">
                     <Info className="h-4 w-4 text-amber-600" /> Training Data Required
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-4 sm:p-6">
                   <div className="space-y-3">
                     <p className="text-sm text-amber-700">
                       Your chatbot needs training data to provide meaningful responses. Add content to help it understand your business and answer questions effectively.
@@ -843,12 +843,12 @@ We serve over 1,000+ companies worldwide and are trusted by industry leaders.`;
             {/* Question Flow Warning - Moved to Top */}
             {(!questionFlow || Object.keys(questionFlow || {}).length === 0) && trainingData && trainingData.trim() !== '' && (
               <Card className="border border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50/30 shadow-md animate-in fade-in duration-500 ease-in-out">
-                <CardHeader>
+                <CardHeader className="p-4 sm:p-6">
                   <CardTitle className="flex items-center gap-2 text-base text-blue-700">
                     <Brain className="h-4 w-4 text-blue-600" /> Question Flow Missing
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-4 sm:p-6">
                   <div className="space-y-3">
                     <p className="text-sm text-blue-700">
                       You have training data but no question flow. Generate a question flow to create structured conversations and improve user experience.
@@ -868,14 +868,14 @@ We serve over 1,000+ companies worldwide and are trusted by industry leaders.`;
             )}
             {/* Training Data Editor */}
             <Card className="border border-slate-200 bg-gradient-to-br from-white to-blue-50/30 shadow-sm animate-in fade-in duration-700 ease-in-out">
-              <CardHeader>
+              <CardHeader className="p-4 sm:p-6">
                 <CardTitle className="flex items-center gap-2">
                   <Brain className="h-5 w-5 text-blue-600 transition-transform duration-500 ease-in-out" /> 
                   <span className="transition-all duration-500 ease-in-out">Training Content</span>
                 </CardTitle>
                 <p className="text-sm text-slate-600 transition-all duration-500 ease-in-out">Add content to help your chatbot provide better responses</p>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-4 sm:p-6">
                 <div className="space-y-4">
                   <div className="flex flex-wrap gap-2">
                     <Button 
@@ -924,13 +924,13 @@ We serve over 1,000+ companies worldwide and are trusted by industry leaders.`;
 
             {/* URL Content Fetcher */}
             <Card className="border border-slate-200 bg-gradient-to-br from-white to-blue-50/30 shadow-md">
-              <CardHeader>
+              <CardHeader className="p-4 sm:p-6">
                 <CardTitle className="flex items-center gap-2">
                   <Globe className="h-5 w-5 text-blue-600" /> Fetch Website Content
                 </CardTitle>
                 <p className="text-sm text-slate-600">Paste URLs to fetch and add their content</p>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-4 sm:p-6">
                 <div className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="urls">Website URLs</Label>
@@ -1003,10 +1003,10 @@ We serve over 1,000+ companies worldwide and are trusted by industry leaders.`;
 
             {/* Contact Info */}
             <Card className="border border-slate-200 bg-gradient-to-br from-white to-blue-50/30 shadow-md animate-in fade-in duration-700 ease-in-out delay-100">
-              <CardHeader>
+              <CardHeader className="p-4 sm:p-6">
                 <CardTitle className="transition-all duration-500 ease-in-out">Contact Information</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="p-4 sm:p-6 space-y-4">
                 <div className="animate-in fade-in duration-500 ease-in-out delay-200">
                   <Label htmlFor="whatsapp">WhatsApp Number</Label>
                   <Input id="whatsapp" value={whatsapp} onChange={e => setWhatsapp(e.target.value)} placeholder="+919876543210" className="transition-all duration-300 ease-in-out hover:border-blue-200 focus:ring-2 focus:ring-blue-200 focus:border-blue-200" />
@@ -1044,14 +1044,14 @@ We serve over 1,000+ companies worldwide and are trusted by industry leaders.`;
 
             {/* Question Flow Editor */}
             <Card className="border border-slate-200 bg-gradient-to-br from-white to-blue-50/30 shadow-md animate-in fade-in duration-700 ease-in-out delay-200">
-              <CardHeader>
+              <CardHeader className="p-4 sm:p-6">
                 <CardTitle className="flex items-center gap-2">
                   <Brain className="h-5 w-5 text-blue-600 transition-transform duration-500 ease-in-out" /> 
                   <span className="transition-all duration-500 ease-in-out">Question Flow</span>
                 </CardTitle>
                 <p className="text-sm text-slate-600 transition-all duration-500 ease-in-out">Edit the AI-generated question flow</p>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-4 sm:p-6">
                 <div className="space-y-2 animate-in fade-in duration-500 ease-in-out delay-300">
                   <Label>Flow JSON</Label>
                   <Textarea
@@ -1079,16 +1079,16 @@ We serve over 1,000+ companies worldwide and are trusted by industry leaders.`;
           </div>
 
           {/* Right Sidebar - Settings */}
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             {/* AI Provider Settings */}
             <Card className="border border-slate-200 bg-gradient-to-br from-white to-blue-50/30 shadow-md animate-in fade-in duration-700 ease-in-out">
-              <CardHeader>
+              <CardHeader className="p-4 sm:p-6">
                 <CardTitle className="flex items-center gap-2 text-base">
                   <Settings className="h-4 w-4 text-blue-600 transition-transform duration-500 ease-in-out" /> 
                   <span className="transition-all duration-500 ease-in-out">AI Provider</span>
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="p-4 sm:p-6 space-y-4">
                 <div className="space-y-2 animate-in fade-in duration-500 ease-in-out delay-100">
                   <Label htmlFor="aiProvider">Provider</Label>
                   <Select value={aiProvider} onValueChange={setAiProvider}>
@@ -1131,13 +1131,13 @@ We serve over 1,000+ companies worldwide and are trusted by industry leaders.`;
 
             {/* Popup Sound Settings */}
             <Card className="border border-slate-200 bg-gradient-to-br from-white to-blue-50/30 shadow-md animate-in fade-in duration-700 ease-in-out delay-200">
-              <CardHeader>
+              <CardHeader className="p-4 sm:p-6">
                 <CardTitle className="flex items-center gap-2 text-base">
                   <Volume2 className="h-4 w-4 text-blue-600 transition-transform duration-500 ease-in-out" /> 
                   <span className="transition-all duration-500 ease-in-out">Popup Sound</span>
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="p-4 sm:p-6 space-y-4">
                 <div className="flex items-center justify-between animate-in fade-in duration-500 ease-in-out delay-300">
                   <Label htmlFor="popupSoundEnabled" className="text-sm font-medium">Enable Sound</Label>
                   <Switch
@@ -1387,13 +1387,13 @@ We serve over 1,000+ companies worldwide and are trusted by industry leaders.`;
 
             {/* Popup Delay Settings */}
             <Card className="border border-slate-200 bg-gradient-to-br from-white to-blue-50/30 shadow-md animate-in fade-in duration-700 ease-in-out delay-300">
-              <CardHeader>
+              <CardHeader className="p-4 sm:p-6">
                 <CardTitle className="flex items-center gap-2 text-base">
                   <Timer className="h-4 w-4 text-blue-600 transition-transform duration-500 ease-in-out" /> 
                   <span className="transition-all duration-500 ease-in-out">Popup Timing</span>
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="p-4 sm:p-6 space-y-4">
                 <div className="space-y-2 animate-in fade-in duration-500 ease-in-out delay-100">
                   <Label htmlFor="chatBubblePopupDelay" className="text-sm">Chat Bubble Popup Delay</Label>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
@@ -1457,12 +1457,12 @@ We serve over 1,000+ companies worldwide and are trusted by industry leaders.`;
 
                                   {/* Training Stats */}
               <Card className="border border-slate-200 bg-gradient-to-br from-white to-blue-50/30 shadow-md">
-                <CardHeader>
+                <CardHeader className="p-4 sm:p-6">
                   <CardTitle className="flex items-center gap-2 text-base">
                     <Brain className="h-4 w-4 text-blue-600" /> Training Stats
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-4 sm:p-6">
                   <div className="space-y-3">
                     <div className="grid grid-cols-2 gap-4 text-sm">
                       <div><span className="font-medium">Words:</span> {typeof trainingData === 'string' ? trainingData.split(/\s+/).filter(word => word.length > 0).length : 'N/A'}</div>
@@ -1500,12 +1500,12 @@ We serve over 1,000+ companies worldwide and are trusted by industry leaders.`;
 
             {/* Tips */}
             <Card className="border border-slate-200 bg-gradient-to-br from-white to-blue-50/30 shadow-md">
-              <CardHeader>
+              <CardHeader className="p-4 sm:p-6">
                 <CardTitle className="flex items-center gap-2 text-base">
                   <Info className="h-4 w-4 text-blue-600" /> Tips
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-4 sm:p-6">
                 <ul className="text-xs text-slate-600 space-y-1 list-disc pl-4">
                   <li>Include FAQs and product info</li>
                   <li>Keep answers clear and concise</li>

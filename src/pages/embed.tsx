@@ -226,6 +226,14 @@ export default ChatWidget;`;
               </AlertDescription>
             </Alert>
           </div>
+          
+          {/* Simplified Embed Notice */}
+          <Alert className="bg-blue-50 border-blue-200 rounded-lg">
+            <Zap className="h-4 w-4 text-blue-600" />
+            <AlertDescription className="text-sm">
+              <strong>Simplified Setup:</strong> The chatbot now automatically detects your backend URL. You only need to provide the chatbot ID - no need to specify the API URL manually!
+            </AlertDescription>
+          </Alert>
 
           {/* Embed Code Options */}
           <Card className="shadow-md rounded-lg border border-gray-200 bg-white">

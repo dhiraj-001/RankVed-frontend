@@ -36,10 +36,10 @@
     `;
     document.head.appendChild(style);
   }
-  // Only get chatbotId and apiUrl from window.CHATBOT_CONFIG
+  // Use RankVedChatbotConfig if available, fallback to CHATBOT_CONFIG for backward compatibility
   let config = {
-    chatbotId: window.CHATBOT_CONFIG?.chatbotId,
-    apiUrl: window.CHATBOT_CONFIG?.apiUrl
+    chatbotId: window.RankVedChatbotConfig?.chatbotId || window.CHATBOT_CONFIG?.chatbotId,
+    apiUrl: window.RankVedChatbotConfig?.apiUrl || window.CHATBOT_CONFIG?.apiUrl
   };
 
   let isOpen = false;
@@ -48,7 +48,7 @@
   let configLoaded = false;
   async function fetchChatbotConfig() {
     if (!config.chatbotId) {
-      console.warn('[RankVed Chat] chatbotId missing at fetchChatbotConfig. window.CHATBOT_CONFIG:', window.CHATBOT_CONFIG);
+      console.warn('[RankVed Chat] chatbotId missing at fetchChatbotConfig. RankVedChatbotConfig:', window.RankVedChatbotConfig, 'CHATBOT_CONFIG:', window.CHATBOT_CONFIG);
       return;
     }
     let baseUrl = (typeof window !== 'undefined' && window.VITE_API_URL) ? window.VITE_API_URL : (config.apiUrl || window.location.origin);
@@ -60,8 +60,10 @@
         if (config.id && !config.chatbotId) {
           config.chatbotId = config.id;
         }
-        // Ensure apiUrl is always set from window.CHATBOT_CONFIG if present
-        if (window.CHATBOT_CONFIG && window.CHATBOT_CONFIG.apiUrl) {
+        // Ensure apiUrl is always set from RankVedChatbotConfig if present, fallback to CHATBOT_CONFIG
+        if (window.RankVedChatbotConfig && window.RankVedChatbotConfig.apiUrl) {
+          config.apiUrl = window.RankVedChatbotConfig.apiUrl;
+        } else if (window.CHATBOT_CONFIG && window.CHATBOT_CONFIG.apiUrl) {
           config.apiUrl = window.CHATBOT_CONFIG.apiUrl;
         }
         // --- Robustly parse questionFlow ---

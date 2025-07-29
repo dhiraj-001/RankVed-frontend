@@ -5,8 +5,7 @@
   
   // Minimal configuration with defaults
   window.RankVedChatbotConfig = window.RankVedChatbotConfig || {
-    chatbotId: null,
-    apiUrl: 'http://localhost:3000'
+    chatbotId: null
   };
 
   console.log('📋 RankVed Chatbot Config:', window.RankVedChatbotConfig);
@@ -125,6 +124,63 @@
     });
   }
 
+  // Fetch initial chatbot config to get apiUrl
+  async function fetchInitialConfig(chatbotId) {
+    console.log('🔧 Fetching initial config for chatbot:', chatbotId);
+    
+    // Try to determine the backend URL from the current page
+    let backendUrl = window.RankVedChatbotConfig.apiUrl;
+    
+    if (!backendUrl) {
+      // Try to guess the backend URL from the current domain
+      const currentDomain = window.location.hostname;
+      const currentProtocol = window.location.protocol;
+      
+      if (currentDomain === 'localhost' || currentDomain === '127.0.0.1') {
+        backendUrl = 'http://localhost:3000';
+      } else {
+        // For production, assume the backend is on the same domain
+        backendUrl = currentProtocol + '//' + currentDomain;
+      }
+    }
+    
+    console.log('🔧 Attempting to fetch config from:', backendUrl);
+    
+    try {
+      const response = await fetch(`${backendUrl}/api/chatbot/${chatbotId}/config`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Domain': window.location.hostname,
+          'X-Referer': document.referrer
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch config: ${response.status}`);
+      }
+
+      const config = await response.json();
+      console.log('✅ Initial config fetched successfully:', config);
+      
+      // Update the global config with the fetched data
+      window.RankVedChatbotConfig = {
+        ...window.RankVedChatbotConfig,
+        ...config,
+        // Ensure the chatbotId from the fetched config is used
+        chatbotId: config.id || config.chatbotId || window.RankVedChatbotConfig.chatbotId
+      };
+      
+      console.log('✅ Updated global config:', window.RankVedChatbotConfig);
+      console.log('✅ Using chatbotId:', window.RankVedChatbotConfig.chatbotId);
+      
+      return config;
+    } catch (error) {
+      console.error('❌ Failed to fetch initial config:', error);
+      throw error;
+    }
+  }
+
   // Initialize chatbot with detailed logging
   async function init() {
     console.log('🎯 Initializing chatbot...');
@@ -137,6 +193,10 @@
       }
       
       console.log('✅ Chatbot ID found:', window.RankVedChatbotConfig.chatbotId);
+      
+      // Fetch initial config to get apiUrl
+      console.log('🔧 Fetching initial config...');
+      await fetchInitialConfig(window.RankVedChatbotConfig.chatbotId);
       
       const container = createContainer();
       console.log('📦 Loading React...');

@@ -150,23 +150,12 @@
         </a>
     </div>
     
-    <!-- ChatBot Pro Embed Script -->
-    <script src="public/chat-embed.js"></script>
-    <link rel="stylesheet" href="public/chat-embed.css">
-    
+    <!-- RankVed Chatbot Embed Script -->
     <script>
-        // Initialize the chat widget with enhanced bubble effect
-        document.addEventListener('DOMContentLoaded', function() {
-            // Simulate a delay to show the bubble effect
-            setTimeout(() => {
-                ChatBotPro.init({
-                    chatbotId: 'acdd623b-1bb6-416c-8e66-a0ac5a659fa7',
-                    primaryColor: '#6366F1',
-                    position: 'bottom-right',
-                    apiUrl: 'https://rankved-backend.onrender.com'
-                });
-            }, 1000);
-        });
+        window.RankVedChatbotConfig = {
+            chatbotId: '69e4c724-2aa1-447c-8d4b-52812d77ba08'
+        };
     </script>
+    <script src="public/chatbot-loader.js"></script>
 </body>
 </html> 

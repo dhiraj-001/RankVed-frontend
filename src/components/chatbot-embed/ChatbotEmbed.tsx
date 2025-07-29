@@ -1,6 +1,16 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { MessageCircle, X, Send,  Volume2, VolumeX, User, Phone, Mail } from 'lucide-react';
 
+// Declare global window property for RankVedChatbotConfig
+declare global {
+  interface Window {
+    RankVedChatbotConfig?: {
+      apiUrl?: string;
+      [key: string]: any;
+    };
+  }
+}
+
 interface ChatbotConfig {
   chatbotId: string;
   position: string;
@@ -105,10 +115,11 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
   // Initialize audio for notification sounds
   useEffect(() => {
     if (dynamicConfig && !isConfigLoading) {
-      // Always use the original config.apiUrl for sound files
-      const soundUrl = dynamicConfig.customPopupSound || `${config.apiUrl}/openclose.mp3`;
+      // Use the frontend URL for sound files, not the backend API URL
+      const frontendUrl = window.location.origin;
+      const soundUrl = dynamicConfig.customPopupSound || `${frontendUrl}/openclose.mp3`;
       console.log('Loading sound from:', soundUrl);
-      console.log('Config API URL:', config.apiUrl);
+      console.log('Frontend URL:', frontendUrl);
       
       // Create audio element and handle loading
       const audio = new Audio();
@@ -212,7 +223,13 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
     const fetchConfig = async () => {
       try {
         setIsConfigLoading(true);
-        const response = await fetch(`${config.apiUrl}/api/chatbot/${config.chatbotId}/config`, {
+        // Use the apiUrl from the config that was already fetched by the loader
+        const apiUrl = config.apiUrl || window.RankVedChatbotConfig?.apiUrl;
+        if (!apiUrl) {
+          throw new Error('No API URL available');
+        }
+        
+        const response = await fetch(`${apiUrl}/api/chatbot/${config.chatbotId}/config`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -319,7 +336,12 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
     if (!dynamicConfig) return;
     
     try {
-      const response = await fetch(`${dynamicConfig.apiUrl}/api/chat`, {
+      const apiUrl = dynamicConfig.apiUrl || window.RankVedChatbotConfig?.apiUrl;
+      if (!apiUrl) {
+        throw new Error('No API URL available');
+      }
+      
+      const response = await fetch(`${apiUrl}/api/chat`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -436,7 +458,12 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
     setIsLoading(true);
 
     try {
-      const response = await fetch(`${dynamicConfig.apiUrl}/api/chat`, {
+      const apiUrl = dynamicConfig.apiUrl || window.RankVedChatbotConfig?.apiUrl;
+      if (!apiUrl) {
+        throw new Error('No API URL available');
+      }
+      
+      const response = await fetch(`${apiUrl}/api/chat`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -514,7 +541,12 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
     });
     
     try {
-      const response = await fetch(`${dynamicConfig.apiUrl}/api/chat/${dynamicConfig.chatbotId}/leads`, {
+      const apiUrl = dynamicConfig.apiUrl || window.RankVedChatbotConfig?.apiUrl;
+      if (!apiUrl) {
+        throw new Error('No API URL available');
+      }
+      
+      const response = await fetch(`${apiUrl}/api/chat/${dynamicConfig.chatbotId}/leads`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

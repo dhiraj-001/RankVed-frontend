@@ -2,21 +2,23 @@ import React from 'react';
 
 const ChatWidget = ({ chatbotId }) => {
   React.useEffect(() => {
+    // Set the chatbot configuration
+    window.RankVedChatbotConfig = {
+      chatbotId: chatbotId
+    };
+
+    // Load the chatbot loader script
     const script = document.createElement('script');
-    script.src = 'http://localhost:5173/chat-embed.js';
+    script.src = '/chatbot-loader.js';
     script.onload = function() {
-      window.ChatBotPro.init({ chatbotId });
+      console.log('✅ Chatbot loader loaded for ID:', chatbotId);
     };
     document.head.appendChild(script);
 
-    const link = document.createElement('link');
-    link.rel = 'stylesheet';
-    link.href = 'http://localhost:5173/chat-embed.css';
-    document.head.appendChild(link);
-
     return () => {
       script.remove();
-      link.remove();
+      // Clean up the global config
+      delete window.RankVedChatbotConfig;
     };
   }, [chatbotId]);
 
@@ -26,4 +28,4 @@ const ChatWidget = ({ chatbotId }) => {
 export default ChatWidget;
 
 // Usage:
-// <ChatWidget chatbotId="acdd623b-1bb6-416c-8e66-a0ac5a659fa7" />
+// <ChatWidget chatbotId="69e4c724-2aa1-447c-8d4b-52812d77ba08" />

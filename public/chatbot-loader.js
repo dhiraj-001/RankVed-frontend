@@ -139,12 +139,18 @@
       if (currentDomain === 'localhost' || currentDomain === '127.0.0.1') {
         backendUrl = 'http://localhost:3000';
       } else {
-        // For production, assume the backend is on the same domain
-        backendUrl = currentProtocol + '//' + currentDomain;
+        // For production, use the deployed backend URL
+        backendUrl = 'https://rankved-backend.onrender.com';
       }
     }
     
     console.log('🔧 Attempting to fetch config from:', backendUrl);
+    console.log('🔧 Request URL:', `${backendUrl}/api/chatbot/${chatbotId}/config`);
+    console.log('🔧 Headers:', {
+      'Content-Type': 'application/json',
+      'X-Domain': window.location.hostname,
+      'X-Referer': document.referrer
+    });
     
     try {
       const response = await fetch(`${backendUrl}/api/chatbot/${chatbotId}/config`, {

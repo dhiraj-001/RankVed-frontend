@@ -727,7 +727,7 @@ export default function Appearance() {
             popupDelay: 3000,
             messageDelay: 1000
           }}
-          domain="https://rank-ved-frontend-rfam.vercel.app"
+          domain="rank-ved-frontend-rfam.vercel.app"
           referer="https://rank-ved-frontend-rfam.vercel.app"
         />
       )}

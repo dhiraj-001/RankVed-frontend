@@ -173,7 +173,7 @@ export default function Dashboard() {
 
   // Export leads as CSV
   const exportLeads = () => {
-    if (!leads || leads.length === 0) return;
+    if (!leads || !Array.isArray(leads) || leads.length === 0) return;
     const csvContent = [
       ['Name', 'Phone', 'Email', 'Consent', 'Chatbot', 'Date'].join(','),
       ...leads.slice(0, 10).map(lead => [
@@ -181,7 +181,7 @@ export default function Dashboard() {
         lead.phone || '',
         lead.email || '',
         lead.consentGiven ? 'Yes' : 'No',
-        chatbots?.find(c => c.id === lead.chatbotId)?.name || 'Unknown',
+        Array.isArray(chatbots) ? chatbots.find(c => c.id === lead.chatbotId)?.name || 'Unknown' : 'Unknown',
         new Date(lead.createdAt).toLocaleString()
       ].join(','))
     ].join('\n');
@@ -520,7 +520,7 @@ export default function Dashboard() {
                                   </div>
                                 </td>
                               </tr>
-                            ) : !chatbots || chatbots.length === 0 ? (
+                            ) : !chatbots || !Array.isArray(chatbots) || chatbots.length === 0 ? (
                               <tr>
                                 <td colSpan={6} className="p-8 text-center">
                                   <div className="flex flex-col items-center justify-center gap-2">
@@ -531,7 +531,7 @@ export default function Dashboard() {
                                 </td>
                               </tr>
                             ) : (
-                              chatbots?.map((chatbot) => (
+                              Array.isArray(chatbots) && chatbots.map((chatbot) => (
                                 <tr key={chatbot.id} className="border-b border-blue-50 hover:bg-blue-50/60 transition-colors group">
                                   <td className="p-4">
                                     <div className="flex items-center space-x-3">
@@ -638,7 +638,7 @@ export default function Dashboard() {
                           <tbody>
                             {leadsLoading ? (
                               <tr><td colSpan={6} className="p-8 text-center text-blue-500 animate-pulse">Loading...</td></tr>
-                            ) : !leads || leads.length === 0 ? (
+                            ) : !leads || !Array.isArray(leads) || leads.length === 0 ? (
                               <tr>
                                 <td colSpan={6} className="p-8 text-center">
                                   <div className="flex flex-col items-center justify-center gap-2">
@@ -649,7 +649,7 @@ export default function Dashboard() {
                                 </td>
                               </tr>
                             ) : (
-                              [...leads].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 10).map((lead) => (
+                              Array.isArray(leads) ? [...leads].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 10).map((lead) => (
                                 <tr key={lead.id} className="border-b border-blue-50 hover:bg-blue-50/60 transition-colors group">
                                   <td className="p-4">
                                     <div className="flex items-center gap-3">
@@ -675,12 +675,12 @@ export default function Dashboard() {
                                   </td>
                                   <td className="p-4">
                                     <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 shadow-sm">
-                                      {chatbots?.find(c => c.id === lead.chatbotId)?.name || 'Unknown'}
+                                      {Array.isArray(chatbots) ? chatbots.find(c => c.id === lead.chatbotId)?.name || 'Unknown' : 'Unknown'}
                                     </span>
                                   </td>
                                   <td className="p-4 text-blue-400">{formatTimeAgo(lead.createdAt)}</td>
                                 </tr>
-                              ))
+                              )) : null
                             )}
                           </tbody>
                         </table>

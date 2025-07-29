@@ -41,6 +41,14 @@ interface LeadFormData {
   message: string;
 }
 
+interface LeadField {
+  id: string;
+  label: string;
+  type: string;
+  required: boolean;
+  placeholder: string;
+}
+
 function isValidEmail(text: string) {
   return /\b[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}\b/i.test(text);
 }
@@ -78,6 +86,7 @@ export default function ChatTest() {
     company: '',
     message: ''
   });
+  const [leadFields, setLeadFields] = useState<LeadField[]>([]);
   const [isSubmittingLead, setIsSubmittingLead] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const apiUrl = import.meta.env.VITE_API_URL || '';
@@ -109,6 +118,36 @@ export default function ChatTest() {
           setAwaitingContactInfo({ field: bot.requested_contact_field });
         } else {
           setAwaitingContactInfo(null);
+        }
+        
+        // Fetch chatbot lead fields configuration
+        try {
+          const chatbotResponse = await fetch(`${apiUrl}/api/chatbots/${chatbotId}`);
+          if (chatbotResponse.ok) {
+            const chatbotData = await chatbotResponse.json();
+            if (chatbotData.leadCollectionFields && Array.isArray(chatbotData.leadCollectionFields)) {
+              setLeadFields(chatbotData.leadCollectionFields);
+            } else {
+              // Default fields if none configured
+              setLeadFields([
+                { id: 'name', label: 'Name', type: 'text', required: true, placeholder: 'Your name' },
+                { id: 'email', label: 'Email', type: 'email', required: true, placeholder: 'your@email.com' }
+              ]);
+            }
+          } else {
+            // Default fields if response not ok
+            setLeadFields([
+              { id: 'name', label: 'Name', type: 'text', required: true, placeholder: 'Your name' },
+              { id: 'email', label: 'Email', type: 'email', required: true, placeholder: 'your@email.com' }
+            ]);
+          }
+        } catch (error) {
+          console.log('Could not fetch chatbot lead fields, using defaults');
+          // Default fields if fetch fails
+          setLeadFields([
+            { id: 'name', label: 'Name', type: 'text', required: true, placeholder: 'Your name' },
+            { id: 'email', label: 'Email', type: 'email', required: true, placeholder: 'your@email.com' }
+          ]);
         }
       } catch {
         setMessages([
@@ -257,6 +296,22 @@ export default function ChatTest() {
   const handleLeadFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmittingLead(true);
+    
+    // Validate required fields - ensure leadFields is an array
+    if (!Array.isArray(leadFields)) {
+      console.error('leadFields is not an array:', leadFields);
+      setIsSubmittingLead(false);
+      return;
+    }
+    
+    const requiredFields = leadFields.filter(field => field && field.required);
+    const missingFields = requiredFields.filter(field => field && !leadFormData[field.id as keyof LeadFormData]);
+    
+    if (missingFields.length > 0) {
+      alert(`Please fill in the required fields: ${missingFields.map(f => f.label).join(', ')}`);
+      setIsSubmittingLead(false);
+      return;
+    }
     
     // Simulate form submission
     await new Promise(resolve => setTimeout(resolve, 1500));
@@ -440,61 +495,33 @@ export default function ChatTest() {
                     </div>
                   </div>
                   
-                  <form onSubmit={handleLeadFormSubmit} className="p-4 space-y-3">
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="text-xs font-medium text-slate-700 mb-1 block">Name</label>
-                        <Input
-                          value={leadFormData.name}
-                          onChange={(e) => setLeadFormData(prev => ({ ...prev, name: e.target.value }))}
-                          placeholder="Your name"
-                          className="text-sm h-8"
-                          required
-                        />
-                      </div>
-                      <div>
-                        <label className="text-xs font-medium text-slate-700 mb-1 block">Company</label>
-                        <Input
-                          value={leadFormData.company}
-                          onChange={(e) => setLeadFormData(prev => ({ ...prev, company: e.target.value }))}
-                          placeholder="Company"
-                          className="text-sm h-8"
-                        />
-                      </div>
-                    </div>
-                    
-                    <div>
-                      <label className="text-xs font-medium text-slate-700 mb-1 block">Email</label>
-                      <Input
-                        type="email"
-                        value={leadFormData.email}
-                        onChange={(e) => setLeadFormData(prev => ({ ...prev, email: e.target.value }))}
-                        placeholder="your@email.com"
-                        className="text-sm h-8"
-                        required
-                      />
-                    </div>
-                    
-                    <div>
-                      <label className="text-xs font-medium text-slate-700 mb-1 block">Phone</label>
-                      <Input
-                        value={leadFormData.phone}
-                        onChange={(e) => setLeadFormData(prev => ({ ...prev, phone: e.target.value }))}
-                        placeholder="+1 (555) 123-4567"
-                        className="text-sm h-8"
-                      />
-                    </div>
-                    
-                    <div>
-                      <label className="text-xs font-medium text-slate-700 mb-1 block">Message</label>
-                      <textarea
-                        value={leadFormData.message}
-                        onChange={(e) => setLeadFormData(prev => ({ ...prev, message: e.target.value }))}
-                        placeholder="Tell us about your needs..."
-                        className="w-full text-sm h-16 p-2 border border-slate-300 rounded-md resize-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
-                        required
-                      />
-                    </div>
+                                     <form onSubmit={handleLeadFormSubmit} className="p-4 space-y-3">
+                     {Array.isArray(leadFields) && leadFields.map((field) => (
+                       <div key={field.id}>
+                         <label className="text-xs font-medium text-slate-700 mb-1 block">
+                           {field.label}
+                           {field.required && <span className="text-red-500 ml-1">*</span>}
+                         </label>
+                         {field.type === 'textarea' ? (
+                           <textarea
+                             value={leadFormData[field.id as keyof LeadFormData] || ''}
+                             onChange={(e) => setLeadFormData(prev => ({ ...prev, [field.id]: e.target.value }))}
+                             placeholder={field.placeholder}
+                             className="w-full text-sm h-16 p-2 border border-slate-300 rounded-md resize-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
+                             required={field.required}
+                           />
+                         ) : (
+                           <Input
+                             type={field.type}
+                             value={leadFormData[field.id as keyof LeadFormData] || ''}
+                             onChange={(e) => setLeadFormData(prev => ({ ...prev, [field.id]: e.target.value }))}
+                             placeholder={field.placeholder}
+                             className="text-sm h-8"
+                             required={field.required}
+                           />
+                         )}
+                       </div>
+                     ))}
                     
                     <Button
                       type="submit"

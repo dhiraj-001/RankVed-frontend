@@ -17,7 +17,7 @@ export function ChatPreview({ chatbot }: ChatPreviewProps) {
   const chatWindowTheme = chatbot?.chatWindowTheme || 'light';
   const chatWindowAvatar = chatbot?.chatWindowAvatar;
   const chatWidgetIcon = chatbot?.chatWidgetIcon;
-  const suggestionButtons = chatbot?.suggestionButtons || [];
+  const suggestionButtons = Array.isArray(chatbot?.suggestionButtons) ? chatbot.suggestionButtons : [];
   const poweredByText = chatbot?.poweredByText || 'Powered by RankVed';
   
   // Demo CTA button for preview
@@ -213,7 +213,7 @@ export function ChatPreview({ chatbot }: ChatPreviewProps) {
           </div>
 
           {/* Follow-up Buttons - Matching ChatbotEmbed.tsx */}
-          {suggestionButtons.length > 0 && (
+          {Array.isArray(suggestionButtons) && suggestionButtons.length > 0 && (
             <div className="flex flex-wrap gap-2 ml-12 mb-2" style={{ marginTop: '12px', marginBottom: '8px' }}>
               {suggestionButtons.slice(0, 3).map((button: string, index: number) => (
             <button

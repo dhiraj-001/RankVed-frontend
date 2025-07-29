@@ -714,7 +714,7 @@ export default function Appearance() {
         <ChatbotEmbed 
           config={{
             chatbotId: activeChatbot.id,
-            apiUrl: 'http://localhost:3000',
+            apiUrl: import.meta.env.VITE_API_URL || 'http://localhost:3000',
             position: 'bottom-right',
             theme: 'light',
             primaryColor: '#3B82F6',
@@ -727,8 +727,8 @@ export default function Appearance() {
             popupDelay: 3000,
             messageDelay: 1000
           }}
-          domain="localhost"
-          referer="http://localhost:5173"
+          domain={window.location.hostname}
+          referer={window.location.origin}
         />
       )}
     </div>

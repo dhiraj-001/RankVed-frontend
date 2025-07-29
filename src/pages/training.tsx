@@ -65,6 +65,9 @@ export default function Training() {
   const [hasSoundSettingsChanges, setHasSoundSettingsChanges] = useState(false);
   const [hasPopupDelayChanges, setHasPopupDelayChanges] = useState(false);
   const [hasFlowChanges, setHasFlowChanges] = useState(false);
+  
+  // Debounced change detection for training data
+  const [debouncedTrainingData, setDebouncedTrainingData] = useState(trainingData);
 
 
 
@@ -84,11 +87,35 @@ export default function Training() {
     }
   }, [activeChatbot, refetchCustomSounds]);
 
-  // Track training data changes
+  // Debounce training data changes
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedTrainingData(trainingData);
+    }, 300); // 300ms delay
+
+    return () => clearTimeout(timer);
+  }, [trainingData]);
+
+  // Track training data changes with debounced value
   useEffect(() => {
     const originalData = activeChatbot?.plainData || '';
-    setHasTrainingDataChanges(trainingData !== originalData);
-  }, [trainingData, activeChatbot?.plainData]);
+    // Normalize whitespace for comparison to handle edge cases
+    const normalizedTrainingData = debouncedTrainingData.trim();
+    const normalizedOriginalData = originalData.trim();
+    const hasChanges = normalizedTrainingData !== normalizedOriginalData;
+    
+    setHasTrainingDataChanges(hasChanges);
+    console.log('[Training] Training data change detection:', {
+      trainingDataLength: trainingData.length,
+      debouncedTrainingDataLength: debouncedTrainingData.length,
+      originalDataLength: originalData.length,
+      normalizedTrainingDataLength: normalizedTrainingData.length,
+      normalizedOriginalDataLength: normalizedOriginalData.length,
+      hasChanges,
+      trainingDataPreview: trainingData.substring(0, 50) + '...',
+      originalDataPreview: originalData.substring(0, 50) + '...'
+    });
+  }, [debouncedTrainingData, activeChatbot?.plainData]);
 
   // Track contact info changes
   useEffect(() => {
@@ -765,6 +792,7 @@ We serve over 1,000+ companies worldwide and are trusted by industry leaders.`;
                 <Save className="h-4 w-4 mr-2" />
               )}
               {updateChatbot.isPending || processTrainingData.isPending ? 'Saving...' : 'Save All'}
+              {hasTrainingDataChanges && <Badge variant="secondary" className="ml-2 bg-green-100 text-green-700 text-xs">Data Changed</Badge>}
             </Button>
           </div>
         </div>
@@ -787,6 +815,7 @@ We serve over 1,000+ companies worldwide and are trusted by industry leaders.`;
                 <Save className="h-4 w-4 mr-1" />
               )}
               {updateChatbot.isPending || processTrainingData.isPending ? 'Saving...' : 'Save'}
+              {hasTrainingDataChanges && <Badge variant="secondary" className="ml-1 bg-green-100 text-green-700 text-xs">Changed</Badge>}
             </Button>
           </div>
         </div>
@@ -909,6 +938,21 @@ We serve over 1,000+ companies worldwide and are trusted by industry leaders.`;
                       id="trainingData"
                       value={trainingData}
                       onChange={(e) => setTrainingData(e.target.value)}
+                      onPaste={(e) => {
+                        // Force re-evaluation of changes after paste
+                        setTimeout(() => {
+                          const pastedData = e.clipboardData.getData('text');
+                          const newTrainingData = trainingData + pastedData;
+                          const originalData = activeChatbot?.plainData || '';
+                          const hasChanges = newTrainingData.trim() !== originalData.trim();
+                          setHasTrainingDataChanges(hasChanges);
+                          console.log('[Training] Paste detected:', {
+                            pastedDataLength: pastedData.length,
+                            newTrainingDataLength: newTrainingData.length,
+                            hasChanges
+                          });
+                        }, 0);
+                      }}
                       placeholder="Enter your training content here..."
                       rows={16}
                       className="font-mono text-sm"

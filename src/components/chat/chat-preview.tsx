@@ -127,7 +127,7 @@ export function ChatPreview({ chatbot }: ChatPreviewProps) {
               />
             ) : null}
             <span style={{ fontWeight: '600' }}>{title}</span>
-          </div>
+              </div>
           <div className="flex items-center gap-2">
             <button
               style={{
@@ -216,7 +216,7 @@ export function ChatPreview({ chatbot }: ChatPreviewProps) {
           {suggestionButtons.length > 0 && (
             <div className="flex flex-wrap gap-2 ml-12 mb-2" style={{ marginTop: '12px', marginBottom: '8px' }}>
               {suggestionButtons.slice(0, 3).map((button: string, index: number) => (
-                <button
+            <button
                   key={index}
                   className="rounded-full transition-all duration-200"
                   style={{
@@ -477,7 +477,7 @@ export function ChatPreview({ chatbot }: ChatPreviewProps) {
             >
               {poweredByText}
             </span>
-          </div>
+        </div>
         </div>
       </div>
     </div>

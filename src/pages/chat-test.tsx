@@ -1,10 +1,11 @@
 import { useState, useRef, useEffect } from 'react';
-import { Send, Bot, Loader2, ExternalLink } from 'lucide-react';
+import { Send, Bot, Loader2, ExternalLink, User, X, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
+import { Card, CardContent } from '@/components/ui/card';
 
 interface FollowUpButton {
   text: string;
@@ -30,6 +31,14 @@ interface Message {
   followUpButtons?: FollowUpButton[];
   ctaButton?: CtaButton;
   lead?: boolean; // Flag to indicate if lead form should be shown
+}
+
+interface LeadFormData {
+  name: string;
+  email: string;
+  phone: string;
+  company: string;
+  message: string;
 }
 
 function isValidEmail(text: string) {
@@ -61,6 +70,15 @@ export default function ChatTest() {
   const [isLoading, setIsLoading] = useState(false);
   const [awaitingContactInfo, setAwaitingContactInfo] = useState<null | { field: string }>(null);
   const [ctaLoading, setCtaLoading] = useState<string | null>(null);
+  const [showLeadForm, setShowLeadForm] = useState(false);
+  const [leadFormData, setLeadFormData] = useState<LeadFormData>({
+    name: '',
+    email: '',
+    phone: '',
+    company: '',
+    message: ''
+  });
+  const [isSubmittingLead, setIsSubmittingLead] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const apiUrl = import.meta.env.VITE_API_URL || '';
   const chatbotId = getChatbotIdFromUrl();
@@ -76,17 +94,17 @@ export default function ChatTest() {
         });
         const data = await response.json();
         const bot: BotResponse = data.intent;
-                  setMessages([
-            {
-              id: 'welcome',
-              content: bot.message_text,
-              sender: 'bot',
-              timestamp: new Date(),
-              followUpButtons: bot.follow_up_buttons,
-              ctaButton: bot.cta_button,
-              lead: bot.lead,
-            }
-          ]);
+        setMessages([
+          {
+            id: 'welcome',
+            content: bot.message_text,
+            sender: 'bot',
+            timestamp: new Date(),
+            followUpButtons: bot.follow_up_buttons,
+            ctaButton: bot.cta_button,
+            lead: bot.lead,
+          }
+        ]);
         if (bot.action_collect_contact_info && bot.requested_contact_field) {
           setAwaitingContactInfo({ field: bot.requested_contact_field });
         } else {
@@ -103,7 +121,7 @@ export default function ChatTest() {
         ]);
       }
     })();
-  }, [apiUrl, chatbotId]); // Removed messages.length from dependencies
+  }, [apiUrl, chatbotId]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -236,6 +254,29 @@ export default function ChatTest() {
     }
   };
 
+  const handleLeadFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmittingLead(true);
+    
+    // Simulate form submission
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    
+    // Add success message
+    setMessages(prev => [
+      ...prev,
+      {
+        id: `${Date.now()}-bot`,
+        content: "Thank you! We've received your information and will get back to you soon. Is there anything else I can help you with?",
+        sender: 'bot',
+        timestamp: new Date(),
+      }
+    ]);
+    
+    setShowLeadForm(false);
+    setLeadFormData({ name: '', email: '', phone: '', company: '', message: '' });
+    setIsSubmittingLead(false);
+  };
+
   return (
     <div className="h-screen flex flex-col bg-gradient-to-br from-blue-50 to-white relative">
       {/* Chat Header */}
@@ -294,14 +335,16 @@ export default function ChatTest() {
                         <div key={index}>{line}{index < message.content.split('\n').length - 1 && <br />}</div>
                       ))}
                 </div>
+                
                 {/* Follow-up buttons */}
                 {message.followUpButtons && message.followUpButtons.length > 0 && (
-                  <div className="mt-4 flex flex-col gap-2">
+                  <div className="mt-4 space-y-2">
                     {message.followUpButtons.map((btn, i) => (
                       <Button
                         key={i}
                         variant="outline"
-                        className="w-full text-left"
+                        size="sm"
+                        className="w-full text-left justify-start bg-white hover:bg-blue-50 border-blue-200 hover:border-blue-300 text-blue-700 hover:text-blue-800 transition-all duration-200 rounded-xl px-4 py-2.5 text-sm font-medium"
                         onClick={() => handleFollowUp(btn)}
                       >
                         {btn.text}
@@ -309,12 +352,13 @@ export default function ChatTest() {
                     ))}
                   </div>
                 )}
+                
                 {/* CTA button */}
                 {message.ctaButton && (
                   <div className="mt-4">
                     <Button
                       variant="default"
-                      className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-base font-semibold py-3 rounded-xl shadow-lg transition-all"
+                      className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white text-sm font-semibold py-3 rounded-xl shadow-lg transition-all duration-200 hover:shadow-xl"
                       onClick={async () => {
                         setCtaLoading(message.id);
                         setTimeout(() => {
@@ -325,7 +369,7 @@ export default function ChatTest() {
                       disabled={ctaLoading === message.id}
                     >
                       {ctaLoading === message.id ? (
-                        <Loader2 className="h-5 w-5 animate-spin" />
+                        <Loader2 className="h-4 w-4 animate-spin" />
                       ) : (
                         <>
                           {message.ctaButton.text}
@@ -335,13 +379,146 @@ export default function ChatTest() {
                     </Button>
                   </div>
                 )}
+                
+                {/* Lead form trigger */}
+                {message.lead && !showLeadForm && (
+                  <div className="mt-4">
+                    <Card className="border-blue-200 bg-blue-50/50">
+                      <CardContent className="p-4">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-blue-100 rounded-full">
+                            <User className="h-4 w-4 text-blue-600" />
+                          </div>
+                          <div className="flex-1">
+                            <h4 className="font-semibold text-blue-900 text-sm">Get in Touch</h4>
+                            <p className="text-blue-700 text-xs">Share your details for personalized assistance</p>
+                          </div>
+                          <Button
+                            size="sm"
+                            onClick={() => setShowLeadForm(true)}
+                            className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1.5 rounded-lg"
+                          >
+                            Fill Form
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                )}
+                
                 <div className="text-xs text-blue-200 mt-2 text-right font-medium">
                   {message.timestamp instanceof Date ? message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
                 </div>
               </div>
-              
             </div>
           ))}
+          
+          {/* Lead Form */}
+          {showLeadForm && (
+            <div className="flex justify-start items-start space-x-2 animate-fadeInLeft">
+              <Avatar className="h-8 w-8 mr-2 shadow-sm">
+                <AvatarFallback style={{ backgroundColor: '#6366F1' }} className="text-white">
+                  <Bot className="h-4 w-4" />
+                </AvatarFallback>
+              </Avatar>
+              <Card className="max-w-md bg-white border-blue-200 shadow-lg">
+                <CardContent className="p-0">
+                  <div className="p-4 border-b border-blue-100 bg-blue-50/30">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <User className="h-4 w-4 text-blue-600" />
+                        <h4 className="font-semibold text-blue-900">Contact Information</h4>
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => setShowLeadForm(false)}
+                        className="h-6 w-6 p-0 hover:bg-blue-100"
+                      >
+                        <X className="h-3 w-3 text-blue-600" />
+                      </Button>
+                    </div>
+                  </div>
+                  
+                  <form onSubmit={handleLeadFormSubmit} className="p-4 space-y-3">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-xs font-medium text-slate-700 mb-1 block">Name</label>
+                        <Input
+                          value={leadFormData.name}
+                          onChange={(e) => setLeadFormData(prev => ({ ...prev, name: e.target.value }))}
+                          placeholder="Your name"
+                          className="text-sm h-8"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-medium text-slate-700 mb-1 block">Company</label>
+                        <Input
+                          value={leadFormData.company}
+                          onChange={(e) => setLeadFormData(prev => ({ ...prev, company: e.target.value }))}
+                          placeholder="Company"
+                          className="text-sm h-8"
+                        />
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <label className="text-xs font-medium text-slate-700 mb-1 block">Email</label>
+                      <Input
+                        type="email"
+                        value={leadFormData.email}
+                        onChange={(e) => setLeadFormData(prev => ({ ...prev, email: e.target.value }))}
+                        placeholder="your@email.com"
+                        className="text-sm h-8"
+                        required
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="text-xs font-medium text-slate-700 mb-1 block">Phone</label>
+                      <Input
+                        value={leadFormData.phone}
+                        onChange={(e) => setLeadFormData(prev => ({ ...prev, phone: e.target.value }))}
+                        placeholder="+1 (555) 123-4567"
+                        className="text-sm h-8"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="text-xs font-medium text-slate-700 mb-1 block">Message</label>
+                      <textarea
+                        value={leadFormData.message}
+                        onChange={(e) => setLeadFormData(prev => ({ ...prev, message: e.target.value }))}
+                        placeholder="Tell us about your needs..."
+                        className="w-full text-sm h-16 p-2 border border-slate-300 rounded-md resize-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
+                        required
+                      />
+                    </div>
+                    
+                    <Button
+                      type="submit"
+                      disabled={isSubmittingLead}
+                      className="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 rounded-lg transition-all duration-200"
+                    >
+                      {isSubmittingLead ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Submitting...
+                        </>
+                      ) : (
+                        <>
+                          <Check className="h-4 w-4 mr-2" />
+                          Submit Information
+                        </>
+                      )}
+                    </Button>
+                  </form>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+          
           {isLoading && (
             <div className="flex justify-start items-end space-x-2 animate-fadeInLeft">
               <Avatar className="h-8 w-8 mr-2 shadow-sm">
@@ -363,7 +540,7 @@ export default function ChatTest() {
       </ScrollArea>
 
       {/* Chat Input */}
-      <div className="sticky bottom-0 z-10 px-4 pb-4 pt-2 bg-gradient-to-t from-white/90 to-white/60  shadow-2xl">
+      <div className="sticky bottom-0 z-10 px-4 pb-4 pt-2 bg-gradient-to-t from-white/90 to-white/60 shadow-2xl">
         <div className="flex gap-2 items-center max-w-2xl mx-auto">
           <Input
             value={input}

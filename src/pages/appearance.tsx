@@ -12,6 +12,7 @@ import { useUpdateChatbot, useChatbot } from '@/hooks/use-chatbots';
 import {  compressAndConvertToDataURI } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { Menu } from '@headlessui/react';
+import ChatbotEmbed from '@/components/chatbot-embed/ChatbotEmbed';
 
 
 export default function Appearance() {
@@ -21,10 +22,7 @@ export default function Appearance() {
   const { data: fetchedChatbot, refetch } = useChatbot(activeChatbot?.id || "");
   const [activeTab, setActiveTab] = useState('chatbot');
 
-  // Debug: Log activeChatbot and fetchedChatbot
-  // console.log('activeChatbot:', activeChatbot);
-  // console.log('fetchedChatbot:', fetchedChatbot);
-  // console.log('useChatbot query key:', ['/api/chatbots', activeChatbot?.id || ""]);
+
 
   // Debug: Log the actual API response
   // useEffect(() => {
@@ -712,6 +710,27 @@ export default function Appearance() {
           </div>
         </Tabs>
       </div>
+      {activeChatbot?.id && (
+        <ChatbotEmbed 
+          config={{
+            chatbotId: activeChatbot.id,
+            apiUrl: 'http://localhost:3000',
+            position: 'bottom-right',
+            theme: 'light',
+            primaryColor: '#3B82F6',
+            zIndex: 9999,
+            autoOpen: false,
+            greetingMessage: 'Hello! How can I help you?',
+            showAvatar: true,
+            avatarUrl: "",
+            soundEnabled: true,
+            popupDelay: 3000,
+            messageDelay: 1000
+          }}
+          domain="localhost"
+          referer="http://localhost:5173"
+        />
+      )}
     </div>
   );
 }

@@ -14,6 +14,10 @@ interface Message {
   content: string;
   sender: 'user' | 'bot';
   timestamp: Date;
+  followUpButtons?: Array<{ text: string; payload: string | object }>;
+  ctaButton?: { text: string; link: string };
+  shouldShowLead?: boolean;
+  intentId?: string;
 }
 
 interface ChatWindowProps {
@@ -83,8 +87,10 @@ export function ChatWindow({ chatbot, onClose, className }: ChatWindowProps) {
       console.log(`[${requestId}] ✅ API response received:`, {
         responseLength: response.response?.length || 0,
         responseType: response.type,
-        shouldCollectLead: response.shouldCollectLead,
-        hasTriggeredFlowNode: !!response.triggeredFlowNode
+        shouldShowLead: response.shouldShowLead,
+        hasFollowUpButtons: response.followUpButtons?.length > 0,
+        hasCtaButton: !!response.ctaButton,
+        intentId: response.intentId
       });
 
       const botMessage: Message = {
@@ -92,6 +98,11 @@ export function ChatWindow({ chatbot, onClose, className }: ChatWindowProps) {
         content: response.response,
         sender: 'bot',
         timestamp: new Date(),
+        // Add new fields for structured response
+        followUpButtons: response.followUpButtons,
+        ctaButton: response.ctaButton,
+        shouldShowLead: response.shouldShowLead,
+        intentId: response.intentId
       };
 
       console.log(`[${requestId}] 📝 Adding bot message to UI:`, {
@@ -218,7 +229,47 @@ export function ChatWindow({ chatbot, onClose, className }: ChatWindowProps) {
                 )}
                 style={message.sender === 'user' ? { backgroundColor: chatbot.primaryColor } : {}}
               >
-                {message.content}
+                <div>{message.content}</div>
+                
+                {/* Follow-up buttons for bot messages */}
+                {message.sender === 'bot' && message.followUpButtons && message.followUpButtons.length > 0 && (
+                  <div className="mt-3 space-y-2">
+                    {message.followUpButtons.map((button, index) => (
+                      <Button
+                        key={index}
+                        variant="outline"
+                        size="sm"
+                        className="w-full text-left justify-start text-xs"
+                        onClick={() => {
+                          if (typeof button.payload === 'string') {
+                            setInput(button.text);
+                          } else if (button.payload && typeof button.payload === 'object' && 'link' in button.payload) {
+                            const link = (button.payload as any).link;
+                            if (typeof link === 'string') {
+                              window.open(link, '_blank');
+                            }
+                          }
+                        }}
+                      >
+                        {button.text}
+                      </Button>
+                    ))}
+                  </div>
+                )}
+                
+                {/* CTA button for bot messages */}
+                {message.sender === 'bot' && message.ctaButton && (
+                  <div className="mt-3">
+                    <Button
+                      onClick={() => window.open(message.ctaButton!.link, '_blank')}
+                      size="sm"
+                      className="w-full text-sm"
+                      style={{ backgroundColor: chatbot.primaryColor }}
+                    >
+                      {message.ctaButton.text}
+                    </Button>
+                  </div>
+                )}
               </div>
             </div>
           ))}

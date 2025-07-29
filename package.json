@@ -6,7 +6,11 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "build:chatbot": "webpack --config webpack.chatbot.config.js",
+    "build:loader": "node build-loader.js",
+    "build:all": "npm run build:chatbot && npm run build:loader",
+    "preview": "vite preview",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
   },
   "dependencies": {
     "@clerk/clerk-react": "^5.35.3",
@@ -45,6 +49,7 @@
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
     "date-fns": "^3.6.0",
+    "dotenv": "^17.2.1",
     "embla-carousel-react": "^8.6.0",
     "framer-motion": "^11.13.1",
     "input-otp": "^1.4.2",
@@ -76,7 +81,11 @@
     "autoprefixer": "^10.4.20",
     "postcss": "^8.4.47",
     "tailwindcss": "^3.4.17",
+    "terser-webpack-plugin": "^5.3.14",
+    "ts-loader": "^9.5.2",
     "typescript": "5.6.3",
-    "vite": "^5.4.14"
+    "vite": "^5.4.14",
+    "webpack": "^5.100.2",
+    "webpack-cli": "^6.0.1"
   }
 }

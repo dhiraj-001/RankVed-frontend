@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RankVed Chatbot Embed Demo</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f8fafc;
+            color: #1f2937;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .header h1 {
+            color: #3b82f6;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            color: #6b7280;
+            font-size: 18px;
+        }
+        
+        .demo-section {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        .demo-section h2 {
+            color: #1f2937;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .demo-section h2::before {
+            content: '';
+            width: 4px;
+            height: 24px;
+            background: #3b82f6;
+            border-radius: 2px;
+        }
+        
+        .code-block {
+            background: #1f2937;
+            color: #f9fafb;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 20px 0;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        .iframe-demo {
+            border: 2px dashed #d1d5db;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            background: #f9fafb;
+            margin: 20px 0;
+        }
+        
+        .config-form {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .form-group label {
+            font-weight: 500;
+            margin-bottom: 5px;
+            color: #374151;
+        }
+        
+        .form-group input, .form-group select {
+            padding: 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .btn:hover {
+            background: #2563eb;
+            transform: translateY(-1px);
+        }
+        
+        .btn-secondary {
+            background: #6b7280;
+        }
+        
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+        
+        .status {
+            padding: 10px;
+            border-radius: 6px;
+            margin: 10px 0;
+            font-weight: 500;
+        }
+        
+        .status.success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+        
+        .status.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+        }
+        
+        .status.info {
+            background: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #93c5fd;
+        }
+        
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #e5e7eb;
+            margin-bottom: 20px;
+        }
+        
+        .tab {
+            padding: 12px 24px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            color: #6b7280;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s ease;
+        }
+        
+        .tab.active {
+            color: #3b82f6;
+            border-bottom-color: #3b82f6;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .feature {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #3b82f6;
+        }
+        
+        .feature h3 {
+            margin: 0 0 10px 0;
+            color: #1f2937;
+        }
+        
+        .feature p {
+            margin: 0;
+            color: #6b7280;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>RankVed Chatbot Embed Demo</h1>
+            <p>Test both iframe and React embedding methods for the RankVed chatbot</p>
+        </div>
+
+        <div class="features">
+            <div class="feature">
+                <h3>🚀 Easy Integration</h3>
+                <p>Simple copy-paste code to embed the chatbot on any website</p>
+            </div>
+            <div class="feature">
+                <h3>🎨 Fully Customizable</h3>
+                <p>Customize colors, themes, positions, and behavior to match your brand</p>
+            </div>
+            <div class="feature">
+                <h3>📱 Mobile Responsive</h3>
+                <p>Automatically adapts to different screen sizes and devices</p>
+            </div>
+            <div class="feature">
+                <h3>🔒 Secure & Isolated</h3>
+                <p>Domain validation and CSS isolation prevent conflicts</p>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('iframe')">Iframe Method</button>
+                <button class="tab" onclick="switchTab('react')">React Method</button>
+                <button class="tab" onclick="switchTab('config')">Configuration</button>
+            </div>
+
+            <!-- Iframe Tab -->
+            <div id="iframe-tab" class="tab-content active">
+                <h2>Iframe Embedding</h2>
+                <p>Simple HTML iframe for basic integration. Perfect for quick setup and testing.</p>
+                
+                <div class="code-block">
+&lt;iframe 
+    src="https://your-frontend-domain.com/chat-embed?chatbotId=YOUR_CHATBOT_ID&domain=your-website.com"
+    style="
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        width: 380px;
+        height: 600px;
+        border: none;
+        border-radius: 16px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+        z-index: 9999;
+        background: transparent;
+    "
+    allow="microphone"
+    title="RankVed Chatbot"&gt;
+&lt;/iframe&gt;
+                </div>
+
+                <div class="iframe-demo">
+                    <h3>Iframe Demo</h3>
+                    <p>Click the button below to test the iframe method:</p>
+                    <button class="btn" onclick="testIframe()">Test Iframe Embed</button>
+                    <div id="iframe-status"></div>
+                </div>
+            </div>
+
+            <!-- React Tab -->
+            <div id="react-tab" class="tab-content">
+                <h2>React Embedding</h2>
+                <p>Advanced JavaScript loader for full customization and better performance.</p>
+                
+                <div class="code-block">
+&lt;script&gt;
+window.RankVedChatbotConfig = {
+    chatbotId: 'YOUR_CHATBOT_ID',
+    apiUrl: 'https://your-backend-domain.com',
+    frontendUrl: 'https://your-frontend-domain.com',
+    theme: 'light',
+    primaryColor: '#3B82F6',
+    position: 'bottom-right'
+};
+&lt;/script&gt;
+
+&lt;script src="https://your-frontend-domain.com/chatbot-loader.js"&gt;&lt;/script&gt;
+                </div>
+
+                <div class="iframe-demo">
+                    <h3>React Demo</h3>
+                    <p>Click the button below to test the React method:</p>
+                    <button class="btn" onclick="testReact()">Test React Embed</button>
+                    <button class="btn btn-secondary" onclick="removeReact()">Remove React Chatbot</button>
+                    <div id="react-status"></div>
+                </div>
+            </div>
+
+            <!-- Config Tab -->
+            <div id="config-tab" class="tab-content">
+                <h2>Configuration Options</h2>
+                <p>Customize the chatbot appearance and behavior with these options.</p>
+                
+                <div class="config-form">
+                    <div class="form-group">
+                        <label for="chatbotId">Chatbot ID</label>
+                        <input type="text" id="chatbotId" value="demo" placeholder="Enter your chatbot ID">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="theme">Theme</label>
+                        <select id="theme">
+                            <option value="light">Light</option>
+                            <option value="dark">Dark</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="position">Position</label>
+                        <select id="position">
+                            <option value="bottom-right">Bottom Right</option>
+                            <option value="bottom-left">Bottom Left</option>
+                            <option value="top-right">Top Right</option>
+                            <option value="top-left">Top Left</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="primaryColor">Primary Color</label>
+                        <input type="color" id="primaryColor" value="#3b82f6">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="popupDelay">Popup Delay (ms)</label>
+                        <input type="number" id="popupDelay" value="3000" min="0" max="10000">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="autoOpen">Auto Open</label>
+                        <select id="autoOpen">
+                            <option value="false">No</option>
+                            <option value="true">Yes</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <button class="btn" onclick="applyConfig()">Apply Configuration</button>
+                <div id="config-status"></div>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h2>Implementation Guide</h2>
+            <p>For detailed implementation instructions, see the <a href="EMBED_IMPLEMENTATION_GUIDE.md" target="_blank">Implementation Guide</a>.</p>
+            
+            <div class="code-block">
+// Quick Start - Add this to your website
+
+// 1. Configure the chatbot
+&lt;script&gt;
+window.RankVedChatbotConfig = {
+    chatbotId: 'your-chatbot-id',
+    apiUrl: 'https://your-backend-domain.com',
+    frontendUrl: 'https://your-frontend-domain.com'
+};
+&lt;/script&gt;
+
+// 2. Load the chatbot
+&lt;script src="https://your-frontend-domain.com/chatbot-loader.js"&gt;&lt;/script&gt;
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab switching
+        function switchTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            document.getElementById(tabName + '-tab').classList.add('active');
+            
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+        }
+
+        // Test iframe method
+        function testIframe() {
+            const status = document.getElementById('iframe-status');
+            const chatbotId = document.getElementById('chatbotId').value;
+            
+            // Create iframe
+            const iframe = document.createElement('iframe');
+            iframe.src = `https://localhost:5173/chat-embed?chatbotId=${chatbotId}&domain=localhost`;
+            iframe.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                width: 380px;
+                height: 600px;
+                border: none;
+                border-radius: 16px;
+                box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+                z-index: 9999;
+                background: transparent;
+            `;
+            iframe.allow = 'microphone';
+            iframe.title = 'RankVed Chatbot';
+            iframe.id = 'test-iframe';
+            
+            // Remove existing iframe
+            const existingIframe = document.getElementById('test-iframe');
+            if (existingIframe) {
+                existingIframe.remove();
+            }
+            
+            document.body.appendChild(iframe);
+            
+            status.innerHTML = '<div class="status success">✅ Iframe chatbot loaded successfully!</div>';
+        }
+
+        // Test React method
+        function testReact() {
+            const status = document.getElementById('react-status');
+            const chatbotId = document.getElementById('chatbotId').value;
+            const theme = document.getElementById('theme').value;
+            const position = document.getElementById('position').value;
+            const primaryColor = document.getElementById('primaryColor').value;
+            const popupDelay = document.getElementById('popupDelay').value;
+            const autoOpen = document.getElementById('autoOpen').value;
+            
+            // Configure chatbot
+            window.RankVedChatbotConfig = {
+                chatbotId: chatbotId,
+                apiUrl: 'http://localhost:3000',
+                frontendUrl: 'http://localhost:5173',
+                theme: theme,
+                position: position,
+                primaryColor: primaryColor,
+                popupDelay: parseInt(popupDelay),
+                autoOpen: autoOpen === 'true',
+                debug: true
+            };
+            
+            // Load chatbot
+            const script = document.createElement('script');
+            script.src = 'http://localhost:5173/chatbot-loader.js';
+            script.onload = () => {
+                status.innerHTML = '<div class="status success">✅ React chatbot loaded successfully!</div>';
+            };
+            script.onerror = () => {
+                status.innerHTML = '<div class="status error">❌ Failed to load React chatbot</div>';
+            };
+            
+            document.head.appendChild(script);
+        }
+
+        // Remove React chatbot
+        function removeReact() {
+            const status = document.getElementById('react-status');
+            
+            // Remove chatbot container
+            const container = document.getElementById('rankved-chatbot-container');
+            if (container) {
+                container.remove();
+            }
+            
+            // Clear config
+            delete window.RankVedChatbotConfig;
+            
+            status.innerHTML = '<div class="status info">ℹ️ React chatbot removed</div>';
+        }
+
+        // Apply configuration
+        function applyConfig() {
+            const status = document.getElementById('config-status');
+            status.innerHTML = '<div class="status success">✅ Configuration applied! Test the chatbot to see changes.</div>';
+        }
+
+        // Initialize with default config
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set default values
+            document.getElementById('chatbotId').value = 'demo';
+            document.getElementById('theme').value = 'light';
+            document.getElementById('position').value = 'bottom-right';
+            document.getElementById('primaryColor').value = '#3b82f6';
+            document.getElementById('popupDelay').value = '3000';
+            document.getElementById('autoOpen').value = 'false';
+        });
+    </script>
+</body>
+</html> 

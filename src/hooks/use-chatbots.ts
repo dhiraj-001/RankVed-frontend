@@ -68,8 +68,12 @@ export function useDeleteChatbot() {
 
 export function useChatResponse() {
   return useMutation({
-    mutationFn: async ({ chatbotId, message }: { chatbotId: string; message: string }) => {
-      const response = await apiRequest('POST', `/api/chat/${chatbotId}/message`, { message });
+    mutationFn: async ({ chatbotId, message, sessionId }: { chatbotId: string; message: string; sessionId?: string }) => {
+      const response = await apiRequest('POST', `/api/chat`, { 
+        message, 
+        chatbotId,
+        sessionId: sessionId || localStorage.getItem('chat_session_id') || undefined
+      });
       return response.json();
     },
   });

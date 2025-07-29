@@ -8,7 +8,6 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useApp } from '@/contexts/app-context';
-import { generateEmbedCode } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
@@ -29,8 +28,9 @@ export default function Embed() {
   const [activeTab, setActiveTab] = useState('script');
 
   const tabOptions = [
-    { value: 'script', label: 'HTML Script' },
-    { value: 'recommended-iframe', label: 'Recommended Iframe' },
+   
+    { value: 'script', label: 'Full Config' },
+    { value: 'iframe', label: 'Iframe' },
     { value: 'react', label: 'React Component' }
   ];
 
@@ -49,61 +49,58 @@ export default function Embed() {
     );
   }
 
-  const embedCode = generateEmbedCode(activeChatbot.id);
-
-  // Use backend URL from env for iframe src and script API
+  // Use backend URL from env for API endpoints
   const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
   const frontendUrl = window.location.origin;
 
-  // Updated iframe embed code using VITE_API_URL
+  // Generate simple embed code
+  const embedCode = `<script>
+window.RankVedChatbotConfig = {
+    chatbotId: '${activeChatbot.id}',
+    apiUrl: '${backendUrl}'
+};
+</script>
+<script src="${frontendUrl}/chatbot-loader.js"></script>`;
 
-  // Improved React component for multi-widget support and cleanup, without duplicate checks
-  // This is a string for user copy-paste, not for direct execution in this file
-  const reactComponent = `import React, { useRef, useEffect } from 'react';
 
-const ChatWidget = ({ chatbotId, style }) => {
-  const containerIdRef = useRef('chatbot-widget-container-' + Math.random().toString(36).substr(2, 9));
+  // React component for the new optimized system
+  const reactComponent = `import React, { useEffect } from 'react';
 
+const ChatWidget = ({ chatbotId, config = {} }) => {
   useEffect(() => {
-    window.CHATBOT_CONFIG = {
+    // Set configuration
+    window.RankVedChatbotConfig = {
       chatbotId,
-      apiUrl: '${backendUrl}'
+      apiUrl: '${backendUrl}',
+      ...config
     };
-
-    // Load script and style only once globally
-    if (!window.__rankvedChatEmbedScriptLoaded) {
-      const script = document.createElement('script');
-      script.src = '${frontendUrl}/chat-embed.js';
-      script.async = true;
-      document.head.appendChild(script);
-
-      const link = document.createElement('link');
-      link.rel = 'stylesheet';
-      link.href = '${frontendUrl}/chat-embed.css';
-      document.head.appendChild(link);
-
-      window.__rankvedChatEmbedScriptLoaded = true;
-    }
-
-    // Do not remove script or style on unmount to avoid duplicates
-
+    
+    // Load chatbot script
+    const script = document.createElement('script');
+    script.src = '${frontendUrl}/chatbot-loader.js';
+    document.head.appendChild(script);
+    
     return () => {
-      // Only clean up CHATBOT_CONFIG on unmount
-      delete window.CHATBOT_CONFIG;
+      // Cleanup if needed
+      const existingScript = document.querySelector('script[src*="chatbot-loader.js"]');
+      if (existingScript) {
+        existingScript.remove();
+      }
     };
-  }, [chatbotId]);
+  }, [chatbotId, config]);
 
-  return <div id={containerIdRef.current} style={style} />;
+  return null; // This component doesn't render anything visible
 };
 
-export default ChatWidget;
+export default ChatWidget;`;
 
-// Usage:
-// <ChatWidget chatbotId='${activeChatbot.id}' style={{ position: 'fixed', bottom: 20, right: 20, zIndex: 1000 }} />
-`;
-
-  // New recommended iframe embed code using /api/iframe/:chatbotId
-  const recommendedIframeEmbed = `<iframe\n  src=\"${backendUrl}/api/iframe/${activeChatbot.id}\"\n  width=\"500\"\n  height=\"600\"\n  frameborder=\"0\"\n  allow=\"microphone; clipboard-write\"\n  loading=\"lazy\"\n  title=\"Chatbot\"\n  style=\"position: fixed; bottom: 20px; right: 20px; z-index: 1000; border-radius: 12px; background: #fff;\">\n</iframe>`;
+  // Iframe embed code
+  const iframeEmbedCode = `<iframe
+  src="${backendUrl}/chat/${activeChatbot.id}"
+  style="position: fixed; bottom: 20px; right: 20px; width: 380px; height: 600px; border: none; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); z-index: 9999;"
+  allow="microphone"
+  title="RankVed Chatbot">
+</iframe>`;
 
   const copyToClipboard = async (text: string, type: string) => {
     try {
@@ -259,22 +256,23 @@ export default ChatWidget;
 
                 {/* Desktop Tabs */}
                 <TabsList className="hidden sm:flex w-full bg-white border border-gray-200 rounded-lg p-1 shadow-sm transition-all duration-500 ease-in-out">
+                  
                   <TabsTrigger 
                     value="script" 
                     className="flex-1 text-gray-600 hover:text-gray-800 focus:text-gray-800 font-medium py-3 px-4 rounded-md data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 data-[state=active]:border-b-2 data-[state=active]:border-blue-500 transition-all duration-500 ease-in-out hover:bg-gray-50"
                   >
                     <div className="flex items-center space-x-2 transition-all duration-500 ease-in-out">
                       <Code className="h-4 w-4 transition-transform duration-500 ease-in-out data-[state=active]:scale-110" />
-                      <span className="transition-all duration-500 ease-in-out">HTML Script</span>
+                      <span className="transition-all duration-500 ease-in-out">Full Config</span>
                     </div>
                   </TabsTrigger>
                   <TabsTrigger 
-                    value="recommended-iframe" 
+                    value="iframe" 
                     className="flex-1 text-gray-600 hover:text-gray-800 focus:text-gray-800 font-medium py-3 px-4 rounded-md data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 data-[state=active]:border-b-2 data-[state=active]:border-blue-500 transition-all duration-500 ease-in-out hover:bg-gray-50"
                   >
                     <div className="flex items-center space-x-2 transition-all duration-500 ease-in-out">
                       <Eye className="h-4 w-4 transition-transform duration-500 ease-in-out data-[state=active]:scale-110" />
-                      <span className="transition-all duration-500 ease-in-out">Recommended Iframe</span>
+                      <span className="transition-all duration-500 ease-in-out">Iframe</span>
                     </div>
                   </TabsTrigger>
                   <TabsTrigger 
@@ -283,16 +281,18 @@ export default ChatWidget;
                   >
                     <div className="flex items-center space-x-2 transition-all duration-500 ease-in-out">
                       <Zap className="h-4 w-4 transition-transform duration-500 ease-in-out data-[state=active]:scale-110" />
-                      <span className="transition-all duration-500 ease-in-out">React Component</span>
+                      <span className="transition-all duration-500 ease-in-out">React</span>
                     </div>
                   </TabsTrigger>
                 </TabsList>
 
+              
+            
                 {/* Script Tab */}
                 <TabsContent value="script" className="space-y-4 animate-in fade-in duration-700 ease-in-out">
                   <div>
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
-                      <h3 className="font-medium text-slate-900">HTML Script Tag (Recommended)</h3>
+                      <h3 className="font-medium text-slate-900">Full Configuration Embed</h3>
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <Button
@@ -320,7 +320,7 @@ export default ChatWidget;
                       className="font-mono text-xs sm:text-sm bg-slate-50 border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
                     />
                     <p className="text-xs sm:text-sm text-slate-600 mt-2">
-                      Add this code before the closing &lt;/body&gt; tag on your website. This method provides the best performance and user experience.
+                      Full configuration with all customization options. Add this code before the closing &lt;/body&gt; tag on your website.
                     </p>
                   </div>
                 </TabsContent>
@@ -362,39 +362,39 @@ export default ChatWidget;
                   </div>
                 </TabsContent>
 
-                {/* Recommended Iframe Tab */}
-                <TabsContent value="recommended-iframe" className="space-y-4 animate-in fade-in duration-700 ease-in-out">
+                {/* Iframe Tab */}
+                <TabsContent value="iframe" className="space-y-4 animate-in fade-in duration-700 ease-in-out">
                   <div>
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
-                      <h3 className="font-medium text-slate-900">Recommended HTML Iframe (Production)</h3>
+                      <h3 className="font-medium text-slate-900">Iframe Embed</h3>
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => copyToClipboard(recommendedIframeEmbed, 'recommended-iframe')}
-                            aria-label="Copy recommended iframe code"
+                            onClick={() => copyToClipboard(iframeEmbedCode, 'iframe')}
+                            aria-label="Copy iframe code"
                             className="transition-all border-blue-200 text-blue-700 hover:bg-blue-50"
                           >
-                            {copiedType === 'recommended-iframe' ? (
+                            {copiedType === 'iframe' ? (
                               <CheckCircle className="h-4 w-4 mr-2 text-green-600 animate-bounce" />
                             ) : (
                               <Copy className="h-4 w-4 mr-2" />
                             )}
-                            {copiedType === 'recommended-iframe' ? 'Copied!' : 'Copy Code'}
+                            {copiedType === 'iframe' ? 'Copied!' : 'Copy Code'}
                           </Button>
                         </TooltipTrigger>
-                        <TooltipContent>Copy Recommended Iframe Code</TooltipContent>
+                        <TooltipContent>Copy Iframe Code</TooltipContent>
                       </Tooltip>
                     </div>
                     <Textarea
-                      value={recommendedIframeEmbed}
+                      value={iframeEmbedCode}
                       readOnly
                       rows={8}
                       className="font-mono text-xs sm:text-sm bg-slate-50 border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 resize-none"
                     />
                     <p className="text-xs sm:text-sm text-slate-600 mt-2">
-                      This is the recommended way to embed your chatbot in production. It loads a minimal, robust HTML page for the widget.
+                      Embed the chatbot as an iframe. This method provides complete isolation but may have some limitations with styling.
                     </p>
                   </div>
                 </TabsContent>

@@ -1095,8 +1095,8 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
           right: 4px;
           top: 50%;
           transform: translateY(-50%);
-          width: 38px;
-          height: 38px;
+          width: 32px;
+          height: 32px;
           background: ${primaryColor};
           color: white;
           border: none;
@@ -1118,8 +1118,8 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
         }
         @media (min-width: 1024px) {
           .rankved-chatbot .chat-input button {
-            width: 40px;
-            height: 40px;
+            width: 36px;
+            height: 36px;
             right: 4px;
           }
         }

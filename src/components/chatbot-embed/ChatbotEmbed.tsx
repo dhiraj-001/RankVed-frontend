@@ -114,7 +114,7 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
 
   // Initialize audio for notification sounds
   useEffect(() => {
-    if (dynamicConfig && !isConfigLoading) {
+    if (dynamicConfig && !isConfigLoading && !audioRef) {
       // Use the frontend URL for sound files, not the backend API URL
       const frontendUrl = window.location.origin;
       const soundUrl = dynamicConfig.customPopupSound || `${frontendUrl}/openclose.mp3`;
@@ -139,24 +139,21 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
       // Set the source after adding event listeners
       audio.src = soundUrl;
     }
-  }, [dynamicConfig, config.apiUrl, isConfigLoading]);
+  }, [dynamicConfig, isConfigLoading, audioRef]);
 
   // Handle audio configuration when config and audio are ready
   useEffect(() => {
     if (dynamicConfig && audioRef) {
-      // Update audio source and volume based on config
-      if (dynamicConfig.customPopupSound) {
-        audioRef.src = dynamicConfig.customPopupSound;
-      }
+      // Update audio volume based on config (don't change src to avoid reloading)
       audioRef.volume = (dynamicConfig.popupSoundVolume || 50) / 100;
     }
-  }, [dynamicConfig, audioRef]);
+  }, [dynamicConfig?.popupSoundVolume, audioRef]);
 
 
 
     // Handle popup delay - show chat bubble after delay
   useEffect(() => {
-    if (dynamicConfig && !isConfigLoading) {
+    if (dynamicConfig && !isConfigLoading && !showChatBubble) {
       const popupDelay = dynamicConfig.popupDelay || config.popupDelay || 0;
       console.log('Popup delay set to:', popupDelay, 'ms');
       
@@ -216,7 +213,7 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
         }
       }
     }
-  }, [dynamicConfig, isConfigLoading, config.popupDelay, soundEnabled, audioRef]); // Removed hasPlayedInitialSound from dependencies
+  }, [dynamicConfig?.popupDelay, isConfigLoading, config.popupDelay, soundEnabled, audioRef, showChatBubble, hasPlayedInitialSound]);
 
   // Fetch dynamic configuration from API
   useEffect(() => {
@@ -253,7 +250,9 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
         setDynamicConfig(mergedConfig);
 
         // Set initial states based on dynamic config
-        setSoundEnabled(mergedConfig.popupSoundEnabled !== false);
+        const initialSoundState = mergedConfig.popupSoundEnabled !== false;
+        console.log('🔊 Initial sound state:', initialSoundState, 'from config:', mergedConfig.popupSoundEnabled);
+        setSoundEnabled(initialSoundState);
 
       } catch (error) {
         console.error('Error fetching chatbot config:', error);
@@ -317,13 +316,21 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
   // Play bubble sound when bubble appears
   // Play notification sound for new messages
   const playNotificationSound = useCallback(() => {
-    if (!soundEnabled || !audioRef) return;
+    if (!soundEnabled || !audioRef) {
+      console.log('🔇 Sound disabled or no audio ref available');
+      return;
+    }
     try {
+      console.log('🔊 Playing notification sound...');
       audioRef.currentTime = 0;
       audioRef.volume = (dynamicConfig?.popupSoundVolume || 50) / 100;
-      audioRef.play().catch(console.error);
+      audioRef.play().then(() => {
+        console.log('✅ Sound played successfully');
+      }).catch((error) => {
+        console.error('❌ Error playing sound:', error);
+      });
     } catch (error) {
-      console.error('Error playing notification sound:', error);
+      console.error('❌ Error playing notification sound:', error);
     }
   }, [soundEnabled, audioRef, dynamicConfig?.popupSoundVolume]);
 
@@ -525,7 +532,29 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
   };
 
   // Toggle sound
-  const toggleSound = () => setSoundEnabled(!soundEnabled);
+  const toggleSound = () => {
+    const newSoundState = !soundEnabled;
+    console.log(`🔊 Toggling sound: ${soundEnabled} → ${newSoundState}`);
+    setSoundEnabled(newSoundState);
+    
+    // If turning sound on and we have audio, test it
+    if (newSoundState && audioRef) {
+      console.log('🔊 Testing sound after enabling...');
+      setTimeout(() => {
+        try {
+          audioRef.currentTime = 0;
+          audioRef.volume = (dynamicConfig?.popupSoundVolume || 50) / 100;
+          audioRef.play().then(() => {
+            console.log('✅ Test sound played successfully');
+          }).catch((error) => {
+            console.log('⚠️ Test sound blocked by browser (normal):', error.message);
+          });
+        } catch (error) {
+          console.error('❌ Error testing sound:', error);
+        }
+      }, 100);
+    }
+  };
 
   // Handle lead form submission
   const handleLeadSubmit = async (e: React.FormEvent) => {
@@ -1597,7 +1626,20 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
                     border: 'none',
                     color: 'white',
                     cursor: 'pointer',
-                    padding: '4px'
+                    padding: '4px',
+                    borderRadius: '4px',
+                    transition: 'all 0.2s ease',
+                    transform: 'scale(1)'
+                  }}
+                  title={soundEnabled ? 'Mute sound' : 'Unmute sound'}
+                  onMouseDown={(e) => {
+                    e.currentTarget.style.transform = 'scale(0.9)';
+                  }}
+                  onMouseUp={(e) => {
+                    e.currentTarget.style.transform = 'scale(1)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'scale(1)';
                   }}
                 >
                   {soundEnabled ? <Volume2 size={16} /> : <VolumeX size={16} />}

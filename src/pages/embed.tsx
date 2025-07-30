@@ -94,11 +94,33 @@ const ChatWidget = ({ chatbotId, config = {} }) => {
 
 export default ChatWidget;`;
 
-  // Iframe embed code
+  // Iframe embed code with dynamic positioning from database
+  const bubblePosition = activeChatbot.bubblePosition || 'bottom-right';
+  const horizontalOffset = activeChatbot.horizontalOffset || 20;
+  const verticalOffset = activeChatbot.verticalOffset || 20;
+  
+  // Calculate position based on bubblePosition setting
+  let positionStyle = '';
+  switch (bubblePosition) {
+    case 'bottom-left':
+      positionStyle = `bottom: ${verticalOffset}px; left: ${horizontalOffset}px;`;
+      break;
+    case 'top-right':
+      positionStyle = `top: ${verticalOffset}px; right: ${horizontalOffset}px;`;
+      break;
+    case 'top-left':
+      positionStyle = `top: ${verticalOffset}px; left: ${horizontalOffset}px;`;
+      break;
+    case 'bottom-right':
+    default:
+      positionStyle = `bottom: ${verticalOffset}px; right: ${horizontalOffset}px;`;
+      break;
+  }
+
   const iframeEmbedCode = `<iframe
-  src="${backendUrl}/chat/${activeChatbot.id}"
-  style="position: fixed; bottom: 20px; right: 20px; width: 380px; height: 600px; border: none; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); z-index: 9999;"
-  allow="microphone"
+  src="${backendUrl}/api/iframe/${activeChatbot.id}"
+  style="position: fixed; ${positionStyle} width: 100%; height: 100%; border: none; border-radius: 16px;  z-index: 9999;"
+  sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
   title="RankVed Chatbot">
 </iframe>`;
 
@@ -133,7 +155,7 @@ export default ChatWidget;`;
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button variant="outline" asChild className="px-3 py-1.5 border-blue-200 text-blue-700 hover:bg-blue-50">
-                    <a href={`/chat/${activeChatbot.id}`} target="_blank" rel="noopener noreferrer">
+                    <a href={`${backendUrl}/api/iframe/${activeChatbot.id}`} target="_blank" rel="noopener noreferrer">
                       <Eye className="h-4 w-4 mr-2" />
                       <span className="hidden sm:inline">Preview</span>
                       <span className="sm:hidden">Preview</span>
@@ -153,13 +175,13 @@ export default ChatWidget;`;
             <h2 className="text-lg font-bold text-slate-900">Embed Code</h2>
             <div className="flex items-center gap-2">
               <Button variant="outline" size="sm" asChild className="border-blue-200 text-blue-700 hover:bg-blue-50">
-                <a href={`/chat/${activeChatbot.id}`} target="_blank" rel="noopener noreferrer">
+                <a href={`${backendUrl}/api/iframe/${activeChatbot.id}`} target="_blank" rel="noopener noreferrer">
                   <Eye className="h-4 w-4 mr-1" />
                   Preview
                 </a>
               </Button>
               <Button variant="outline" size="sm" asChild className="border-blue-200 text-blue-700 hover:bg-blue-50">
-                <a href={`/chat/${activeChatbot.id}`} target="_blank" rel="noopener noreferrer">
+                <a href={`${backendUrl}/api/iframe/${activeChatbot.id}`} target="_blank" rel="noopener noreferrer">
                   <ExternalLink className="h-4 w-4 mr-1" />
                   New Tab
                 </a>

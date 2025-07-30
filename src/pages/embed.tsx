@@ -51,7 +51,6 @@ export default function Embed() {
 
   // Use backend URL from env for API endpoints
   const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-  const frontendUrl = window.location.origin;
 
   // Generate simple embed code
   const embedCode = `<script>
@@ -60,28 +59,33 @@ window.RankVedChatbotConfig = {
     apiUrl: '${backendUrl}'
 };
 </script>
-<script src="${frontendUrl}/chatbot-loader.js"></script>`;
+<script src="${window.location.origin}/chatbot-loader.js"></script>`;
 
 
   // React component for the new optimized system
-  const reactComponent = `import React, { useEffect } from 'react';
+  const reactComponent = `import { useEffect } from 'react';
 
 const ChatWidget = ({ chatbotId, config = {} }) => {
   useEffect(() => {
+    // Use same URL pattern as embed page
+    const backendUrl = '${backendUrl}';
+    const frontendUrl = '${window.location.origin}';
+    
     // Set configuration
     window.RankVedChatbotConfig = {
       chatbotId,
-      apiUrl: '${backendUrl}',
+      apiUrl: config.apiUrl || backendUrl,
+      frontendUrl: config.frontendUrl || frontendUrl,
       ...config
     };
     
     // Load chatbot script
     const script = document.createElement('script');
-    script.src = '${frontendUrl}/chatbot-loader.js';
+    script.src = \`\${window.RankVedChatbotConfig.frontendUrl}/chatbot-loader.js\`;
     document.head.appendChild(script);
     
     return () => {
-      // Cleanup if needed
+      // Cleanup
       const existingScript = document.querySelector('script[src*="chatbot-loader.js"]');
       if (existingScript) {
         existingScript.remove();
@@ -89,7 +93,7 @@ const ChatWidget = ({ chatbotId, config = {} }) => {
     };
   }, [chatbotId, config]);
 
-  return null; // This component doesn't render anything visible
+  return null;
 };
 
 export default ChatWidget;`;

@@ -49,7 +49,7 @@ export default function Training() {
   // Popup Sound Settings
   const [popupSoundEnabled, setPopupSoundEnabled] = useState(activeChatbot?.popupSoundEnabled ?? true);
   const [popupSoundVolume, setPopupSoundVolume] = useState(activeChatbot?.popupSoundVolume ?? 50);
-  const [selectedPopupSound, setSelectedPopupSound] = useState(activeChatbot?.customPopupSound || '');
+  const [selectedPopupSound, setSelectedPopupSound] = useState(activeChatbot?.customPopupSound || '/openclose.mp3');
   const [isPlayingSound, setIsPlayingSound] = useState(false);
   const [playingSoundId, setPlayingSoundId] = useState<string | null>(null);
   const [audioRefs, setAudioRefs] = useState<{ [key: string]: HTMLAudioElement }>({});
@@ -352,61 +352,6 @@ export default function Training() {
     }
   };
 
-  // Upload default sound to database as custom sound
-  const handleUploadDefaultSound = async (soundUrl: string, soundName: string) => {
-    try {
-      // Fetch the sound file from the public directory
-      const response = await fetch(soundUrl);
-      if (!response.ok) {
-        throw new Error('Failed to fetch sound file');
-      }
-      
-      const blob = await response.blob();
-      
-      // Create a FormData object to upload the file
-      const formData = new FormData();
-      formData.append('sound', blob, `${soundName}.mp3`);
-      formData.append('name', soundName);
-      formData.append('chatbotId', activeChatbot!.id);
-      
-      // Upload to the custom sounds endpoint
-      const uploadResponse = await apiRequest('POST', '/api/custom-sounds', formData);
-      
-      if (!uploadResponse.ok) {
-        throw new Error('Failed to upload sound');
-      }
-      
-      const result = await uploadResponse.json();
-      
-      // Update the chatbot's custom popup sound to use the new uploaded sound
-      await updateChatbot.mutateAsync({
-        id: activeChatbot!.id,
-        data: {
-          customPopupSound: result.soundUrl,
-        },
-      });
-      
-      // Update the selected sound to the new uploaded sound
-      setSelectedPopupSound(result.soundUrl);
-      setHasSoundSettingsChanges(true);
-      
-      // Refresh the custom sounds list
-      refetchCustomSounds();
-      
-      toast({
-        title: 'Sound uploaded',
-        description: `${soundName} has been uploaded to your custom sounds and set as the popup sound.`,
-      });
-    } catch (error) {
-      console.error('Error uploading default sound:', error);
-      toast({
-        title: 'Upload Error',
-        description: 'Failed to upload sound to database. Please try again.',
-        variant: 'destructive',
-      });
-    }
-  };
-
   // Save AI provider settings
   const handleSaveAiSettings = async () => {
     if (!activeChatbot || !hasAiSettingsChanges) return;
@@ -438,17 +383,6 @@ export default function Training() {
     if (!activeChatbot || !hasSoundSettingsChanges) return;
 
     try {
-      // Check if the selected sound is a default sound (not already in custom sounds)
-      const isDefaultSound = selectedPopupSound && 
-        selectedPopupSound.startsWith('/') && 
-        !customSounds.some((sound: CustomSound) => sound.soundUrl === selectedPopupSound);
-
-      // If it's a default sound, upload it to the database first
-      if (isDefaultSound && selectedPopupSound) {
-        const soundName = selectedPopupSound.split('/').pop()?.replace('.mp3', '') || 'Default Sound';
-        await handleUploadDefaultSound(selectedPopupSound, soundName);
-      }
-
       await updateChatbot.mutateAsync({
         id: activeChatbot.id,
         data: {
@@ -464,9 +398,7 @@ export default function Training() {
       
       toast({
         title: 'Sound Settings Saved',
-        description: isDefaultSound 
-          ? 'Sound uploaded to database and settings updated successfully.'
-          : 'Popup sound settings have been updated successfully.',
+        description: 'Popup sound settings have been updated successfully.',
       });
     } catch (error) {
       toast({

@@ -96,10 +96,7 @@ const ChatWidget = ({ chatbotId, config = {} }) => {
   return null;
 };
 
-export default ChatWidget;
-
-// Usage example:
-// <ChatWidget chatbotId="${activeChatbot.id}" />`;
+export default ChatWidget;`;
 
   // Iframe embed code with dynamic positioning from database
   const bubblePosition = activeChatbot.bubblePosition || 'bottom-right';
@@ -446,118 +443,49 @@ export default ChatWidget;
                 <Zap className="h-5 w-5 text-blue-600" />
                 <span>Installation Instructions</span>
               </CardTitle>
-              <p className="text-gray-600 text-sm">Choose your platform and follow the specific installation steps</p>
+              <p className="text-gray-600 text-sm">Follow these steps to embed your chatbot</p>
             </CardHeader>
             <CardContent>
-                <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-                  {/* Script Installation */}
-                  <TabsContent value="script" className="space-y-4">
-                    <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                      <h4 className="font-medium text-gray-900 mb-3">Script Installation</h4>
-                      <div className="space-y-3">
-                        <div className="flex items-start gap-3">
-                          <div className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                            <span className="text-gray-600 font-bold text-xs">1</span>
-                          </div>
-                          <div>
-                            <p className="text-sm text-gray-700 font-medium">Copy the Script Code</p>
-                            <p className="text-xs text-gray-600">Copy the script code from the "Full Config" tab above</p>
-                          </div>
-                        </div>
-                        <div className="flex items-start gap-3">
-                          <div className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                            <span className="text-gray-600 font-bold text-xs">2</span>
-                          </div>
-                          <div>
-                            <p className="text-sm text-gray-700 font-medium">Add to Your Website</p>
-                            <p className="text-xs text-gray-600">Paste the code just before the closing &lt;/body&gt; tag in your HTML file</p>
-                          </div>
-                        </div>
-                        <div className="flex items-start gap-3">
-                          <div className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                            <span className="text-gray-600 font-bold text-xs">3</span>
-                          </div>
-                          <div>
-                            <p className="text-sm text-gray-700 font-medium">Test Your Website</p>
-                            <p className="text-xs text-gray-600">Refresh your page and look for the chat bubble in the bottom-right corner</p>
-                          </div>
-                        </div>
-                      </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+                      <span className="text-blue-600 font-bold text-sm">1</span>
                     </div>
-                  </TabsContent>
-
-                  {/* Iframe Installation */}
-                  <TabsContent value="iframe" className="space-y-4">
-                    <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                      <h4 className="font-medium text-gray-900 mb-3">Iframe Installation</h4>
-                      <div className="space-y-3">
-                        <div className="flex items-start gap-3">
-                          <div className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                            <span className="text-gray-600 font-bold text-xs">1</span>
-                          </div>
-                          <div>
-                            <p className="text-sm text-gray-700 font-medium">Copy Iframe Code</p>
-                            <p className="text-xs text-gray-600">Copy the iframe code from the "Iframe" tab above</p>
-                          </div>
-                        </div>
-                        <div className="flex items-start gap-3">
-                          <div className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                            <span className="text-gray-600 font-bold text-xs">2</span>
-                          </div>
-                          <div>
-                            <p className="text-sm text-gray-700 font-medium">Add to Your Website</p>
-                            <p className="text-xs text-gray-600">Paste the iframe code anywhere on your webpage where you want the chatbot to appear</p>
-                          </div>
-                        </div>
-                        <div className="flex items-start gap-3">
-                          <div className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                            <span className="text-gray-600 font-bold text-xs">3</span>
-                          </div>
-                          <div>
-                            <p className="text-sm text-gray-700 font-medium">Test Your Website</p>
-                            <p className="text-xs text-gray-600">Refresh your page and the iframe will display the chatbot</p>
-                          </div>
+                    <h4 className="font-medium text-gray-900">Copy the Code</h4>
                   </div>
+                  <p className="text-sm text-gray-600">
+                    Copy the embed code from one of the tabs above that best suits your website platform.
+                  </p>
                 </div>
-                    </div>
-                  </TabsContent>
 
-                  {/* React Installation */}
-                  <TabsContent value="react" className="space-y-4">
-                    <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                      <h4 className="font-medium text-gray-900 mb-3">React Application Installation</h4>
-                      <div className="space-y-3">
-                        <div className="flex items-start gap-3">
-                          <div className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                            <span className="text-gray-600 font-bold text-xs">1</span>
-                          </div>
-                          <div>
-                            <p className="text-sm text-gray-700 font-medium">Copy React Component</p>
-                            <p className="text-xs text-gray-600">Copy the ChatWidget component code from the "React" tab above</p>
-                          </div>
-                        </div>
-                        <div className="flex items-start gap-3">
-                          <div className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                            <span className="text-gray-600 font-bold text-xs">2</span>
-                          </div>
-                          <div>
-                            <p className="text-sm text-gray-700 font-medium">Create Component File</p>
-                            <p className="text-xs text-gray-600">Create a new file (e.g., ChatWidget.tsx) and paste the component code</p>
-                          </div>
-                  </div>
-                        <div className="flex items-start gap-3">
-                          <div className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                            <span className="text-gray-600 font-bold text-xs">3</span>
-                </div>
-                          <div>
-                            <p className="text-sm text-gray-700 font-medium">Import and Use</p>
-                            <p className="text-xs text-gray-600">Import the component in your app and use: &lt;ChatWidget chatbotId="${activeChatbot.id}" /&gt;</p>
+                <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+                      <span className="text-blue-600 font-bold text-sm">2</span>
                     </div>
+                    <h4 className="font-medium text-gray-900">Add to Your Website</h4>
                   </div>
+                  <ul className="text-sm text-gray-600 space-y-1">
+                    <li>• HTML: Before &lt;/body&gt; tag</li>
+                    <li>• WordPress: Footer.php or plugin</li>
+                    <li>• Shopify: Theme.liquid file</li>
+                    <li>• React: Import component</li>
+                  </ul>
+                </div>
+
+                <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+                      <span className="text-blue-600 font-bold text-sm">3</span>
+                    </div>
+                    <h4 className="font-medium text-gray-900">Test</h4>
+                  </div>
+                  <p className="text-sm text-gray-600">
+                    Visit your website and look for the chat bubble in the bottom-right corner. Click it to test the chatbot functionality.
+                  </p>
                 </div>
               </div>
-                  </TabsContent>
-                </Tabs>
             </CardContent>
           </Card>
 

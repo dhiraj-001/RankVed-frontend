@@ -15,13 +15,6 @@ export const SOUND_OPTIONS: SoundOption[] = [
     category: 'notification'
   },
   {
-    id: 'openclose',
-    name: 'Open Close Sound',
-    file: '/audios/openclose.mp3',
-    description: 'Clean open/close notification sound',
-    category: 'popup'
-  },
-  {
     id: 'sound1',
     name: 'Gentle Chime',
     file: '/audios/1.mp3',

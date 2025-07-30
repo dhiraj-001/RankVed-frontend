@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Save, Palette, Eye, Image, Settings } from 'lucide-react';
+import { Save, Palette, Eye, Image, Settings, Trash2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -245,6 +245,15 @@ export default function Appearance() {
         variant: 'destructive',
       });
     }
+  };
+
+  const handleRemoveImage = (field: string) => {
+    console.log('[Appearance] Removing image for field:', field);
+    setAppearance(prev => ({ ...prev, [field]: '' }));
+    toast({
+      title: 'Image removed',
+      description: 'The image has been removed successfully.',
+    });
   };
 
   // const addSuggestionButton = () => {
@@ -604,8 +613,16 @@ export default function Appearance() {
                       <Label className="text-gray-700 font-medium">Chat Bubble Icon</Label>
                       <div className="flex items-center gap-4">
                         {appearance.chatBubbleIcon && (
-                          <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center border-2 border-blue-200">
+                          <div className="relative w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center border-2 border-blue-200">
                             <img src={appearance.chatBubbleIcon} alt="Chat Bubble Icon" className="w-8 h-8 rounded-full object-cover" />
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleRemoveImage('chatBubbleIcon')}
+                              className="absolute -top-2 -right-2 h-6 w-6 bg-red-500 hover:bg-red-600 text-white rounded-full shadow-md"
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
                           </div>
                         )}
                         <div className="flex-1">
@@ -629,8 +646,16 @@ export default function Appearance() {
                       <Label className="text-gray-700 font-medium">Chat Widget Icon</Label>
                       <div className="flex items-center gap-4">
                         {appearance.chatWidgetIcon && (
-                          <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center border-2 border-blue-200">
+                          <div className="relative w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center border-2 border-blue-200">
                             <img src={appearance.chatWidgetIcon} alt="Chat Widget Icon" className="w-8 h-8 rounded-full object-cover" />
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleRemoveImage('chatWidgetIcon')}
+                              className="absolute -top-2 -right-2 h-6 w-6 bg-red-500 hover:bg-red-600 text-white rounded-full shadow-md"
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
                           </div>
                         )}
                         <div className="flex-1">
@@ -664,8 +689,16 @@ export default function Appearance() {
                       <Label className="text-gray-700 font-medium">Chat Window Avatar</Label>
                       <div className="flex items-center gap-4">
                         {appearance.chatWindowAvatar && (
-                          <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center border-2 border-blue-200">
+                          <div className="relative w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center border-2 border-blue-200">
                             <img src={appearance.chatWindowAvatar} alt="Chat Window Avatar" className="w-10 h-10 rounded-full object-cover" />
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleRemoveImage('chatWindowAvatar')}
+                              className="absolute -top-2 -right-2 h-6 w-6 bg-red-500 hover:bg-red-600 text-white rounded-full shadow-md"
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
                           </div>
                         )}
                         <div className="flex-1">

@@ -376,10 +376,10 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
           text: data.response || 'Hello! How can I help you today?',
           sender: 'bot',
           timestamp: new Date(),
-          followUpButtons: data.followUpButtons || [],
-          ctaButton: data.ctaButton || undefined,
+          followUpButtons: data.follow_up_buttons || data.followUpButtons || [],
+          ctaButton: data.cta_button || data.ctaButton || undefined,
           shouldShowLead: data.shouldShowLead || false,
-          intentId: data.intentId || 'unrecognized_intent'
+          intentId: data.intent_id || data.intentId || 'unrecognized_intent'
         };
 
         setMessages([botMessage]);
@@ -429,7 +429,7 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
   };
 
   const sendMessage = async (text: string) => {
-    if (!text.trim() || isLoading || !dynamicConfig) return;
+    if (!text || !text.trim() || isLoading || !dynamicConfig) return;
 
     // If first message is already loading, don't send another
     if (isFirstMessageLoading) {
@@ -498,10 +498,10 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
           text: data.response || 'Sorry, I couldn\'t process your message.',
           sender: 'bot',
           timestamp: new Date(),
-          followUpButtons: data.followUpButtons || [],
-          ctaButton: data.ctaButton || undefined,
+          followUpButtons: data.follow_up_buttons || data.followUpButtons || [],
+          ctaButton: data.cta_button || data.ctaButton || undefined,
           shouldShowLead: data.shouldShowLead || false,
-          intentId: data.intentId || 'unrecognized_intent'
+          intentId: data.intent_id || data.intentId || 'unrecognized_intent'
         };
 
         setMessages(prev => [...prev, botMessage]);
@@ -1716,7 +1716,9 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
                               className="follow-up-button"
                               onClick={() => {
                                 // Send the button text as the message instead of the payload
-                                sendMessage(button.text);
+                                if (button.text && button.text.trim()) {
+                                  sendMessage(button.text);
+                                }
                               }}
                             >
                               {button.text}

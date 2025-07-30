@@ -287,7 +287,9 @@ export default function ChatTest() {
 
   const handleFollowUp = (btn: FollowUpButton) => {
     if (typeof btn.payload === 'string') {
-      handleSendMessage(btn.text);
+      if (btn.text && btn.text.trim()) {
+        handleSendMessage(btn.text);
+      }
     } else if (btn.payload && typeof btn.payload === 'object' && btn.payload.type === 'cta_option' && btn.payload.link) {
       window.open(btn.payload.link, '_blank');
     }

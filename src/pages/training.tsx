@@ -28,7 +28,7 @@ export default function Training() {
   const { data: customSounds = [], refetch: refetchCustomSounds } = useCustomSounds();
 
   const [trainingData, setTrainingData] = useState(() => {
-    const initial = activeChatbot?.trainingData || '';
+    const initial = activeChatbot?.plainData || '';
     return initial;
   });
   const [urls, setUrls] = useState('');
@@ -65,6 +65,10 @@ export default function Training() {
   const [hasSoundSettingsChanges, setHasSoundSettingsChanges] = useState(false);
   const [hasPopupDelayChanges, setHasPopupDelayChanges] = useState(false);
   const [hasFlowChanges, setHasFlowChanges] = useState(false);
+  
+  // Confirmation dialogs
+  const [showDeleteTrainingDataDialog, setShowDeleteTrainingDataDialog] = useState(false);
+  const [showDeleteQuestionFlowDialog, setShowDeleteQuestionFlowDialog] = useState(false);
   
   // Debounced change detection for training data
   const [debouncedTrainingData, setDebouncedTrainingData] = useState(trainingData);
@@ -184,13 +188,7 @@ export default function Training() {
     }
   }, [editedFlow, questionFlow]);
 
-  // Mutation for processing training data
-  const processTrainingData = useMutation({
-    mutationFn: async (content: string) => {
-      const response = await apiRequest('POST', '/api/training/process', { content });
-      return response.json();
-    },
-  });
+
 
   // Mutation for fetching URL content
   const fetchUrlContent = useMutation({
@@ -435,7 +433,7 @@ export default function Training() {
     }
   };
 
-  const handleSave = async () => {
+    const handleSave = async () => {
     if (!activeChatbot) {
       toast({
         title: 'Error',
@@ -445,22 +443,16 @@ export default function Training() {
       return;
     }
 
-    let processed = { processed: false, wordCount: 0 };
-    try {
-      processed = await processTrainingData.mutateAsync(trainingData);
-    } catch (error) {
-      // Training data processing failed, saving anyway
-    }
-
     try {
       // Save both plainData and trainingData (question flow)
-      const parsedFlow = editedFlow ? JSON.parse(editedFlow) : null;
-      // --- LOGGING: Log the data being saved ---
+      const parsedFlow = editedFlow && editedFlow.trim() !== '' ? JSON.parse(editedFlow) : null;
+      
       console.log('[Training] Saving chatbot data:', {
         id: activeChatbot.id,
         plainData: trainingData,
         trainingData: parsedFlow,
       });
+      
       const result = await updateChatbot.mutateAsync({
         id: activeChatbot.id,
         data: {
@@ -468,21 +460,21 @@ export default function Training() {
           trainingData: parsedFlow ? JSON.stringify(parsedFlow) : undefined,
         },
       });
-      // --- LOGGING: Log the result of the save operation ---
+      
       console.log('[Training] Save result:', result);
       setHasTrainingDataChanges(false);
       setHasFlowChanges(false);
+      
+      // Show success message
+      const wordCount = trainingData ? trainingData.split(/\s+/).filter(word => word.length > 0).length : 0;
       toast({
-        title: 'Saved',
-        description: processed.processed
-          ? `Successfully processed ${processed.wordCount} words of training data and saved question flow.`
-          : 'Data saved (processing failed, but data is stored).',
+        title: 'Data Saved',
+        description: `Training data (${wordCount} words) and question flow saved successfully.`,
       });
     } catch (error) {
-      // --- LOGGING: Log the error encountered during saving ---
       console.error('[Training] Error saving chatbot data:', error);
       toast({
-        title: 'Error',
+        title: 'Save Failed',
         description: 'Failed to save data. Please try again.',
         variant: 'destructive',
       });
@@ -663,7 +655,7 @@ We serve over 1,000+ companies worldwide and are trusted by industry leaders.`;
       setWebsite(activeChatbot.website || '');
       
       // Load question flow from trainingData if it exists
-      if (activeChatbot.trainingData) {
+      if (activeChatbot.trainingData && activeChatbot.trainingData.trim() !== '') {
         try {
           // trainingData is stored as a JSON string, so we need to parse it
           const parsedTrainingData = typeof activeChatbot.trainingData === 'string' 
@@ -690,6 +682,12 @@ We serve over 1,000+ companies worldwide and are trusted by industry leaders.`;
         setEditedFlow('');
         console.log('[Training] No trainingData found in activeChatbot');
       }
+      
+      // Reset fetched content and states when chatbot changes
+      setFetchedContent([]);
+      setFetchingStates({});
+      setFetchProgress({ current: 0, total: 0 });
+      setUrls('');
     }
   }, [activeChatbot]);
 
@@ -746,6 +744,58 @@ We serve over 1,000+ companies worldwide and are trusted by industry leaders.`;
     }
   };
 
+  // Delete training data
+  const handleDeleteTrainingData = async () => {
+    if (!activeChatbot) return;
+    
+    try {
+      await updateChatbot.mutateAsync({
+        id: activeChatbot.id,
+        data: {
+          plainData: '',
+        },
+      });
+      setTrainingData('');
+      setHasTrainingDataChanges(false);
+      toast({
+        title: 'Training Data Deleted',
+        description: 'Training data has been cleared successfully.',
+      });
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to delete training data. Please try again.',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  // Delete question flow
+  const handleDeleteQuestionFlow = async () => {
+    if (!activeChatbot) return;
+    
+    try {
+      await updateChatbot.mutateAsync({
+        id: activeChatbot.id,
+        data: {
+          trainingData: undefined,
+        },
+      });
+      setQuestionFlow(null);
+      setEditedFlow('');
+      setHasFlowChanges(false);
+      toast({
+        title: 'Question Flow Deleted',
+        description: 'Question flow has been cleared successfully.',
+      });
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to delete question flow. Please try again.',
+        variant: 'destructive',
+      });
+    }
+  };
 
 
   if (typeof activeChatbot === 'undefined') {
@@ -783,15 +833,15 @@ We serve over 1,000+ companies worldwide and are trusted by industry leaders.`;
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
             <Button 
               onClick={handleSave} 
-              disabled={updateChatbot.isPending || processTrainingData.isPending || (!hasTrainingDataChanges && !hasFlowChanges)}
+              disabled={updateChatbot.isPending || (!hasTrainingDataChanges && !hasFlowChanges)}
               className="bg-blue-600 hover:bg-blue-700 text-white border-none px-3 py-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {updateChatbot.isPending || processTrainingData.isPending ? (
+              {updateChatbot.isPending ? (
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
               ) : (
                 <Save className="h-4 w-4 mr-2" />
               )}
-              {updateChatbot.isPending || processTrainingData.isPending ? 'Saving...' : 'Save All'}
+              {updateChatbot.isPending ? 'Saving...' : 'Save All'}
               {hasTrainingDataChanges && <Badge variant="secondary" className="ml-2 bg-green-100 text-green-700 text-xs">Data Changed</Badge>}
             </Button>
           </div>
@@ -806,15 +856,15 @@ We serve over 1,000+ companies worldwide and are trusted by industry leaders.`;
             <Button 
               size="sm"
               onClick={handleSave} 
-              disabled={updateChatbot.isPending || processTrainingData.isPending || (!hasTrainingDataChanges && !hasFlowChanges)}
+              disabled={updateChatbot.isPending || (!hasTrainingDataChanges && !hasFlowChanges)}
               className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {updateChatbot.isPending || processTrainingData.isPending ? (
+              {updateChatbot.isPending ? (
                 <Loader2 className="h-4 w-4 mr-1 animate-spin" />
               ) : (
                 <Save className="h-4 w-4 mr-1" />
               )}
-              {updateChatbot.isPending || processTrainingData.isPending ? 'Saving...' : 'Save'}
+              {updateChatbot.isPending ? 'Saving...' : 'Save'}
               {hasTrainingDataChanges && <Badge variant="secondary" className="ml-1 bg-green-100 text-green-700 text-xs">Changed</Badge>}
             </Button>
           </div>
@@ -931,6 +981,17 @@ We serve over 1,000+ companies worldwide and are trusted by industry leaders.`;
                     >
                       + Company Info
                     </Button>
+                    {trainingData && trainingData.trim() !== '' && (
+                      <Button 
+                        size="sm" 
+                        variant="destructive" 
+                        onClick={() => setShowDeleteTrainingDataDialog(true)}
+                        className="hover:bg-red-50 hover:border-red-200 transition-colors"
+                      >
+                        <Trash className="h-3 w-3 mr-1" />
+                        Clear Data
+                      </Button>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="trainingData">Training Data</Label>
@@ -1096,28 +1157,41 @@ We serve over 1,000+ companies worldwide and are trusted by industry leaders.`;
                 <p className="text-sm text-slate-600 transition-all duration-500 ease-in-out">Edit the AI-generated question flow</p>
               </CardHeader>
               <CardContent className="p-4 sm:p-6">
-                <div className="space-y-2 animate-in fade-in duration-500 ease-in-out delay-300">
-                  <Label>Flow JSON</Label>
-                  <Textarea
-                    value={editedFlow}
-                    onChange={e => setEditedFlow(e.target.value)}
-                    rows={12}
-                    className="font-mono text-xs transition-all duration-300 ease-in-out hover:border-blue-200 focus:ring-2 focus:ring-blue-200 focus:border-blue-200"
-                    spellCheck={false}
-                  />
-                  {!isValidJson && (
-                    <span className="text-red-600 text-sm animate-in fade-in duration-300 ease-in-out">Invalid JSON</span>
-                  )}
-                  <Button
-                    onClick={handleResetFlow}
-                    disabled={editedFlow === JSON.stringify(questionFlow, null, 2) || !questionFlow}
-                    variant="outline"
-                    size="sm"
-                    className="hover:bg-blue-50 hover:border-blue-200 transition-all duration-300 ease-in-out animate-in fade-in delay-400"
-                  >
-                    Reset to AI Output
-                  </Button>
-                </div>
+                                  <div className="space-y-2 animate-in fade-in duration-500 ease-in-out delay-300">
+                    <Label>Flow JSON</Label>
+                    <Textarea
+                      value={editedFlow}
+                      onChange={e => setEditedFlow(e.target.value)}
+                      rows={12}
+                      className="font-mono text-xs transition-all duration-300 ease-in-out hover:border-blue-200 focus:ring-2 focus:ring-blue-200 focus:border-blue-200"
+                      spellCheck={false}
+                    />
+                    {!isValidJson && (
+                      <span className="text-red-600 text-sm animate-in fade-in duration-300 ease-in-out">Invalid JSON</span>
+                    )}
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={handleResetFlow}
+                        disabled={editedFlow === JSON.stringify(questionFlow, null, 2) || !questionFlow}
+                        variant="outline"
+                        size="sm"
+                        className="hover:bg-blue-50 hover:border-blue-200 transition-all duration-300 ease-in-out animate-in fade-in delay-400"
+                      >
+                        Reset to AI Output
+                      </Button>
+                      {questionFlow && Object.keys(questionFlow).length > 0 && (
+                        <Button
+                          onClick={() => setShowDeleteQuestionFlowDialog(true)}
+                          variant="destructive"
+                          size="sm"
+                          className="hover:bg-red-50 hover:border-red-200 transition-all duration-300 ease-in-out animate-in fade-in delay-400"
+                        >
+                          <Trash className="h-3 w-3 mr-1" />
+                          Delete Flow
+                        </Button>
+                      )}
+                    </div>
+                  </div>
               </CardContent>
             </Card>
           </div>
@@ -1562,6 +1636,58 @@ We serve over 1,000+ companies worldwide and are trusted by industry leaders.`;
           </div>
         </div>
       </div>
+
+      {/* Delete Training Data Confirmation Dialog */}
+      {showDeleteTrainingDataDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md mx-4">
+            <h3 className="text-lg font-semibold text-red-700 mb-4">Delete Training Data</h3>
+            <p className="text-gray-600 mb-6">
+              Are you sure you want to delete all training data? This action cannot be undone and will remove all the content that helps your chatbot provide responses.
+            </p>
+            <div className="flex justify-end space-x-2">
+              <Button variant="outline" onClick={() => setShowDeleteTrainingDataDialog(false)}>
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={() => {
+                  handleDeleteTrainingData();
+                  setShowDeleteTrainingDataDialog(false);
+                }}
+              >
+                Delete Training Data
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Question Flow Confirmation Dialog */}
+      {showDeleteQuestionFlowDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md mx-4">
+            <h3 className="text-lg font-semibold text-red-700 mb-4">Delete Question Flow</h3>
+            <p className="text-gray-600 mb-6">
+              Are you sure you want to delete the question flow? This action cannot be undone and will remove all the structured conversation flows for your chatbot.
+            </p>
+            <div className="flex justify-end space-x-2">
+              <Button variant="outline" onClick={() => setShowDeleteQuestionFlowDialog(false)}>
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={() => {
+                  handleDeleteQuestionFlow();
+                  setShowDeleteQuestionFlowDialog(false);
+                }}
+              >
+                Delete Question Flow
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </TooltipProvider>
   );
 }

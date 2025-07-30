@@ -70,8 +70,25 @@
       const s = document.createElement('script');
       
       // Load bundle from the frontend domain (where chatbot files are hosted)
-      const frontendDomain = window.RankVedChatbotConfig.frontendUrl || 'http://localhost:5173';
-      const bundleUrl = frontendDomain + '/chatbot-bundle.js';
+      // Use the frontendUrl from config, or determine it dynamically
+      let frontendDomain = window.RankVedChatbotConfig.frontendUrl;
+      
+      if (!frontendDomain) {
+        // Try to determine the frontend URL dynamically
+        const currentDomain = window.location.hostname;
+        const currentProtocol = window.location.protocol;
+        
+        if (currentDomain === 'localhost') {
+          frontendDomain = 'http://localhost:5173';
+        } else {
+          // For production, use the same domain as the current page
+          // This assumes the chatbot bundle is hosted on the same domain
+          frontendDomain = `${currentProtocol}//${currentDomain}`;
+        }
+      }
+      
+      // Try absolute URL first, then fallback to relative URL
+      let bundleUrl = frontendDomain + '/chatbot-bundle.js';
       
       console.log('🌐 Frontend domain:', frontendDomain);
       console.log('📦 Bundle URL (from frontend domain):', bundleUrl);
@@ -113,9 +130,44 @@
       };
       
       s.onerror = (error) => {
-        console.error('❌ Failed to load bundle:', error);
+        console.error('❌ Failed to load bundle from absolute URL:', error);
         console.error('❌ Bundle URL that failed:', bundleUrl);
-        reject('Failed to load bundle');
+        
+        // Fallback to relative URL
+        console.log('🔄 Trying relative URL fallback...');
+        const relativeBundleUrl = '/chatbot-bundle.js';
+        console.log('📦 Relative bundle URL:', relativeBundleUrl);
+        
+        s.src = relativeBundleUrl;
+        
+        s.onload = () => {
+          console.log('✅ Bundle script loaded successfully from relative URL');
+          
+          // Wait for the RankVedChatbot object to be available
+          let retryCount = 0;
+          const maxRetries = 50; // 5 seconds max wait
+          
+          const checkForChatbot = () => {
+            if (window.RankVedChatbot && typeof window.RankVedChatbot.init === 'function') {
+              console.log('✅ RankVedChatbot object found');
+              resolve(window.RankVedChatbot);
+            } else if (retryCount < maxRetries) {
+              retryCount++;
+              setTimeout(checkForChatbot, 100);
+            } else {
+              console.error('❌ Bundle loaded but RankVedChatbot object not found after ' + maxRetries + ' attempts');
+              reject('Bundle loaded but init function not found after timeout');
+            }
+          };
+          
+          checkForChatbot();
+        };
+        
+        s.onerror = (fallbackError) => {
+          console.error('❌ Failed to load bundle from relative URL:', fallbackError);
+          console.error('❌ Both absolute and relative URLs failed');
+          reject('Failed to load bundle from both absolute and relative URLs');
+        };
       };
       
       console.log('📤 Adding bundle script to DOM...');
@@ -136,7 +188,7 @@
       const currentDomain = window.location.hostname;
       const currentProtocol = window.location.protocol;
       
-      if (currentDomain === 'localhost' || currentDomain === '127.0.0.1') {
+      if (currentDomain === 'localhost') {
         backendUrl = 'http://localhost:3000';
       } else {
         // For production, use the deployed backend URL

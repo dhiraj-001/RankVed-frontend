@@ -36,6 +36,7 @@ export default function Training() {
   const [fetchingStates, setFetchingStates] = useState<{ [url: string]: 'idle' | 'fetching' | 'success' | 'error' }>({});
   const [fetchProgress, setFetchProgress] = useState<{ current: number; total: number }>({ current: 0, total: 0 });
   const [questionFlow, setQuestionFlow] = useState<any>(null);
+  const [originalQuestionFlow, setOriginalQuestionFlow] = useState<any>(null);
   const [isGeneratingFlow, setIsGeneratingFlow] = useState(false);
   const [editedFlow, setEditedFlow] = useState<string>('');
   const [whatsapp, setWhatsapp] = useState(activeChatbot?.whatsapp || '');
@@ -167,26 +168,30 @@ export default function Training() {
 
   // Track flow changes
   useEffect(() => {
-    if (questionFlow && editedFlow) {
+    if (editedFlow && editedFlow.trim() !== '') {
       try {
         const parsedEditedFlow = JSON.parse(editedFlow);
-        const hasChanges = !isEqual(parsedEditedFlow, questionFlow);
+        
+        // Compare with original flow from backend
+        const hasChanges = originalQuestionFlow ? !isEqual(parsedEditedFlow, originalQuestionFlow) : true;
         setHasFlowChanges(hasChanges);
-        console.log('[Training] Flow changes tracked:', { hasChanges, editedFlowLength: editedFlow.length, questionFlowKeys: Object.keys(questionFlow || {}) });
+        console.log('[Training] Flow changes tracked:', { 
+          hasChanges, 
+          editedFlowLength: editedFlow.length, 
+          hasOriginalFlow: !!originalQuestionFlow,
+          originalFlowKeys: Object.keys(originalQuestionFlow || {}),
+          currentFlowKeys: Object.keys(parsedEditedFlow || {})
+        });
       } catch {
         // If JSON is invalid, consider it changed
         setHasFlowChanges(true);
         console.log('[Training] Flow changes tracked: Invalid JSON, marked as changed');
       }
-    } else if (editedFlow && editedFlow.trim() !== '') {
-      // If there's edited flow but no original flow, consider it changed
-      setHasFlowChanges(true);
-      console.log('[Training] Flow changes tracked: Has edited flow but no original flow');
     } else {
       setHasFlowChanges(false);
       console.log('[Training] Flow changes tracked: No changes');
     }
-  }, [editedFlow, questionFlow]);
+  }, [editedFlow, originalQuestionFlow]);
 
 
 
@@ -473,6 +478,12 @@ export default function Training() {
       setHasTrainingDataChanges(false);
       setHasFlowChanges(false);
       
+      // Update the original flow to match the saved flow
+      if (parsedFlow) {
+        setOriginalQuestionFlow(parsedFlow);
+        console.log('[Training] Updated original flow after save:', parsedFlow);
+      }
+      
       // Show success message
       const wordCount = trainingData ? trainingData.split(/\s+/).filter(word => word.length > 0).length : 0;
       toast({
@@ -557,6 +568,10 @@ export default function Training() {
   // Updated handler for generating question flow (AI)
   const handleGenerateFlow = async () => {
     setIsGeneratingFlow(true);
+    
+    // Enable save button immediately when generation starts
+    setHasFlowChanges(true);
+    
     try {
       if (!trainingData) {
         toast({
@@ -565,20 +580,27 @@ export default function Training() {
           variant: 'destructive',
         });
         setIsGeneratingFlow(false);
+        // Reset flow changes if generation fails due to no training data
+        setHasFlowChanges(false);
         return;
       }
       // Compose content with contact info (fields may be blank)
       const contactInfo = `\n\nContact Info:\nWhatsApp: ${whatsapp}\nPhone: ${phone}\nWebsite: ${website}`;
       const contentWithContact = trainingData + contactInfo;
       const result = await generateQuestionFlow.mutateAsync(contentWithContact);
+      console.log('[Training] Generated new question flow:', result);
       setQuestionFlow(result);
+      setOriginalQuestionFlow(result);
       setEditedFlow(JSON.stringify(result, null, 2));
+      console.log('[Training] Set original flow and edited flow after generation');
     } catch (error: any) {
       toast({
         title: 'Error',
         description: error.message || 'Failed to generate question flow',
         variant: 'destructive',
       });
+      // Reset flow changes if generation fails
+      setHasFlowChanges(false);
     } finally {
       setIsGeneratingFlow(false);
     }
@@ -676,10 +698,12 @@ We serve over 1,000+ companies worldwide and are trusted by industry leaders.`;
           
           if (parsedTrainingData && typeof parsedTrainingData === 'object') {
             setQuestionFlow(parsedTrainingData);
+            setOriginalQuestionFlow(parsedTrainingData);
             setEditedFlow(JSON.stringify(parsedTrainingData, null, 2));
             console.log('[Training] Loaded question flow from backend:', parsedTrainingData);
           } else {
             setQuestionFlow(null);
+            setOriginalQuestionFlow(null);
             setEditedFlow('');
             console.log('[Training] No valid question flow found in trainingData');
           }
@@ -691,6 +715,7 @@ We serve over 1,000+ companies worldwide and are trusted by industry leaders.`;
       } else {
         // Reset flow state if no training data
         setQuestionFlow(null);
+        setOriginalQuestionFlow(null);
         setEditedFlow('');
         console.log('[Training] No trainingData found in activeChatbot');
       }
@@ -794,6 +819,7 @@ We serve over 1,000+ companies worldwide and are trusted by industry leaders.`;
         },
       });
       setQuestionFlow(null);
+      setOriginalQuestionFlow(null);
       setEditedFlow('');
       setHasFlowChanges(false);
       toast({
@@ -855,6 +881,7 @@ We serve over 1,000+ companies worldwide and are trusted by industry leaders.`;
               )}
               {updateChatbot.isPending ? 'Saving...' : 'Save All'}
               {hasTrainingDataChanges && <Badge variant="secondary" className="ml-2 bg-green-100 text-green-700 text-xs">Data Changed</Badge>}
+              {hasFlowChanges && <Badge variant="secondary" className="ml-2 bg-blue-100 text-blue-700 text-xs">Flow Changed</Badge>}
             </Button>
           </div>
         </div>
@@ -878,6 +905,7 @@ We serve over 1,000+ companies worldwide and are trusted by industry leaders.`;
               )}
               {updateChatbot.isPending ? 'Saving...' : 'Save'}
               {hasTrainingDataChanges && <Badge variant="secondary" className="ml-1 bg-green-100 text-green-700 text-xs">Changed</Badge>}
+              {hasFlowChanges && <Badge variant="secondary" className="ml-1 bg-blue-100 text-blue-700 text-xs">Flow</Badge>}
             </Button>
           </div>
         </div>

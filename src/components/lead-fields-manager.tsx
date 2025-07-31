@@ -19,7 +19,7 @@ export function LeadFieldsManager({ chatbotId }: LeadFieldsManagerProps) {
 
   // State management
   const [enabled, setEnabled] = useState(false);
-  const [selectedFields, setSelectedFields] = useState<string[]>([]);
+  const [selectedFields, setSelectedFields] = useState<string[]>(['name', 'phone']);
   const [originalState, setOriginalState] = useState<{
     enabled: boolean;
     fields: string[];
@@ -27,77 +27,178 @@ export function LeadFieldsManager({ chatbotId }: LeadFieldsManagerProps) {
 
   // Initialize state from API data
   useEffect(() => {
+    console.log('[LeadFields] useEffect triggered:', {
+      hasLeadFields: !!leadFields,
+      leadFieldsData: leadFields,
+      originalState: originalState,
+      isLoading: isLoading
+    });
+
     if (leadFields) {
       const newState = {
         enabled: leadFields.leadCollectionEnabled,
         fields: leadFields.leadCollectionFields || ['name', 'phone']
       };
       
+      console.log('[LeadFields] Initializing state from API:', {
+        newState: newState,
+        leadCollectionFieldsType: typeof leadFields.leadCollectionFields,
+        leadCollectionFieldsIsArray: Array.isArray(leadFields.leadCollectionFields),
+        leadCollectionFieldsValue: leadFields.leadCollectionFields
+      });
+      
+      // Always update state when API data changes
       setEnabled(newState.enabled);
-      setSelectedFields(newState.fields);
-      setOriginalState(newState);
+      setSelectedFields([...newState.fields]);
+      setOriginalState({
+        enabled: newState.enabled,
+        fields: [...newState.fields]
+      });
+    } else if (!originalState && !isLoading) {
+      // Fallback initialization if no API data and not loading
+      console.log('[LeadFields] Using fallback initialization');
+      const fallbackState = {
+        enabled: false,
+        fields: ['name', 'phone']
+      };
+      setOriginalState(fallbackState);
     }
-  }, [leadFields]);
+  }, [leadFields, isLoading]); // Removed originalState from dependencies to prevent infinite loop
 
   // Check if there are any changes
   const hasChanges = useMemo(() => {
-    if (!originalState) return false;
+    console.log('[LeadFields] Change detection triggered:', {
+      hasOriginalState: !!originalState,
+      currentEnabled: enabled,
+      currentSelectedFields: selectedFields,
+      currentSelectedFieldsType: typeof selectedFields,
+      currentSelectedFieldsIsArray: Array.isArray(selectedFields)
+    });
+
+    if (!originalState) {
+      console.log('[LeadFields] No original state, no changes');
+      return false;
+    }
     
-    const fieldsChanged = JSON.stringify(selectedFields.sort()) !== JSON.stringify(originalState.fields.sort());
+    // Simple comparison - check if arrays have same length and same items
+    const fieldsChanged = selectedFields.length !== originalState.fields.length ||
+      !selectedFields.every(field => originalState.fields.includes(field)) ||
+      !originalState.fields.every(field => selectedFields.includes(field));
+    
     const enabledChanged = enabled !== originalState.enabled;
     
-    console.log('[LeadFields] Change detection:', {
-      current: { enabled, fields: selectedFields },
-      original: originalState,
+    const hasChangesResult = fieldsChanged || enabledChanged;
+    
+    console.log('[LeadFields] Change detection result:', {
+      current: { 
+        enabled, 
+        fields: selectedFields,
+        fieldsType: typeof selectedFields,
+        fieldsIsArray: Array.isArray(selectedFields)
+      },
+      original: {
+        ...originalState,
+        fieldsType: typeof originalState.fields,
+        fieldsIsArray: Array.isArray(originalState.fields)
+      },
       fieldsChanged,
       enabledChanged,
-      hasChanges: fieldsChanged || enabledChanged
+      hasChanges: hasChangesResult
     });
     
-    return fieldsChanged || enabledChanged;
+    return hasChangesResult;
   }, [enabled, selectedFields, originalState]);
 
   const handleToggleField = (fieldValue: string) => {
+    console.log('[LeadFields] Toggle field called:', {
+      fieldValue: fieldValue,
+      currentSelectedFields: selectedFields,
+      willRemove: selectedFields.includes(fieldValue)
+    });
+
     setSelectedFields(prev => {
-      if (prev.includes(fieldValue)) {
-        return prev.filter(f => f !== fieldValue);
-      } else {
-        return [...prev, fieldValue];
-      }
+      const newFields = prev.includes(fieldValue) 
+        ? prev.filter(f => f !== fieldValue)
+        : [...prev, fieldValue];
+      
+      console.log('[LeadFields] Field toggle result:', {
+        fieldValue: fieldValue,
+        previousFields: prev,
+        newFields: newFields,
+        newFieldsType: typeof newFields,
+        newFieldsIsArray: Array.isArray(newFields)
+      });
+      
+      return newFields;
     });
   };
 
   const handleReset = () => {
+    console.log('[LeadFields] Reset called:', {
+      hasOriginalState: !!originalState,
+      originalState: originalState
+    });
+
     if (originalState) {
+      console.log('[LeadFields] Resetting to original state:', {
+        enabled: originalState.enabled,
+        fields: originalState.fields,
+        fieldsType: typeof originalState.fields,
+        fieldsIsArray: Array.isArray(originalState.fields)
+      });
+      
       setEnabled(originalState.enabled);
-      setSelectedFields(originalState.fields);
+      setSelectedFields([...originalState.fields]); // Create a copy to ensure state immutability
     }
   };
 
   const handleSave = async () => {
+    console.log('[LeadFields] Save called:', {
+      chatbotId: chatbotId,
+      selectedFields: selectedFields,
+      selectedFieldsType: typeof selectedFields,
+      selectedFieldsIsArray: Array.isArray(selectedFields),
+      enabled: enabled
+    });
+
     try {
       // Update both lead collection enabled state and fields
-      await updateLeadFields.mutateAsync({
+      const saveData = {
         chatbotId,
         fields: selectedFields,
         enabled: enabled,
-      });
+      };
+      
+      console.log('[LeadFields] Sending save data to API:', saveData);
+      
+      await updateLeadFields.mutateAsync(saveData);
 
       // Update original state to reflect the saved state
-      setOriginalState({
+      const newOriginalState = {
         enabled,
-        fields: selectedFields
+        fields: [...selectedFields] // Create a copy to ensure state immutability
+      };
+      
+      console.log('[LeadFields] Updating original state after save:', {
+        newOriginalState: newOriginalState,
+        fieldsType: typeof newOriginalState.fields,
+        fieldsIsArray: Array.isArray(newOriginalState.fields)
       });
+      
+      setOriginalState(newOriginalState);
 
       toast({
         title: 'Lead Fields Updated',
         description: 'Lead collection settings have been saved successfully.',
+        duration: 3000, // Auto-dismiss after 3 seconds
       });
     } catch (error) {
+      console.error('[LeadFields] Save error:', error);
       toast({
         title: 'Error',
         description: 'Failed to update lead fields. Please try again.',
         variant: 'destructive',
+        duration: 5000, // Auto-dismiss after 5 seconds for errors
       });
     }
   };

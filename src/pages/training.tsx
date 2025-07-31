@@ -49,7 +49,7 @@ export default function Training() {
   // Popup Sound Settings
   const [popupSoundEnabled, setPopupSoundEnabled] = useState(activeChatbot?.popupSoundEnabled ?? true);
   const [popupSoundVolume, setPopupSoundVolume] = useState(activeChatbot?.popupSoundVolume ?? 50);
-  const [selectedPopupSound, setSelectedPopupSound] = useState(activeChatbot?.customPopupSound || '/openclose.mp3');
+  const [selectedPopupSound, setSelectedPopupSound] = useState(activeChatbot?.customPopupSound || '');
   const [isPlayingSound, setIsPlayingSound] = useState(false);
   const [playingSoundId, setPlayingSoundId] = useState<string | null>(null);
   const [audioRefs, setAudioRefs] = useState<{ [key: string]: HTMLAudioElement }>({});
@@ -82,7 +82,7 @@ export default function Training() {
       setCustomApiKey(activeChatbot.customApiKey || '');
       setPopupSoundEnabled(activeChatbot.popupSoundEnabled ?? true);
       setPopupSoundVolume(activeChatbot.popupSoundVolume ?? 50);
-      setSelectedPopupSound(activeChatbot.customPopupSound || '/openclose.mp3');
+      setSelectedPopupSound(activeChatbot.customPopupSound || '');
       setChatBubblePopupDelay(activeChatbot.popupDelay ?? 3000);
       setMessagePopupDelay(activeChatbot.replyDelay ?? 1000);
       
@@ -147,7 +147,7 @@ export default function Training() {
   useEffect(() => {
     const originalSoundEnabled = activeChatbot?.popupSoundEnabled ?? true;
     const originalSoundVolume = activeChatbot?.popupSoundVolume ?? 50;
-    const originalCustomSound = activeChatbot?.customPopupSound || '/openclose.mp3';
+    const originalCustomSound = activeChatbot?.customPopupSound || '';
     setHasSoundSettingsChanges(
       popupSoundEnabled !== originalSoundEnabled ||
       popupSoundVolume !== originalSoundVolume ||
@@ -201,7 +201,10 @@ export default function Training() {
   // Mutation for generating question flow (AI)
   const generateQuestionFlow = useMutation({
     mutationFn: async (content: string) => {
-      const response = await apiRequest('POST', '/api/training/generate', { content });
+      const response = await apiRequest('POST', '/api/training/generate', { 
+        content,
+        chatbotId: activeChatbot?.id 
+      });
       if (!response.ok) {
         const err = await response.json().catch(() => ({}));
         throw new Error(err.message || 'Failed to generate question flow');
@@ -312,7 +315,7 @@ export default function Training() {
 
   // Clear file input when custom sound is removed
   const clearCustomSound = () => {
-    setSelectedPopupSound('/openclose.mp3');
+    setSelectedPopupSound('');
     // Clear the file input
     const fileInput = document.getElementById('customSound') as HTMLInputElement;
     if (fileInput) {
@@ -321,26 +324,31 @@ export default function Training() {
   };
 
   // Delete custom sound from database
-  const handleDeleteCustomSound = async () => {
+  const handleDeleteCustomSound = async (_ : any, soundUrl?: string) => {
     try {
-      // Remove the custom popup sound from the chatbot
-      await updateChatbot.mutateAsync({
-        id: activeChatbot!.id,
-        data: {
-          customPopupSound: '/openclose.mp3', // Reset to default
-        },
-      });
+      // If a specific sound is being deleted, clear the chatbot's sound if it matches
+      if (soundUrl && activeChatbot?.customPopupSound === soundUrl) {
+        await updateChatbot.mutateAsync({
+          id: activeChatbot.id,
+          data: {
+            customPopupSound: '', // Clear the custom sound
+          },
+        });
+        
+        // Clear selected sound if it was the deleted one
+        if (selectedPopupSound === soundUrl) {
+          setSelectedPopupSound('');
+        }
+      }
+      
+      // Refresh the custom sounds list to remove the deleted sound from frontend
+      refetchCustomSounds();
       
       setHasSoundSettingsChanges(true);
       toast({
         title: 'Sound deleted',
         description: 'Custom sound has been removed successfully.',
       });
-      
-      // Reset selected sound if it was the deleted one
-      if (selectedPopupSound !== '/openclose.mp3') {
-        setSelectedPopupSound('/openclose.mp3');
-      }
     } catch (error) {
       toast({
         title: 'Error',
@@ -470,6 +478,7 @@ export default function Training() {
       toast({
         title: 'Data Saved',
         description: `Training data (${wordCount} words) and question flow saved successfully.`,
+        duration: 3000, // Auto-dismiss after 3 seconds
       });
     } catch (error) {
       console.error('[Training] Error saving chatbot data:', error);
@@ -477,6 +486,7 @@ export default function Training() {
         title: 'Save Failed',
         description: 'Failed to save data. Please try again.',
         variant: 'destructive',
+        duration: 5000, // Auto-dismiss after 5 seconds for errors
       });
     }
   };
@@ -517,6 +527,7 @@ export default function Training() {
         toast({
           title: 'Content fetched',
           description: `Successfully fetched content from ${url}`,
+          duration: 3000, // Auto-dismiss after 3 seconds
         });
       } catch (error) {
         // Update state to error
@@ -526,6 +537,7 @@ export default function Training() {
           title: 'Fetch error',
           description: `Failed to fetch content from ${url}`,
           variant: 'destructive',
+          duration: 5000, // Auto-dismiss after 5 seconds for errors
         });
       }
     }
@@ -1306,14 +1318,31 @@ We serve over 1,000+ companies worldwide and are trusted by industry leaders.`;
                       </div>
                       
                       {/* Option 2: Custom Sounds from Database */}
-                      {customSounds.length > 0 && (
-                        <div className="space-y-3">
-                          <div className="flex items-center gap-2">
-                            <div className="w-3 h-3 bg-purple-600 rounded-full"></div>
-                            <span className="text-sm font-medium">Previously Uploaded Sounds</span>
-                          </div>
-                          <div className="space-y-2 max-h-32 overflow-y-auto border border-gray-200 rounded-md p-2">
-                            {customSounds.map((sound: CustomSound) => (
+                      {(() => {
+                        // Filter custom sounds to only show:
+                        // 1. Custom uploaded sounds (not default sounds like /openclose.mp3)
+                        // 2. Sounds that are actually being used by the active chatbot
+                        const filteredCustomSounds = customSounds.filter((sound: CustomSound) => {
+                          // Exclude default sounds
+                          const isDefaultSound = sound.soundUrl === '/openclose.mp3' || 
+                                               sound.soundUrl.startsWith('data:audio/') && 
+                                               sound.soundUrl.includes('openclose');
+                          
+                          // Check if this sound is being used by the active chatbot
+                          const isUsedByActiveChatbot = activeChatbot?.customPopupSound === sound.soundUrl;
+                          
+                          // Only show custom sounds that are being used
+                          return !isDefaultSound && isUsedByActiveChatbot;
+                        });
+                        
+                        return filteredCustomSounds.length > 0 ? (
+                          <div className="space-y-3">
+                            <div className="flex items-center gap-2">
+                              <div className="w-3 h-3 bg-purple-600 rounded-full"></div>
+                              <span className="text-sm font-medium">Sounds in Use</span>
+                            </div>
+                            <div className="space-y-2 max-h-32 overflow-y-auto border border-gray-200 rounded-md p-2">
+                              {filteredCustomSounds.map((sound: CustomSound) => (
                               <div
                                 key={sound.id}
                                 className={`flex items-center justify-between p-2 rounded-md cursor-pointer transition-colors ${
@@ -1431,7 +1460,7 @@ We serve over 1,000+ companies worldwide and are trusted by industry leaders.`;
                                     variant="ghost"
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      handleDeleteCustomSound();
+                                      handleDeleteCustomSound(sound.id, sound.soundUrl);
                                     }}
                                     className="h-6 w-6 p-0 hover:bg-red-200 text-red-600"
                                   >
@@ -1442,7 +1471,8 @@ We serve over 1,000+ companies worldwide and are trusted by industry leaders.`;
                             ))}
                           </div>
                         </div>
-                      )}
+                      ) : null;
+                      })()}
                       
                       {/* Option 3: Custom Upload */}
                       <div className="space-y-3">

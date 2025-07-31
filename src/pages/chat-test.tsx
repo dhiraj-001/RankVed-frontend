@@ -89,7 +89,7 @@ export default function ChatTest() {
   const [leadFields, setLeadFields] = useState<LeadField[]>([]);
   const [isSubmittingLead, setIsSubmittingLead] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const apiUrl = import.meta.env.VITE_API_URL || '';
+  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
   const chatbotId = getChatbotIdFromUrl();
 
   // Initialize chat with welcome message
@@ -126,27 +126,40 @@ export default function ChatTest() {
           if (chatbotResponse.ok) {
             const chatbotData = await chatbotResponse.json();
             if (chatbotData.leadCollectionFields && Array.isArray(chatbotData.leadCollectionFields)) {
-              setLeadFields(chatbotData.leadCollectionFields);
+              // Convert array of field names to field objects
+              const fieldObjects = chatbotData.leadCollectionFields.map((fieldName: string) => {
+                switch (fieldName) {
+                  case 'name':
+                    return { id: 'name', label: 'Full Name', type: 'text', required: true, placeholder: 'Your name' };
+                  case 'email':
+                    return { id: 'email', label: 'Email Address', type: 'email', required: false, placeholder: 'your@email.com' };
+                  case 'phone':
+                    return { id: 'phone', label: 'Phone Number', type: 'tel', required: false, placeholder: 'Your phone number' };
+                  default:
+                    return { id: fieldName, label: fieldName.charAt(0).toUpperCase() + fieldName.slice(1), type: 'text', required: false, placeholder: `Your ${fieldName}` };
+                }
+              });
+              setLeadFields(fieldObjects);
             } else {
               // Default fields if none configured
               setLeadFields([
-                { id: 'name', label: 'Name', type: 'text', required: true, placeholder: 'Your name' },
-                { id: 'email', label: 'Email', type: 'email', required: true, placeholder: 'your@email.com' }
+                { id: 'name', label: 'Full Name', type: 'text', required: true, placeholder: 'Your name' },
+                { id: 'phone', label: 'Phone Number', type: 'tel', required: false, placeholder: 'Your phone number' }
               ]);
             }
           } else {
             // Default fields if response not ok
             setLeadFields([
-              { id: 'name', label: 'Name', type: 'text', required: true, placeholder: 'Your name' },
-              { id: 'email', label: 'Email', type: 'email', required: true, placeholder: 'your@email.com' }
+              { id: 'name', label: 'Full Name', type: 'text', required: true, placeholder: 'Your name' },
+              { id: 'phone', label: 'Phone Number', type: 'tel', required: false, placeholder: 'Your phone number' }
             ]);
           }
         } catch (error) {
           console.log('Could not fetch chatbot lead fields, using defaults');
           // Default fields if fetch fails
           setLeadFields([
-            { id: 'name', label: 'Name', type: 'text', required: true, placeholder: 'Your name' },
-            { id: 'email', label: 'Email', type: 'email', required: true, placeholder: 'your@email.com' }
+            { id: 'name', label: 'Full Name', type: 'text', required: true, placeholder: 'Your name' },
+            { id: 'phone', label: 'Phone Number', type: 'tel', required: false, placeholder: 'Your phone number' }
           ]);
         }
       } catch {

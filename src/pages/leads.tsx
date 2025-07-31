@@ -300,7 +300,7 @@ export default function Leads() {
 
         {/* Filters */}
         <Card className="mb-6 shadow bg-white/80 border-0 sticky top-[90px] z-10">
-          <CardContent className="p-6 flex flex-col sm:flex-row gap-4 items-center">
+          <CardContent className="p-6 flex flex-col sm:flex-row gap-4 items-center bg-white rounded-xl">
             <div className="relative flex-1 w-full">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400 animate-bounce" />
               <Input

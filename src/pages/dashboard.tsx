@@ -44,7 +44,7 @@ export default function Dashboard() {
     suggestionTimeout: number;
     leadCollectionEnabled: boolean;
     leadCollectionAfterMessages: number;
-    leadCollectionMessage: string;
+    leadCollectionFields: string[];
     chatWindowStyle: string;
     chatWindowTheme: string;
     borderRadius: number;
@@ -70,12 +70,12 @@ export default function Dashboard() {
     suggestionTimeout: 30000,
     leadCollectionEnabled: true,
     leadCollectionAfterMessages: 3,
-    leadCollectionMessage: 'To help you better, may I have your name and contact information!',
+    leadCollectionFields: ['name', 'phone'],
     chatWindowStyle: 'modern',
     chatWindowTheme: 'light',
     borderRadius: 16,
     shadowStyle: 'soft',
-    popupDelay: 2000,
+    popupDelay: 3000,
     replyDelay: 1000
   });
   const { handleCreateChatbot, handleUpdateChatbot, handleDeleteChatbot, createChatbot, updateChatbot } = useChatbotActions({ setShowCreateDialog, setNewChatbot });
@@ -118,7 +118,7 @@ export default function Dashboard() {
         suggestionTimeout: 30000,
         leadCollectionEnabled: true,
         leadCollectionAfterMessages: 3,
-        leadCollectionMessage: 'To help you better, may I have your name and contact information!',
+        leadCollectionFields: ['name', 'phone'],
         chatWindowStyle: 'modern',
         chatWindowTheme: 'light',
         borderRadius: 16,
@@ -321,10 +321,10 @@ export default function Dashboard() {
                         suggestionTiming: 'initial',
                         suggestionPersistence: 'until_clicked',
                         suggestionTimeout: 30000,
-                        leadCollectionEnabled: true,
-                        leadCollectionAfterMessages: 3,
-                        leadCollectionMessage: 'To help you better, may I have your name and contact information!',
-                        chatWindowStyle: 'modern',
+                            leadCollectionEnabled: true,
+    leadCollectionAfterMessages: 3,
+    leadCollectionFields: ['name', 'phone'],
+    chatWindowStyle: 'modern',
                         chatWindowTheme: 'light',
                         borderRadius: 16,
                         shadowStyle: 'soft',

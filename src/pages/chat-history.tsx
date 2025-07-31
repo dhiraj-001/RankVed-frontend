@@ -173,17 +173,29 @@ export default function ChatHistory() {
     if (minutes < 60) return `${minutes}m`;
     const hours = Math.floor(minutes / 60);
     const remainingMinutes = minutes % 60;
+    if (remainingMinutes === 0) return `${hours}h`;
     return `${hours}h ${remainingMinutes}m`;
   };
 
   const formatDate = (date: Date) => {
-    return new Intl.DateTimeFormat('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    }).format(date);
+    const now = new Date();
+    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
+    const diffInDays = Math.floor(diffInHours / 24);
+    
+    if (diffInHours < 1) {
+      return 'Just now';
+    } else if (diffInHours < 24) {
+      return `${diffInHours}h ago`;
+    } else if (diffInDays < 7) {
+      return `${diffInDays}d ago`;
+    } else {
+      return new Intl.DateTimeFormat('en-US', {
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      }).format(date);
+    }
   };
 
   if (!activeChatbot && chatbots.length === 0) {
@@ -476,7 +488,6 @@ function SessionCard({
   isExpanded, 
   onToggleExpansion, 
   onDelete, 
-  formatDuration, 
   formatDate 
 }: SessionCardProps) {
   const { data: messages = [], isLoading: messagesLoading } = useChatMessages(
@@ -505,10 +516,7 @@ function SessionCard({
                 <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4" />
                 {session.messageCount} messages
               </div>
-              <div className="flex items-center gap-1">
-                <Clock className="h-3 w-3 sm:h-4 sm:w-4" />
-                {formatDuration(session.duration)}
-              </div>
+            
             </div>
           </div>
 

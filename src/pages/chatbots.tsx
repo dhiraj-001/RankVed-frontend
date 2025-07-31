@@ -42,7 +42,7 @@ export default function Chatbots() {
     suggestionTimeout: 30000,
     leadCollectionEnabled: true,
     leadCollectionAfterMessages: 3,
-    leadCollectionMessage: 'To help you better, may I have your name and contact information?',
+    leadCollectionFields: ['name', 'phone'],
     chatWindowStyle: 'modern',
     chatWindowTheme: 'light',
     borderRadius: 16,

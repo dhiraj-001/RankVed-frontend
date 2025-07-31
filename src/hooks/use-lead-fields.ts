@@ -11,9 +11,20 @@ export function useLeadFields(chatbotId: string) {
   return useQuery({
     queryKey: ['/api/chatbots', chatbotId, 'lead-fields'],
     queryFn: async (): Promise<LeadFieldsConfig> => {
+      console.log('[LeadFields Hook] Fetching lead fields for chatbot:', chatbotId);
+      
       const response = await apiRequest('GET', `/api/chatbots/${chatbotId}/lead-fields`);
       if (!response.ok) throw new Error('Failed to fetch lead fields');
-      return response.json();
+      
+      const data = await response.json();
+      console.log('[LeadFields Hook] Received data from API:', {
+        data: data,
+        leadCollectionFields: data.leadCollectionFields,
+        leadCollectionFieldsType: typeof data.leadCollectionFields,
+        leadCollectionFieldsIsArray: Array.isArray(data.leadCollectionFields)
+      });
+      
+      return data;
     },
     enabled: !!chatbotId,
   });
@@ -24,14 +35,31 @@ export function useUpdateLeadFields() {
   
   return useMutation({
     mutationFn: async ({ chatbotId, fields, enabled }: { chatbotId: string; fields: string[]; enabled?: boolean }) => {
-      const response = await apiRequest('PUT', `/api/chatbots/${chatbotId}`, {
+      console.log('[LeadFields Hook] Updating lead fields:', {
+        chatbotId: chatbotId,
+        fields: fields,
+        fieldsType: typeof fields,
+        fieldsIsArray: Array.isArray(fields),
+        enabled: enabled
+      });
+      
+      const requestData = {
         leadCollectionFields: fields,
         leadCollectionEnabled: enabled,
-      });
+      };
+      
+      console.log('[LeadFields Hook] Sending request data:', requestData);
+      
+      const response = await apiRequest('PUT', `/api/chatbots/${chatbotId}`, requestData);
       if (!response.ok) throw new Error('Failed to update lead fields');
-      return response.json();
+      
+      const result = await response.json();
+      console.log('[LeadFields Hook] Update response:', result);
+      
+      return result;
     },
     onSuccess: (_, { chatbotId }) => {
+      console.log('[LeadFields Hook] Update successful, invalidating queries for chatbot:', chatbotId);
       queryClient.invalidateQueries({ queryKey: ['/api/chatbots', chatbotId, 'lead-fields'] });
       queryClient.invalidateQueries({ queryKey: ['/api/chatbots', chatbotId] });
     },

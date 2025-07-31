@@ -1,9 +1,4 @@
-// Define the interfaces based on your expected JSON structure
-interface FollowUpOption {
-  option_text: string; // Changed from button_text to option_text
-  associated_intent_id: string;
-  // No cta_button_text or cta_button_link here, as per your instructions
-}
+
 
 /**
  * Validates if the provided chatbot training data adheres to the specified format.

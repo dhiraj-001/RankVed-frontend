@@ -5,17 +5,6 @@ interface FollowUpOption {
   // No cta_button_text or cta_button_link here, as per your instructions
 }
 
-interface TrainingDataItem {
-  intent_id: string;
-  nlp_training_phrases: string[];
-  default_response_text: string;
-  follow_up_options: FollowUpOption[];
-  cta_button_text: string | null;
-  cta_button_link: string | null;
-  collect_contact_info: boolean;
-  lead: boolean;
-}
-
 /**
  * Validates if the provided chatbot training data adheres to the specified format.
  *

@@ -328,23 +328,69 @@ export default function ChatTest() {
       return;
     }
     
-    // Simulate form submission
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    // Add success message
-    setMessages(prev => [
-      ...prev,
-      {
-        id: `${Date.now()}-bot`,
-        content: "Thank you! We've received your information and will get back to you soon. Is there anything else I can help you with?",
-        sender: 'bot',
-        timestamp: new Date(),
+    try {
+      // Submit lead to the API
+      const response = await fetch(`${apiUrl}/api/chat/${chatbotId}/leads`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          chatbotId,
+          name: leadFormData.name,
+          email: leadFormData.email,
+          phone: leadFormData.phone,
+          company: leadFormData.company,
+          message: leadFormData.message,
+          consentGiven: true,
+          source: 'chat-test',
+          conversationContext: {
+            messages: messages.slice(-5), // Include last 5 messages for context
+            variables: {
+              page: window.location.href,
+              referrer: document.referrer,
+              userAgent: navigator.userAgent
+            }
+          }
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
       }
-    ]);
-    
-    setShowLeadForm(false);
-    setLeadFormData({ name: '', email: '', phone: '', company: '', message: '' });
-    setIsSubmittingLead(false);
+
+      await response.json();
+
+      // Add success message
+      setMessages(prev => [
+        ...prev,
+        {
+          id: `${Date.now()}-bot`,
+          content: "Thank you! We've received your information and will get back to you soon. Is there anything else I can help you with?",
+          sender: 'bot',
+          timestamp: new Date(),
+        }
+      ]);
+      
+      setShowLeadForm(false);
+      setLeadFormData({ name: '', email: '', phone: '', company: '', message: '' });
+      
+    } catch (error) {
+      
+      // Add error message
+      setMessages(prev => [
+        ...prev,
+        {
+          id: `${Date.now()}-bot`,
+          content: "I apologize, but there was an error submitting your information. Please try again or contact us directly.",
+          sender: 'bot',
+          timestamp: new Date(),
+        }
+      ]);
+    } finally {
+      setIsSubmittingLead(false);
+    }
   };
 
   return (

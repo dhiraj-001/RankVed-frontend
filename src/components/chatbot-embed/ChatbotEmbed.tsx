@@ -386,9 +386,6 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
         setIsFirstMessageLoading(false);
         setIsFirstMessage(false);
         playNotificationSound();
-        
-        // Check if lead form should be shown
-        showLeadFormIfNeeded(botMessage);
       }, dynamicConfig.replyDelay || 1000);
 
     } catch (error) {
@@ -507,9 +504,6 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
         setMessages(prev => [...prev, botMessage]);
         setIsLoading(false);
         playNotificationSound();
-        
-        // Check if lead form should be shown
-        showLeadFormIfNeeded(botMessage);
       }, dynamicConfig.replyDelay || 1000);
 
     } catch (error) {
@@ -561,13 +555,25 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
     e.preventDefault();
     if (!dynamicConfig) return;
 
-    setIsSubmittingLead(true);
-    console.log('[Lead Form] Submitting lead data:', {
-      chatbotId: dynamicConfig.chatbotId,
-      sessionId: getSessionId(),
-      leadData,
-      conversationContext: messages.length
+    // Validate required fields
+    const requiredFields = dynamicConfig.leadCollectionFields || ['name', 'phone'];
+    const missingFields = requiredFields.filter(field => {
+      const value = leadData[field];
+      return !value || (typeof value === 'string' && value.trim() === '');
     });
+
+    if (missingFields.length > 0) {
+      const errorMessage: Message = {
+        id: Date.now().toString(),
+        text: `Please fill in the required fields: ${missingFields.join(', ')}`,
+        sender: 'bot',
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, errorMessage]);
+      return;
+    }
+
+    setIsSubmittingLead(true);
     
     try {
       const apiUrl = dynamicConfig.apiUrl || window.RankVedChatbotConfig?.apiUrl;
@@ -584,23 +590,40 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
         },
         body: JSON.stringify({
           chatbotId: dynamicConfig.chatbotId,
-          sessionId: getSessionId(),
-          ...leadData,
+          name: leadData.name,
+          email: leadData.email,
+          phone: leadData.phone,
           consentGiven: true,
           source: 'chat_widget',
-          conversationContext: messages.map(msg => ({
-            role: msg.sender,
-            content: msg.text,
-            timestamp: msg.timestamp
-          }))
+          conversationContext: {
+            messages: messages.map(msg => ({
+              role: msg.sender,
+              content: msg.text,
+              timestamp: msg.timestamp
+            })),
+            variables: {
+              page: window.location.href,
+              referrer: document.referrer,
+              userAgent: navigator.userAgent
+            }
+          }
         })
       });
 
       if (!response.ok) {
-        throw new Error('Failed to submit lead');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
       }
 
+      await response.json();
       setLeadSubmitted(true);
+      
+      // Reset lead form data
+      setLeadData({
+        name: '',
+        email: '',
+        phone: ''
+      });
       
       // Add a success message
       const successMessage: Message = {
@@ -634,14 +657,6 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
     }));
   };
 
-  // Show lead form when shouldShowLead is true
-  const showLeadFormIfNeeded = (message: Message) => {
-    console.log('[Lead Form] Checking if should show lead form:', {
-      shouldShowLead: message.shouldShowLead,
-      leadCollectionEnabled: dynamicConfig?.leadCollectionEnabled,
-      leadSubmitted
-    });
-  };
 
   // Function to parse and render formatted text
   const renderFormattedText = (text: string) => {
@@ -1806,7 +1821,15 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
                           </button>
                           <button
                             type="button"
-                            onClick={() => setLeadSubmitted(true)}
+                            onClick={() => {
+                              setLeadSubmitted(true);
+                              // Reset lead form data when cancelled
+                              setLeadData({
+                                name: '',
+                                email: '',
+                                phone: ''
+                              });
+                            }}
                             className="lead-cancel-button"
                             disabled={isSubmittingLead}
                           >

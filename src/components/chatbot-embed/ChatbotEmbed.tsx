@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { MessageCircle, X, Send,  Volume2, VolumeX, User, Phone, Mail } from 'lucide-react';
+import { MessageCircle, X, Send, Volume2, VolumeX, User, Phone, Mail } from 'lucide-react';
 
 // Declare global window property for RankVedChatbotConfig
 declare global {
@@ -100,6 +100,9 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
   const [hasPlayedInitialSound, setHasPlayedInitialSound] = useState(false);
   const [showChatBubble, setShowChatBubble] = useState(false);
   
+  // **NEW**: State to manage the animation and visibility of the chat window
+  const [isWindowVisible, setIsWindowVisible] = useState(false);
+
   // Lead collection states
   const [leadData, setLeadData] = useState<LeadData>({
     name: '',
@@ -111,6 +114,29 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const ANIMATION_DURATION = 300; // Animation duration in ms
+
+  // **NEW**: Handlers for opening and closing the chat window with animation
+  const handleOpen = () => {
+    setIsOpen(true);
+  };
+  
+  const handleClose = () => {
+    setIsWindowVisible(false); // Trigger fade-out animation
+    setTimeout(() => {
+      setIsOpen(false); // Unmount component after animation
+    }, ANIMATION_DURATION);
+  };
+  
+  // **NEW**: Effect to trigger fade-in animation when window is opened
+  useEffect(() => {
+    if (isOpen) {
+      // Use a small timeout to ensure the element is in the DOM before adding the visibility class
+      const timer = setTimeout(() => setIsWindowVisible(true), 10);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen]);
 
   // Initialize audio for notification sounds
   useEffect(() => {
@@ -308,10 +334,10 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
 
   // Focus input when chat opens
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && isWindowVisible) {
       setTimeout(() => inputRef.current?.focus(), 100);
     }
-  }, [isOpen]);
+  }, [isOpen, isWindowVisible]);
 
   // Play bubble sound when bubble appears
   // Play notification sound for new messages
@@ -897,7 +923,20 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
           overflow: hidden;
           display: flex;
           flex-direction: column;
+
+          /* **NEW**: Animation styles for chat window */
+          opacity: 0;
+          transform: translateY(15px);
+          visibility: hidden;
+          transition: opacity ${ANIMATION_DURATION}ms ease, transform ${ANIMATION_DURATION}ms ease, visibility ${ANIMATION_DURATION}ms;
         }
+        /* **NEW**: Visible state for chat window */
+        .rankved-chatbot .chat-window.visible {
+            opacity: 1;
+            transform: translateY(0);
+            visibility: visible;
+        }
+
         @media (min-width: 768px) {
           .rankved-chatbot .chat-window {
             width: 420px;
@@ -1604,104 +1643,248 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
 
       {showChatBubble && (
         <div className="rankved-chatbot" style={getPositionStyles()}>
-          {!isOpen ? (
-            <div className="chat-bubble" onClick={() => setIsOpen(true)}>
+          {!isOpen && (
+            <div className="chat-bubble" onClick={handleOpen}>
               {dynamicConfig?.chatBubbleIcon ? (
                 <img src={dynamicConfig.chatBubbleIcon} alt="Chat" style={{ width: '35px', height: '35x', borderRadius: '50%', objectFit: 'cover' }} />
               ) : (
                 <MessageCircle size={28} />
               )}
             </div>
-          ) : (
-          <div className="chat-window">
-            <div className="chat-header">
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                {dynamicConfig?.chatWidgetIcon ? (
-                  <img
-                    src={dynamicConfig.chatWidgetIcon}
-                    alt="Widget Icon"
-                    style={{ width: '38px', height: '38px', borderRadius: '50%', objectFit: 'cover' }}
-                  />
-                ) : dynamicConfig?.showAvatar && dynamicConfig?.chatWindowAvatar ? (
-                  <img
-                    src={dynamicConfig.chatWindowAvatar}
-                    alt="Avatar"
-                    style={{ width: '32px', height: '32px', borderRadius: '50%' }}
-                  />
-                ) : null}
-                <span style={{ fontWeight: '600' }}>
-                  {dynamicConfig?.chatWidgetName || 'Support Chat'}
-                </span>
+          )}
+          {isOpen && (
+            <div className={`chat-window ${isWindowVisible ? 'visible' : ''}`}>
+              <div className="chat-header">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  {dynamicConfig?.chatWidgetIcon ? (
+                    <img
+                      src={dynamicConfig.chatWidgetIcon}
+                      alt="Widget Icon"
+                      style={{ width: '38px', height: '38px', borderRadius: '50%', objectFit: 'cover' }}
+                    />
+                  ) : dynamicConfig?.showAvatar && dynamicConfig?.chatWindowAvatar ? (
+                    <img
+                      src={dynamicConfig.chatWindowAvatar}
+                      alt="Avatar"
+                      style={{ width: '32px', height: '32px', borderRadius: '50%' }}
+                    />
+                  ) : null}
+                  <span style={{ fontWeight: '600' }}>
+                    {dynamicConfig?.chatWidgetName || 'Support Chat'}
+                  </span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <button
+                    onClick={toggleSound}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: 'white',
+                      cursor: 'pointer',
+                      padding: '4px',
+                      borderRadius: '4px',
+                      transition: 'all 0.2s ease',
+                      transform: 'scale(1)'
+                    }}
+                    title={soundEnabled ? 'Mute sound' : 'Unmute sound'}
+                    onMouseDown={(e) => {
+                      e.currentTarget.style.transform = 'scale(0.9)';
+                    }}
+                    onMouseUp={(e) => {
+                      e.currentTarget.style.transform = 'scale(1)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'scale(1)';
+                    }}
+                  >
+                    {soundEnabled ? <Volume2 size={16} /> : <VolumeX size={16} />}
+                  </button>
+                  <button
+                    onClick={handleClose}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: 'white',
+                      cursor: 'pointer',
+                      padding: '4px'
+                    }}
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <button
-                  onClick={toggleSound}
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    color: 'white',
-                    cursor: 'pointer',
-                    padding: '4px',
-                    borderRadius: '4px',
-                    transition: 'all 0.2s ease',
-                    transform: 'scale(1)'
-                  }}
-                  title={soundEnabled ? 'Mute sound' : 'Unmute sound'}
-                  onMouseDown={(e) => {
-                    e.currentTarget.style.transform = 'scale(0.9)';
-                  }}
-                  onMouseUp={(e) => {
-                    e.currentTarget.style.transform = 'scale(1)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = 'scale(1)';
-                  }}
-                >
-                  {soundEnabled ? <Volume2 size={16} /> : <VolumeX size={16} />}
-                </button>
-                <button
-                  onClick={() => setIsOpen(false)}
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    color: 'white',
-                    cursor: 'pointer',
-                    padding: '4px'
-                  }}
-                >
-                  <X size={16} />
-                </button>
-              </div>
-            </div>
 
-            <div className="chat-messages">
-              {/* Show welcome message when popup is disabled and no messages exist */}
-              {!dynamicConfig?.showWelcomePopup && messages.length === 0 && !isFirstMessageLoading && (
-                <div className="welcome-container">
-                  <div className="welcome-avatar-large">
-                    {dynamicConfig?.chatWidgetIcon ? (
-                      <img
-                        src={dynamicConfig.chatWidgetIcon}
-                        alt="Bot Avatar"
-                        style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }}
-                      />
-                    ) : (
-                      <MessageCircle size={48} />
+              <div className="chat-messages">
+                {/* Show welcome message when popup is disabled and no messages exist */}
+                {!dynamicConfig?.showWelcomePopup && messages.length === 0 && !isFirstMessageLoading && (
+                  <div className="welcome-container">
+                    <div className="welcome-avatar-large">
+                      {dynamicConfig?.chatWidgetIcon ? (
+                        <img
+                          src={dynamicConfig.chatWidgetIcon}
+                          alt="Bot Avatar"
+                          style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }}
+                        />
+                      ) : (
+                        <MessageCircle size={48} />
+                      )}
+                    </div>
+                    <div className="welcome-title-large">
+                      {dynamicConfig?.name || dynamicConfig?.chatWidgetName || 'AI Assistant'}
+                    </div>
+                    <div className="welcome-text-large">
+                      {dynamicConfig?.welcomeMessage || 'Ask Your Query'}
+                    </div>
+                  </div>
+                )}
+                
+                {messages.map((message) => (
+                  <div key={message.id} className={`message ${message.sender}`}>
+                    <div className="message-content">
+                      {message.sender === 'bot' && (
+                        <div className="message-avatar">
+                          {dynamicConfig?.chatWindowAvatar ? (
+                            <img
+                              src={dynamicConfig.chatWindowAvatar}
+                              alt="Bot Avatar"
+                              style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }}
+                            />
+                          ) : (
+                            <MessageCircle size={16} />
+                          )}
+                        </div>
+                      )}
+                      <div className="message-bubble">
+                        {message.sender === 'bot' ? renderFormattedText(message.text) : message.text}
+                      </div>
+                    </div>
+
+                    {/* Message actions (follow-up buttons and CTA) */}
+                    {(message.sender === 'bot' && ((message.followUpButtons && message.followUpButtons.length > 0) || message.ctaButton)) && (
+                      <div className="message-actions">
+                        {/* Follow-up buttons */}
+                        {message.followUpButtons && message.followUpButtons.length > 0 && (
+                          <div className="follow-up-buttons">
+                            {message.followUpButtons.map((button, index) => (
+                              <button
+                                key={index}
+                                className="follow-up-button"
+                                onClick={() => {
+                                  // Send the button text as the message instead of the payload
+                                  if (button.text && button.text.trim()) {
+                                    sendMessage(button.text);
+                                  }
+                                }}
+                              >
+                                {button.text}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* CTA button */}
+                        {message.ctaButton && (
+                          <a
+                            href={message.ctaButton.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="cta-button"
+                          >
+                            {message.ctaButton.text}
+                          </a>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Lead Form - Show as part of bot message when shouldShowLead is true */}
+                    {message.sender === 'bot' && message.shouldShowLead && dynamicConfig?.leadCollectionEnabled && !leadSubmitted && (
+                      <div className="lead-form-message">
+                        <div className="lead-form-header">
+                          <h3>Contact Details</h3>
+                        </div>
+                        <form onSubmit={handleLeadSubmit} className="lead-form">
+                          {dynamicConfig?.leadCollectionFields?.includes('name') && (
+                            <div className="lead-form-field">
+                              <div className="field-icon">
+                                <User size={14} />
+                              </div>
+                              <input
+                                type="text"
+                                placeholder="Your Name"
+                                value={leadData.name}
+                                onChange={(e) => handleLeadInputChange('name', e.target.value)}
+                                required
+                                disabled={isSubmittingLead}
+                              />
+                            </div>
+                          )}
+                          
+                          {dynamicConfig?.leadCollectionFields?.includes('email') && (
+                            <div className="lead-form-field">
+                              <div className="field-icon">
+                                <Mail size={14} />
+                              </div>
+                              <input
+                                type="email"
+                                placeholder="Your Email"
+                                value={leadData.email}
+                                onChange={(e) => handleLeadInputChange('email', e.target.value)}
+                                required
+                                disabled={isSubmittingLead}
+                              />
+                            </div>
+                          )}
+                          
+                          {dynamicConfig?.leadCollectionFields?.includes('phone') && (
+                            <div className="lead-form-field">
+                              <div className="field-icon">
+                                <Phone size={14} />
+                              </div>
+                              <input
+                                type="tel"
+                                placeholder="Your Phone"
+                                value={leadData.phone}
+                                onChange={(e) => handleLeadInputChange('phone', e.target.value)}
+                                required
+                                disabled={isSubmittingLead}
+                              />
+                            </div>
+                          )}
+                          
+                          <div className="lead-form-actions">
+                            <button
+                              type="submit"
+                              disabled={isSubmittingLead}
+                              className="lead-submit-button"
+                            >
+                              {isSubmittingLead ? 'Submitting...' : 'Submit'}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setLeadSubmitted(true);
+                                // Reset lead form data when cancelled
+                                setLeadData({
+                                  name: '',
+                                  email: '',
+                                  phone: ''
+                                });
+                              }}
+                              className="lead-cancel-button"
+                              disabled={isSubmittingLead}
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </form>
+                      </div>
                     )}
                   </div>
-                  <div className="welcome-title-large">
-                    {dynamicConfig?.name || dynamicConfig?.chatWidgetName || 'AI Assistant'}
-                  </div>
-                  <div className="welcome-text-large">
-                    {dynamicConfig?.welcomeMessage || 'Ask Your Query'}
-                  </div>
-                </div>
-              )}
-              
-              {messages.map((message) => (
-                <div key={message.id} className={`message ${message.sender}`}>
-                  <div className="message-content">
-                    {message.sender === 'bot' && (
+                ))}
+
+                {isLoading && (
+                  <div className="message bot">
+                    <div className="message-content">
                       <div className="message-avatar">
                         {dynamicConfig?.chatWindowAvatar ? (
                           <img
@@ -1713,212 +1896,69 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
                           <MessageCircle size={16} />
                         )}
                       </div>
-                    )}
-                    <div className="message-bubble">
-                      {message.sender === 'bot' ? renderFormattedText(message.text) : message.text}
-                    </div>
-                  </div>
-
-                  {/* Message actions (follow-up buttons and CTA) */}
-                  {(message.sender === 'bot' && ((message.followUpButtons && message.followUpButtons.length > 0) || message.ctaButton)) && (
-                    <div className="message-actions">
-                      {/* Follow-up buttons */}
-                      {message.followUpButtons && message.followUpButtons.length > 0 && (
-                        <div className="follow-up-buttons">
-                          {message.followUpButtons.map((button, index) => (
-                            <button
-                              key={index}
-                              className="follow-up-button"
-                              onClick={() => {
-                                // Send the button text as the message instead of the payload
-                                if (button.text && button.text.trim()) {
-                                  sendMessage(button.text);
-                                }
-                              }}
-                            >
-                              {button.text}
-                            </button>
-                          ))}
+                      <div className="message-bubble typing-indicator">
+                        <div className="typing-dots">
+                          <span className="dot"></span>
+                          <span className="dot"></span>
+                          <span className="dot"></span>
                         </div>
-                      )}
-
-                      {/* CTA button */}
-                      {message.ctaButton && (
-                        <a
-                          href={message.ctaButton.link}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="cta-button"
-                        >
-                          {message.ctaButton.text}
-                        </a>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Lead Form - Show as part of bot message when shouldShowLead is true */}
-                  {message.sender === 'bot' && message.shouldShowLead && dynamicConfig?.leadCollectionEnabled && !leadSubmitted && (
-                    <div className="lead-form-message">
-                      <div className="lead-form-header">
-                        <h3>Contact Details</h3>
                       </div>
-                      <form onSubmit={handleLeadSubmit} className="lead-form">
-                        {dynamicConfig?.leadCollectionFields?.includes('name') && (
-                          <div className="lead-form-field">
-                            <div className="field-icon">
-                              <User size={14} />
-                            </div>
-                            <input
-                              type="text"
-                              placeholder="Your Name"
-                              value={leadData.name}
-                              onChange={(e) => handleLeadInputChange('name', e.target.value)}
-                              required
-                              disabled={isSubmittingLead}
-                            />
-                          </div>
+                    </div>
+                  </div>
+                )}
+
+                {isFirstMessageLoading && (
+                  <div className="message bot">
+                    <div className="message-content">
+                      <div className="message-avatar">
+                        {dynamicConfig?.chatWindowAvatar ? (
+                          <img
+                            src={dynamicConfig.chatWindowAvatar}
+                            alt="Bot Avatar"
+                            style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }}
+                          />
+                        ) : (
+                          <MessageCircle size={16} />
                         )}
-                        
-                        {dynamicConfig?.leadCollectionFields?.includes('email') && (
-                          <div className="lead-form-field">
-                            <div className="field-icon">
-                              <Mail size={14} />
-                            </div>
-                            <input
-                              type="email"
-                              placeholder="Your Email"
-                              value={leadData.email}
-                              onChange={(e) => handleLeadInputChange('email', e.target.value)}
-                              required
-                              disabled={isSubmittingLead}
-                            />
-                          </div>
-                        )}
-                        
-                        {dynamicConfig?.leadCollectionFields?.includes('phone') && (
-                          <div className="lead-form-field">
-                            <div className="field-icon">
-                              <Phone size={14} />
-                            </div>
-                            <input
-                              type="tel"
-                              placeholder="Your Phone"
-                              value={leadData.phone}
-                              onChange={(e) => handleLeadInputChange('phone', e.target.value)}
-                              required
-                              disabled={isSubmittingLead}
-                            />
-                          </div>
-                        )}
-                        
-                        <div className="lead-form-actions">
-                          <button
-                            type="submit"
-                            disabled={isSubmittingLead}
-                            className="lead-submit-button"
-                          >
-                            {isSubmittingLead ? 'Submitting...' : 'Submit'}
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setLeadSubmitted(true);
-                              // Reset lead form data when cancelled
-                              setLeadData({
-                                name: '',
-                                email: '',
-                                phone: ''
-                              });
-                            }}
-                            className="lead-cancel-button"
-                            disabled={isSubmittingLead}
-                          >
-                            Cancel
-                          </button>
+                      </div>
+                      <div className="message-bubble typing-indicator">
+                        <div className="typing-dots">
+                          <span className="dot"></span>
+                          <span className="dot"></span>
+                          <span className="dot"></span>
                         </div>
-                      </form>
-                    </div>
-                  )}
-                </div>
-              ))}
-
-              {isLoading && (
-                <div className="message bot">
-                  <div className="message-content">
-                    <div className="message-avatar">
-                      {dynamicConfig?.chatWindowAvatar ? (
-                        <img
-                          src={dynamicConfig.chatWindowAvatar}
-                          alt="Bot Avatar"
-                          style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }}
-                        />
-                      ) : (
-                        <MessageCircle size={16} />
-                      )}
-                    </div>
-                    <div className="message-bubble typing-indicator">
-                      <div className="typing-dots">
-                        <span className="dot"></span>
-                        <span className="dot"></span>
-                        <span className="dot"></span>
                       </div>
                     </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              {isFirstMessageLoading && (
-                <div className="message bot">
-                  <div className="message-content">
-                    <div className="message-avatar">
-                      {dynamicConfig?.chatWindowAvatar ? (
-                        <img
-                          src={dynamicConfig.chatWindowAvatar}
-                          alt="Bot Avatar"
-                          style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }}
-                        />
-                      ) : (
-                        <MessageCircle size={16} />
-                      )}
-                    </div>
-                    <div className="message-bubble typing-indicator">
-                      <div className="typing-dots">
-                        <span className="dot"></span>
-                        <span className="dot"></span>
-                        <span className="dot"></span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
+                <div ref={messagesEndRef} />
+              </div>
 
-              <div ref={messagesEndRef} />
+              <form className="chat-input" onSubmit={handleSubmit}>
+                <div className="chat-input-container">
+                  <input
+                    ref={inputRef}
+                    type="text"
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
+                    placeholder={dynamicConfig?.inputPlaceholder || 'Type your message...'}
+                    disabled={isLoading || isFirstMessageLoading}
+                  />
+                  <button type="submit" disabled={isLoading || isFirstMessageLoading || !inputValue.trim()}>
+                    <Send size={16} />
+                  </button>
+                </div>
+                <div className="powered-by">
+                  ⚡ Powered by RankVed
+                </div>
+              </form>
             </div>
-
-            <form className="chat-input" onSubmit={handleSubmit}>
-              <div className="chat-input-container">
-                <input
-                  ref={inputRef}
-                  type="text"
-                  value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
-                  placeholder={dynamicConfig?.inputPlaceholder || 'Type your message...'}
-                  disabled={isLoading || isFirstMessageLoading}
-                />
-                <button type="submit" disabled={isLoading || isFirstMessageLoading || !inputValue.trim()}>
-                  <Send size={16} />
-                </button>
-              </div>
-              <div className="powered-by">
-                ⚡ Powered by RankVed
-              </div>
-            </form>
-          </div>
-        )}
+          )}
         </div>
       )}
     </>
   );
 };
 
-export default ChatbotEmbed; 
+export default ChatbotEmbed;

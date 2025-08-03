@@ -115,7 +115,7 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const ANIMATION_DURATION = 300; // Animation duration in ms
+  const ANIMATION_DURATION = 500; // Animation duration in ms
 
   // **NEW**: Handlers for opening and closing the chat window with animation
   const handleOpen = () => {
@@ -1093,7 +1093,7 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
           padding: 6px 14px;
           word-wrap: break-word;
           position: relative;
-          font-size: 13px;
+          font-size: 14px;
           font-weight: 400;
           line-height: 1.2;
           border-radius: 18px;

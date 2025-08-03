@@ -96,7 +96,10 @@ const ChatWidget = ({ chatbotId, config = {} }) => {
   return null;
 };
 
-export default ChatWidget;`;
+export default ChatWidget;
+
+// <ChatWidget chatbotId={${activeChatbot.id}} config={{}} />
+`;
 
   // Iframe embed code with dynamic positioning from database
   const bubblePosition = activeChatbot.bubblePosition || 'bottom-right';

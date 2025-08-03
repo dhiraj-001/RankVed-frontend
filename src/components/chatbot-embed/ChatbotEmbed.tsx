@@ -1054,7 +1054,7 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
           padding: 6px 14px;
           word-wrap: break-word;
           position: relative;
-          font-size: 12px;
+          font-size: 13px;
           font-weight: 400;
           line-height: 1.2;
           border-radius: 18px;
@@ -1063,7 +1063,7 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
         @media (min-width: 768px) {
           .rankved-chatbot .message-bubble {
             padding: 6px 14px;
-            font-size: 12px;
+            font-size: 13px;
             line-height: 1.4;
           }
         }

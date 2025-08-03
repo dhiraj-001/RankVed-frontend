@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --host",
     "build": "tsc && vite build",
     "build:chatbot": "webpack --config webpack.chatbot.config.js",
     "build:loader": "node build-loader.js",

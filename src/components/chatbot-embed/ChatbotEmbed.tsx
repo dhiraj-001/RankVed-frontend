@@ -102,6 +102,7 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
   
   // **NEW**: State to manage the animation and visibility of the chat window
   const [isWindowVisible, setIsWindowVisible] = useState(false);
+  const [showWelcomeWidget, setShowWelcomeWidget] = useState(false);
 
   // Lead collection states
   const [leadData, setLeadData] = useState<LeadData>({
@@ -265,8 +266,8 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
           throw new Error(`Failed to fetch config: ${response.status}`);
         }
 
-        const dynamicConfigData = await response.json();
-        console.log("dynamicConfigData", dynamicConfigData);
+                const dynamicConfigData = await response.json();
+        
         // Merge static config with dynamic config
         const mergedConfig = {
           ...config,
@@ -277,7 +278,6 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
 
         // Set initial states based on dynamic config
         const initialSoundState = mergedConfig.popupSoundEnabled !== false;
-        console.log('🔊 Initial sound state:', initialSoundState, 'from config:', mergedConfig.popupSoundEnabled);
         setSoundEnabled(initialSoundState);
 
       } catch (error) {
@@ -296,24 +296,21 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
 
   // Handle welcome message logic and auto-load first message
   useEffect(() => {
-    console.log("dynamicConfig welcomeMessage:", dynamicConfig?.welcomeMessage);
-    console.log("dynamicConfig showWelcomePopup:", dynamicConfig?.showWelcomePopup);
     
     if (dynamicConfig && isOpen && messages.length === 0) {
       // Check if welcome message is enabled
       if (dynamicConfig.showWelcomePopup) {
         // If custom welcome message exists and is not empty, show it
         if (dynamicConfig.welcomeMessage && dynamicConfig.welcomeMessage.trim() !== '') {
-          console.log("Showing custom welcome message:", dynamicConfig.welcomeMessage);
           setMessages([{
             id: 'greeting',
             text: dynamicConfig.welcomeMessage,
             sender: 'bot',
             timestamp: new Date()
           }]);
+          setShowWelcomeWidget(false); // Hide welcome widget when welcome message is shown
         } else {
           // If no custom message or message is blank, start loading first message immediately
-          console.log("No custom welcome message, starting first message loading");
           setIsFirstMessage(true);
           setIsFirstMessageLoading(true);
           // Automatically send "hello" to get first response
@@ -321,7 +318,6 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
         }
       } else {
         // Welcome message is disabled, don't add any messages - let the UI show the welcome widget
-        console.log("Welcome message disabled, showing widget welcome");
         // Don't add any messages - the welcome widget will be shown in the UI
       }
     }
@@ -338,6 +334,8 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
       setTimeout(() => inputRef.current?.focus(), 100);
     }
   }, [isOpen, isWindowVisible]);
+
+
 
   // Play bubble sound when bubble appears
   // Play notification sound for new messages
@@ -411,6 +409,7 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
         setMessages([botMessage]);
         setIsFirstMessageLoading(false);
         setIsFirstMessage(false);
+        setShowWelcomeWidget(false); // Hide welcome widget when first message is loaded
         playNotificationSound();
       }, dynamicConfig.replyDelay || 1000);
 
@@ -425,6 +424,7 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
       setMessages([errorMessage]);
       setIsFirstMessageLoading(false);
       setIsFirstMessage(false);
+      setShowWelcomeWidget(false); // Hide welcome widget when first message is loaded (even on error)
     }
   };
 
@@ -459,6 +459,9 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
       console.log("First message is already loading, ignoring user input");
       return;
     }
+
+    // Hide welcome widget when user sends a message
+    setShowWelcomeWidget(false);
 
     // Handle first message case
     let messageToSend = text.trim();
@@ -596,6 +599,9 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
     });
     setLeadSubmitted(false);
     setIsSubmittingLead(false);
+    
+    // Show welcome widget after reset
+    setShowWelcomeWidget(true);
     
     // Generate new session ID
     const generateUUID = () => {
@@ -1774,8 +1780,8 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
               </div>
 
               <div className="chat-messages">
-                {/* Show welcome message when popup is disabled and no messages exist */}
-                {!dynamicConfig?.showWelcomePopup && messages.length === 0 && !isFirstMessageLoading && (
+                {/* Show welcome message when popup is disabled and no messages exist, OR when conversation is reset */}
+                {((!dynamicConfig?.showWelcomePopup && messages.length === 0 && !isFirstMessageLoading) || showWelcomeWidget) && (
                   <div className="welcome-container">
                     <div className="welcome-avatar-large">
                       {dynamicConfig?.chatWidgetIcon ? (
@@ -2000,7 +2006,13 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
                     ref={inputRef}
                     type="text"
                     value={inputValue}
-                    onChange={(e) => setInputValue(e.target.value)}
+                    onChange={(e) => {
+                      setInputValue(e.target.value);
+                      // Hide welcome widget when user starts typing
+                      if (showWelcomeWidget) {
+                        setShowWelcomeWidget(false);
+                      }
+                    }}
                     placeholder={dynamicConfig?.inputPlaceholder || 'Type your message...'}
                     disabled={isLoading || isFirstMessageLoading}
                   />
@@ -2009,7 +2021,18 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
                   </button>
                 </div>
                 <div className="powered-by">
-                  ⚡ Powered by RankVed
+                  {dynamicConfig?.poweredByText && dynamicConfig.poweredByText.trim() !== '' ? (
+                    <a
+                      href={dynamicConfig.poweredByLink || '#'}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ color: 'inherit', textDecoration: 'none' }}
+                    >
+                      {`⚡ Powered by ${dynamicConfig.poweredByText}`}
+                    </a>
+                  ) : (
+                    `⚡ Powered by RankVed`
+                  )}
                 </div>
               </form>
             </div>

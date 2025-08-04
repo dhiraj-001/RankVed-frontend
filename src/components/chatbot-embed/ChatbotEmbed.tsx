@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { MessageCircle, X, Send, Volume2, VolumeX, User, Phone, Mail } from 'lucide-react';
+import { MessageCircle, X, Send, Volume2, VolumeX, User, Phone, Mail, RotateCcw } from 'lucide-react';
 
 // Declare global window property for RankVedChatbotConfig
 declare global {
@@ -574,6 +574,41 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
         }
       }, 100);
     }
+  };
+
+  // Reset conversation
+  const resetConversation = () => {
+    // Clear messages
+    setMessages([]);
+    
+    // Reset first message states
+    setIsFirstMessage(true);
+    setIsFirstMessageLoading(false);
+    
+    // Clear input
+    setInputValue('');
+    
+    // Reset lead form states
+    setLeadData({
+      name: '',
+      email: '',
+      phone: ''
+    });
+    setLeadSubmitted(false);
+    setIsSubmittingLead(false);
+    
+    // Generate new session ID
+    const generateUUID = () => {
+      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+        const r = Math.random() * 16 | 0;
+        const v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+      });
+    };
+    const newSessionId = generateUUID();
+    localStorage.setItem('rankved-chatbot-session', newSessionId);
+    
+    console.log('🔄 Conversation reset successfully');
   };
 
   // Handle lead form submission
@@ -1288,14 +1323,13 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
         }
         @media (max-width: 480px) {
           .rankved-chatbot .chat-window {
-            width: calc(100vw - 40px);
-            height: calc(100vh - 70px);
-            max-height: calc(100vh - 120px);
+            width: 100vw;
+            height: calc(100vh - 65px);
+            max-height: calc(100vh - 80px);
             position: fixed;
-            
-            left: 20px;
-            right: 20px;
-            bottom: 20px;
+            left: 0;
+            right: 0;
+            bottom: 0;
           }
           .rankved-chatbot .chat-messages {
             min-height: 150px;
@@ -1674,6 +1708,31 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
                   </span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <button
+                    onClick={resetConversation}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: 'white',
+                      cursor: 'pointer',
+                      padding: '4px',
+                      borderRadius: '4px',
+                      transition: 'all 0.2s ease',
+                      transform: 'scale(1)'
+                    }}
+                    title="Reset conversation"
+                    onMouseDown={(e) => {
+                      e.currentTarget.style.transform = 'scale(0.9)';
+                    }}
+                    onMouseUp={(e) => {
+                      e.currentTarget.style.transform = 'scale(1)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'scale(1)';
+                    }}
+                  >
+                    <RotateCcw size={16} />
+                  </button>
                   <button
                     onClick={toggleSound}
                     style={{

@@ -1283,7 +1283,7 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
           border: none;
           border-radius: 20px;
           cursor: pointer;
-          font-size: 11px;
+          font-size: 12px;
           font-weight: 500;
           transition: all 0.2s ease;
           min-height: 24px;
@@ -1302,7 +1302,7 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
           border: 2px solid ${secondaryColor};
           border-radius: 20px;
           cursor: pointer;
-          font-size: 11px;
+          font-size: 12px;
           font-weight: 500;
           text-decoration: none;
           display: inline-flex;

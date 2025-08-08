@@ -35,6 +35,7 @@ export default function Training() {
     previewUrl,
     performOCR,
     setFile,
+    file,
   } = useTesseractOCR();
 
   const [trainingData, setTrainingData] = useState(() => {
@@ -1221,7 +1222,7 @@ We serve over 1,000+ companies worldwide and are trusted by industry leaders.`;
                   <div className="flex gap-2">
                     <Button 
                       onClick={performOCR} 
-                      disabled={ocrLoading || !previewUrl}
+                      disabled={ocrLoading || !file}
                       className="bg-blue-600 hover:bg-blue-700 text-white transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {ocrLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Scan className="h-4 w-4 mr-2" />}

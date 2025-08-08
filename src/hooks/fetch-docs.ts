@@ -13,6 +13,7 @@ interface UseTesseractOCR {
     previewUrl: string | null;
     performOCR: () => Promise<void>;
     setFile: (file: File | null) => void;
+    file: File | null;
 }
 
 // Set the worker source for pdf.js to avoid issues with bundlers
@@ -156,5 +157,6 @@ export const useTesseractOCR = (): UseTesseractOCR => {
         previewUrl,
         performOCR,
         setFile,
+        file,
     };
 };

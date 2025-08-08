@@ -32,7 +32,6 @@ export default function Training() {
     isLoading: ocrLoading,
     progress: ocrProgress,
     error: ocrError,
-    previewUrl,
     performOCR,
     setFile,
     file,

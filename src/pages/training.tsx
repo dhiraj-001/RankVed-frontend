@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Save, Upload, Brain, Globe, Loader2, Volume2, Play, Pause, Settings, Trash, Timer } from 'lucide-react';
+import { Save, Upload, Brain, Globe, Loader2, Volume2, Play, Pause, Settings, Trash, Timer, FileText, Scan } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -18,6 +18,7 @@ import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { LeadFieldsManager } from '@/components/lead-fields-manager';
 import { SoundSelector } from '@/components/sound-selector';
+import { useTesseractOCR } from '@/hooks/fetch-docs';
 // @ts-ignore
 import { isEqual } from 'lodash-es';
 
@@ -26,6 +27,15 @@ export default function Training() {
   const updateChatbot = useUpdateChatbot();
   const { toast } = useToast();
   const { data: customSounds = [], refetch: refetchCustomSounds } = useCustomSounds();
+  const {
+    extractedText,
+    isLoading: ocrLoading,
+    progress: ocrProgress,
+    error: ocrError,
+    previewUrl,
+    performOCR,
+    setFile,
+  } = useTesseractOCR();
 
   const [trainingData, setTrainingData] = useState(() => {
     const initial = activeChatbot?.plainData || '';
@@ -1146,6 +1156,98 @@ We serve over 1,000+ companies worldwide and are trusted by industry leaders.`;
               </CardContent>
             </Card>
 
+            {/* Document OCR */}
+            <Card className="border border-slate-200 bg-gradient-to-br from-white to-blue-50/30 shadow-md">
+              <CardHeader className="p-4 sm:p-6">
+                <CardTitle className="flex items-center gap-2">
+                  <Scan className="h-5 w-5 text-blue-600" /> Extract Text from Documents
+                </CardTitle>
+                <p className="text-sm text-slate-600">Upload images or PDFs to extract text using OCR</p>
+              </CardHeader>
+              <CardContent className="p-4 sm:p-6">
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="document-upload">Upload Document</Label>
+                    <Input
+                      id="document-upload"
+                      type="file"
+                      accept="image/*,.pdf"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          setFile(file);
+                        }
+                      }}
+                      className="transition-all duration-300 ease-in-out"
+                    />
+                    <p className="text-xs text-slate-500">Supported: JPG, PNG, PDF files</p>
+                  </div>
+
+
+                  {/* OCR Progress */}
+                  {ocrLoading && (
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="font-medium">OCR Progress</span>
+                        <span className="text-slate-600">{Math.round(ocrProgress.progress * 100)}%</span>
+                      </div>
+                      <div className="w-full bg-slate-200 rounded-full h-2">
+                        <div 
+                          className="bg-blue-600 h-2 rounded-full transition-all duration-300 ease-in-out"
+                          style={{ width: `${ocrProgress.progress * 100}%` }}
+                        ></div>
+                      </div>
+                      <p className="text-xs text-slate-600">{ocrProgress.status}</p>
+                    </div>
+                  )}
+
+                  {/* OCR Error */}
+                  {ocrError && (
+                    <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+                      <p className="text-sm text-red-700">{ocrError}</p>
+                    </div>
+                  )}
+
+                  {/* Extracted Text Preview */}
+                  {extractedText && (
+                    <div className="space-y-2">
+                      <Label>Extracted Text</Label>
+                      <div className="max-h-32 overflow-y-auto border rounded-md p-3 bg-slate-50">
+                        <p className="text-sm text-slate-700 whitespace-pre-wrap">{extractedText}</p>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="flex gap-2">
+                    <Button 
+                      onClick={performOCR} 
+                      disabled={ocrLoading || !previewUrl}
+                      className="bg-blue-600 hover:bg-blue-700 text-white transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {ocrLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Scan className="h-4 w-4 mr-2" />}
+                      {ocrLoading ? 'Extracting...' : 'Extract Text'}
+                    </Button>
+                    
+                    {extractedText && (
+                      <Button 
+                        onClick={() => {
+                          setTrainingData(prev => prev + '\n\n--- OCR Extracted Text ---\n' + extractedText);
+                          toast({
+                            title: 'Text Added',
+                            description: 'Extracted text has been added to your training data',
+                          });
+                        }}
+                        className="bg-green-600 hover:bg-green-700 text-white"
+                      >
+                        <FileText className="h-4 w-4 mr-2" />
+                        Add to Training
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
             {/* Contact Info */}
             <Card className="border border-slate-200 bg-gradient-to-br from-white to-blue-50/30 shadow-md animate-in fade-in duration-700 ease-in-out delay-100">
               <CardHeader className="p-4 sm:p-6">
@@ -1638,40 +1740,18 @@ We serve over 1,000+ companies worldwide and are trusted by industry leaders.`;
                     <Brain className="h-4 w-4 text-blue-600" /> Training Stats
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="p-4 sm:p-6">
-                  <div className="space-y-3">
-                    <div className="grid grid-cols-2 gap-4 text-sm">
-                      <div><span className="font-medium">Words:</span> {typeof trainingData === 'string' ? trainingData.split(/\s+/).filter(word => word.length > 0).length : 'N/A'}</div>
-                      <div><span className="font-medium">Characters:</span> {typeof trainingData === 'string' ? trainingData.length : 'N/A'}</div>
-                      <div><span className="font-medium">Sources:</span> {fetchedContent.length}</div>
-                      <div><span className="font-medium">URLs Fetched:</span> {Object.values(fetchingStates).filter(status => status === 'success').length}</div>
-                    </div>
-                    
-                    {/* URL States Summary */}
-                    {Object.keys(fetchingStates).length > 0 && (
-                      <div className="space-y-2 pt-2 border-t border-slate-200">
-                        <div className="text-sm font-medium text-slate-700">URL Fetch Status</div>
-                        <div className="flex flex-wrap gap-2">
-                          {Object.values(fetchingStates).filter(status => status === 'success').length > 0 && (
-                            <Badge variant="secondary" className="bg-green-100 text-green-700 text-xs">
-                              {Object.values(fetchingStates).filter(status => status === 'success').length} Success
-                            </Badge>
-                          )}
-                          {Object.values(fetchingStates).filter(status => status === 'error').length > 0 && (
-                            <Badge variant="secondary" className="bg-red-100 text-red-700 text-xs">
-                              {Object.values(fetchingStates).filter(status => status === 'error').length} Failed
-                            </Badge>
-                          )}
-                          {Object.values(fetchingStates).filter(status => status === 'fetching').length > 0 && (
-                            <Badge variant="secondary" className="bg-blue-100 text-blue-700 text-xs">
-                              {Object.values(fetchingStates).filter(status => status === 'fetching').length} Fetching
-                            </Badge>
-                          )}
-                        </div>
-                      </div>
-                    )}
+              <CardContent className="p-4 sm:p-6">
+                <div className="space-y-3">
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div><span className="font-medium">Words:</span> {typeof trainingData === 'string' ? trainingData.split(/\s+/).filter(word => word.length > 0).length : 'N/A'}</div>
+                    <div><span className="font-medium">Characters:</span> {typeof trainingData === 'string' ? trainingData.length : 'N/A'}</div>
+                    <div><span className="font-medium">Sources:</span> {fetchedContent.length}</div>
+                    <div><span className="font-medium">URLs Fetched:</span> {Object.values(fetchingStates).filter(status => status === 'success').length}</div>
                   </div>
-                </CardContent>
+                  
+                  {/* URL States Summary */}
+                </div>
+              </CardContent>
               </Card>            
 
             {/* Tips */}

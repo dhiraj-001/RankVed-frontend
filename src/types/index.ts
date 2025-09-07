@@ -101,6 +101,7 @@ export interface Chatbot {
   chatWindowTheme?: string;
   borderRadius?: number;
   shadowStyle?: string;
+  fontFamily?: string;
 }
 
 export interface Lead {
@@ -217,6 +218,7 @@ export interface InsertChatbot {
   phone?: string;
   whatsapp?: string;
   website?: string;
+  fontFamily?: string;
 }
 
 export interface InsertLead {

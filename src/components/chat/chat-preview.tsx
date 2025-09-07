@@ -9,6 +9,7 @@ export function ChatPreview({ chatbot }: ChatPreviewProps) {
   // Real-time appearance properties
   const primaryColor = chatbot?.primaryColor || '#6366F1';
   const secondaryColor = chatbot?.secondaryColor || '#797cf6d4';
+  const fontFamily = chatbot?.fontFamily || 'Arial';
   const title = chatbot?.chatWidgetName || chatbot?.name || 'Support Bot';
   const welcomeMessage = chatbot?.welcomeMessage || 'Hello! How can I help you today?';
   const inputPlaceholder = chatbot?.inputPlaceholder || 'Type your message...';
@@ -94,7 +95,7 @@ export function ChatPreview({ chatbot }: ChatPreviewProps) {
           overflow: 'hidden',
           display: 'flex',
           flexDirection: 'column',
-          fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif"
+          fontFamily: fontFamily
         }}
         data-rankved-widget="true"
       >

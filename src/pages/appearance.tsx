@@ -57,7 +57,8 @@ export default function Appearance() {
     chatWindowTheme: 'light' | 'dark' | 'auto';
     borderRadius: number;
     shadowStyle: 'none' | 'soft' | 'medium' | 'strong';
-  }>({
+    fontFamily: string;
+  }>( {
     title: '',
     primaryColor: '#6366F1',
     secondaryColor: '#A7C7E7',
@@ -75,6 +76,7 @@ export default function Appearance() {
     chatWindowTheme: 'light',
     borderRadius: 16,
     shadowStyle: 'soft',
+    fontFamily: 'Arial',
   });
 
   // Sync appearance state with fetchedChatbot
@@ -108,6 +110,7 @@ export default function Appearance() {
         chatWindowTheme: (fetchedChatbot.chatWindowTheme as 'light' | 'dark' | 'auto') || 'light',
         borderRadius: fetchedChatbot.borderRadius || 16,
         shadowStyle: (fetchedChatbot.shadowStyle as 'none' | 'soft' | 'medium' | 'strong') || 'soft',
+        fontFamily: fetchedChatbot.fontFamily || 'Arial',
       });
     }
   }, [fetchedChatbot]);
@@ -125,6 +128,7 @@ export default function Appearance() {
     name:  appearance.chatWidgetName || 'Support Bot',
     primaryColor: appearance.primaryColor,
     secondaryColor: appearance.secondaryColor,
+    fontFamily: appearance.fontFamily,
     inputPlaceholder: appearance.inputPlaceholder,
     borderRadius: appearance.borderRadius,
     shadowStyle: appearance.shadowStyle,
@@ -204,6 +208,7 @@ export default function Appearance() {
             chatWindowTheme: appearance.chatWindowTheme,
             borderRadius: appearance.borderRadius,
             shadowStyle: appearance.shadowStyle,
+            fontFamily: appearance.fontFamily,
           },
         });
         
@@ -459,144 +464,167 @@ export default function Appearance() {
                    
                    
                         <div className="space-y-2">
-                          <Label htmlFor="inputPlaceholder" className="text-gray-700 font-medium">Input Placeholder</Label>
-                          <Input 
-                            id="inputPlaceholder" 
-                            value={appearance.inputPlaceholder} 
-                            onChange={e => setAppearance(prev => ({ ...prev, inputPlaceholder: e.target.value }))} 
-                            placeholder="Type your message..." 
-                            className="border-gray-200 focus:ring-2 focus:ring-blue-200 focus:border-blue-200 rounded-lg transition-all duration-200 hover:border-blue-200"
+                        <Label htmlFor="inputPlaceholder" className="text-gray-700 font-medium">Input Placeholder</Label>
+                        <Input 
+                          id="inputPlaceholder" 
+                          value={appearance.inputPlaceholder} 
+                          onChange={e => setAppearance(prev => ({ ...prev, inputPlaceholder: e.target.value }))} 
+                          placeholder="Type your message..." 
+                          className="border-gray-200 focus:ring-2 focus:ring-blue-200 focus:border-blue-200 rounded-lg transition-all duration-200 hover:border-blue-200"
+                        />
+                      </div>
+                      {/* Font Family */}
+                      <div className="space-y-2">
+                        <Label htmlFor="fontFamily" className="text-gray-700 font-medium">Font Family</Label>
+                        <Select
+                          value={appearance.fontFamily}
+                          onValueChange={(value) => setAppearance(prev => ({ ...prev, fontFamily: value }))}
+                        >
+                          <SelectTrigger className="w-full border-gray-200 focus:ring-2 focus:ring-blue-200 focus:border-blue-200 rounded-lg transition-all duration-200 hover:border-blue-200">
+                            <SelectValue placeholder="Select font family" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Arial">Arial</SelectItem>
+                            <SelectItem value="Helvetica">Helvetica</SelectItem>
+                            <SelectItem value="Times New Roman">Times New Roman</SelectItem>
+                            <SelectItem value="Courier New">Courier New</SelectItem>
+                            <SelectItem value="Georgia">Georgia</SelectItem>
+                            <SelectItem value="Verdana">Verdana</SelectItem>
+                            <SelectItem value="Tahoma">Tahoma</SelectItem>
+                            <SelectItem value="Trebuchet MS">Trebuchet MS</SelectItem>
+                            <SelectItem value="Comic Sans MS">Comic Sans MS</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      {/* Border Radius */}
+                      <div className="space-y-2">
+                        <Label htmlFor="borderRadius" className="text-gray-700 font-medium">Border Radius</Label>
+                        <div className="flex items-center gap-4">
+                          <input
+                            id="borderRadius"
+                            type="range"
+                            min={0}
+                            max={32}
+                            value={appearance.borderRadius}
+                            onChange={e => setAppearance(prev => ({ ...prev, borderRadius: Number(e.target.value) }))}
+                            className="w-80 accent-blue-500 cursor-pointer"
                           />
+                          <Input
+                            type="number"
+                            min={0}
+                            max={32}
+                            value={appearance.borderRadius}
+                            onChange={e => setAppearance(prev => ({ ...prev, borderRadius: Number(e.target.value) }))}
+                            className="w-20 border-gray-200 focus:ring-2 focus:ring-blue-200 focus:border-blue-200 rounded-lg transition-all duration-200 hover:border-blue-200 text-center"
+                          />
+                          <span className="text-xs text-gray-500">px</span>
                         </div>
-                        {/* Border Radius */}
-                        <div className="space-y-2">
-                          <Label htmlFor="borderRadius" className="text-gray-700 font-medium">Border Radius</Label>
-                          <div className="flex items-center gap-4">
-                            <input
-                              id="borderRadius"
-                              type="range"
-                              min={0}
-                              max={32}
-                              value={appearance.borderRadius}
-                              onChange={e => setAppearance(prev => ({ ...prev, borderRadius: Number(e.target.value) }))}
-                              className="w-80 accent-blue-500 cursor-pointer"
-                            />
-                            <Input
-                              type="number"
-                              min={0}
-                              max={32}
-                              value={appearance.borderRadius}
-                              onChange={e => setAppearance(prev => ({ ...prev, borderRadius: Number(e.target.value) }))}
-                              className="w-20 border-gray-200 focus:ring-2 focus:ring-blue-200 focus:border-blue-200 rounded-lg transition-all duration-200 hover:border-blue-200 text-center"
-                            />
-                            <span className="text-xs text-gray-500">px</span>
-                          </div>
-                        </div>
-                        {/* Theme */}
-                        <div className="space-y-2">
-                          <Label htmlFor="chatWindowTheme" className="text-gray-700 font-medium mr-4">Theme</Label>
-                          <Menu as="div" className="relative inline-block text-left w-40">
-                            <Menu.Button className="inline-flex items-center justify-between w-full px-3 py-2 bg-white border border-gray-200 rounded-lg shadow-sm hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300 ease-in-out">
-                              <span className="font-medium text-gray-700">{appearance.chatWindowTheme === 'light' ? 'Light' : appearance.chatWindowTheme === 'dark' ? 'Dark' : 'Auto'}</span>
-                              <svg className="h-4 w-4 text-gray-400 transition-transform duration-300 ease-in-out" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clipRule="evenodd" /></svg>
-                            </Menu.Button>
-                            <Menu.Items className="absolute right-0 mt-2 w-full origin-top-right bg-white border border-gray-200 divide-y divide-gray-100 rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50 animate-in fade-in duration-500 ease-in-out">
-                              <Menu.Item>
-                                {({ active }: { active: boolean }) => (
-                                  <button
-                                    className={`w-full text-left px-3 py-2 text-sm rounded transition-all duration-300 ease-in-out ${appearance.chatWindowTheme === 'light' ? 'bg-blue-100 text-blue-700' : active ? 'bg-gray-100' : ''}`}
-                                    onClick={() => setAppearance(prev => ({ ...prev, chatWindowTheme: 'light' as any }))}
-                                  >
-                                    Light
-                                  </button>
-                                )}
-                              </Menu.Item>
-                              <Menu.Item>
-                                {({ active }: { active: boolean }) => (
-                                  <button
-                                    className={`w-full text-left px-3 py-2 text-sm rounded transition-all duration-300 ease-in-out ${appearance.chatWindowTheme === 'dark' ? 'bg-blue-100 text-blue-700' : active ? 'bg-gray-100' : ''}`}
-                                    onClick={() => setAppearance(prev => ({ ...prev, chatWindowTheme: 'dark' as any }))}
-                                  >
-                                    Dark
-                                  </button>
-                                )}
-                              </Menu.Item>
-                              <Menu.Item>
-                                {({ active }: { active: boolean }) => (
-                                  <button
-                                    className={`w-full text-left px-3 py-2 text-sm rounded transition-all duration-300 ease-in-out ${appearance.chatWindowTheme === 'auto' ? 'bg-blue-100 text-blue-700' : active ? 'bg-gray-100' : ''}`}
-                                    onClick={() => setAppearance(prev => ({ ...prev, chatWindowTheme: 'auto' as any }))}
-                                  >
-                                    Auto
-                                  </button>
-                                )}
-                              </Menu.Item>
-                            </Menu.Items>
-                          </Menu>
-                        </div>
-                        {/* Shadow Style */}
-                        <div className="space-y-2">
-                          <Label htmlFor="shadowStyle" className="text-gray-700 font-medium mr-4">Shadow Style</Label>
-                          <Menu as="div" className="relative inline-block text-left w-40">
-                            <Menu.Button className="inline-flex items-center justify-between w-full px-3 py-2 bg-white border border-gray-200 rounded-lg shadow-sm hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300 ease-in-out">
-                              <span className="font-medium text-gray-700">{appearance.shadowStyle === 'none' ? 'No Shadow' : appearance.shadowStyle === 'soft' ? 'Soft' : appearance.shadowStyle === 'medium' ? 'Medium' : 'Strong'}</span>
-                              <svg className="h-4 w-4 text-gray-400 transition-transform duration-300 ease-in-out" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clipRule="evenodd" /></svg>
-                            </Menu.Button>
-                            <Menu.Items className="absolute right-0 mt-2 w-full origin-top-right bg-white border border-gray-200 divide-y divide-gray-100 rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50 animate-in fade-in duration-500 ease-in-out">
-                              <Menu.Item>
-                                {({ active }: { active: boolean }) => (
-                                  <button
-                                    className={`w-full text-left px-3 py-2 text-sm rounded transition-all duration-300 ease-in-out ${appearance.shadowStyle === 'none' ? 'bg-blue-100 text-blue-700' : active ? 'bg-gray-100' : ''}`}
-                                    onClick={() => setAppearance(prev => ({ ...prev, shadowStyle: 'none' as any }))}
-                                  >
-                                    No Shadow
-                                  </button>
-                                )}
-                              </Menu.Item>
-                              <Menu.Item>
-                                {({ active }: { active: boolean }) => (
-                                  <button
-                                    className={`w-full text-left px-3 py-2 text-sm rounded transition-all duration-300 ease-in-out ${appearance.shadowStyle === 'soft' ? 'bg-blue-100 text-blue-700' : active ? 'bg-gray-100' : ''}`}
-                                    onClick={() => setAppearance(prev => ({ ...prev, shadowStyle: 'soft' as any }))}
-                                  >
-                                    Soft
-                                  </button>
-                                )}
-                              </Menu.Item>
-                              <Menu.Item>
-                                {({ active }: { active: boolean }) => (
-                                  <button
-                                    className={`w-full text-left px-3 py-2 text-sm rounded transition-all duration-300 ease-in-out ${appearance.shadowStyle === 'medium' ? 'bg-blue-100 text-blue-700' : active ? 'bg-gray-100' : ''}`}
-                                    onClick={() => setAppearance(prev => ({ ...prev, shadowStyle: 'medium' as any }))}
-                                  >
-                                    Medium
-                                  </button>
-                                )}
-                              </Menu.Item>
-                              <Menu.Item>
-                                {({ active }: { active: boolean }) => (
-                                  <button
-                                    className={`w-full text-left px-3 py-2 text-sm rounded transition-all duration-300 ease-in-out ${appearance.shadowStyle === 'strong' ? 'bg-blue-100 text-blue-700' : active ? 'bg-gray-100' : ''}`}
-                                    onClick={() => setAppearance(prev => ({ ...prev, shadowStyle: 'strong' as any }))}
-                                  >
-                                    Strong
-                                  </button>
-                                )}
-                              </Menu.Item>
-                            </Menu.Items>
-                          </Menu>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </>
-                ) : (
-                  <Card className="shadow-md rounded-lg border border-gray-200 bg-white p-12 text-center">
-                    <Palette className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">No Active Chatbot</h3>
-                    <p className="text-gray-500">Select a chatbot from the sidebar to customize its appearance.</p>
+                      </div>
+                      {/* Theme */}
+                      <div className="space-y-2">
+                        <Label htmlFor="chatWindowTheme" className="text-gray-700 font-medium mr-4">Theme</Label>
+                        <Menu as="div" className="relative inline-block text-left w-40">
+                          <Menu.Button className="inline-flex items-center justify-between w-full px-3 py-2 bg-white border border-gray-200 rounded-lg shadow-sm hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300 ease-in-out">
+                            <span className="font-medium text-gray-700">{appearance.chatWindowTheme === 'light' ? 'Light' : appearance.chatWindowTheme === 'dark' ? 'Dark' : 'Auto'}</span>
+                            <svg className="h-4 w-4 text-gray-400 transition-transform duration-300 ease-in-out" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clipRule="evenodd" /></svg>
+                          </Menu.Button>
+                          <Menu.Items className="absolute right-0 mt-2 w-full origin-top-right bg-white border border-gray-200 divide-y divide-gray-100 rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50 animate-in fade-in duration-500 ease-in-out">
+                            <Menu.Item>
+                              {({ active }: { active: boolean }) => (
+                                <button
+                                  className={`w-full text-left px-3 py-2 text-sm rounded transition-all duration-300 ease-in-out ${appearance.chatWindowTheme === 'light' ? 'bg-blue-100 text-blue-700' : active ? 'bg-gray-100' : ''}`}
+                                  onClick={() => setAppearance(prev => ({ ...prev, chatWindowTheme: 'light' as any }))}
+                                >
+                                  Light
+                                </button>
+                              )}
+                            </Menu.Item>
+                            <Menu.Item>
+                              {({ active }: { active: boolean }) => (
+                                <button
+                                  className={`w-full text-left px-3 py-2 text-sm rounded transition-all duration-300 ease-in-out ${appearance.chatWindowTheme === 'dark' ? 'bg-blue-100 text-blue-700' : active ? 'bg-gray-100' : ''}`}
+                                  onClick={() => setAppearance(prev => ({ ...prev, chatWindowTheme: 'dark' as any }))}
+                                >
+                                  Dark
+                                </button>
+                              )}
+                            </Menu.Item>
+                            <Menu.Item>
+                              {({ active }: { active: boolean }) => (
+                                <button
+                                  className={`w-full text-left px-3 py-2 text-sm rounded transition-all duration-300 ease-in-out ${appearance.chatWindowTheme === 'auto' ? 'bg-blue-100 text-blue-700' : active ? 'bg-gray-100' : ''}`}
+                                  onClick={() => setAppearance(prev => ({ ...prev, chatWindowTheme: 'auto' as any }))}
+                                >
+                                  Auto
+                                </button>
+                              )}
+                            </Menu.Item>
+                          </Menu.Items>
+                        </Menu>
+                      </div>
+                      {/* Shadow Style */}
+                      <div className="space-y-2">
+                        <Label htmlFor="shadowStyle" className="text-gray-700 font-medium mr-4">Shadow Style</Label>
+                        <Menu as="div" className="relative inline-block text-left w-40">
+                          <Menu.Button className="inline-flex items-center justify-between w-full px-3 py-2 bg-white border border-gray-200 rounded-lg shadow-sm hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300 ease-in-out">
+                            <span className="font-medium text-gray-700">{appearance.shadowStyle === 'none' ? 'No Shadow' : appearance.shadowStyle === 'soft' ? 'Soft' : appearance.shadowStyle === 'medium' ? 'Medium' : 'Strong'}</span>
+                            <svg className="h-4 w-4 text-gray-400 transition-transform duration-300 ease-in-out" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clipRule="evenodd" /></svg>
+                          </Menu.Button>
+                          <Menu.Items className="absolute right-0 mt-2 w-full origin-top-right bg-white border border-gray-200 divide-y divide-gray-100 rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50 animate-in fade-in duration-500 ease-in-out">
+                            <Menu.Item>
+                              {({ active }: { active: boolean }) => (
+                                <button
+                                  className={`w-full text-left px-3 py-2 text-sm rounded transition-all duration-300 ease-in-out ${appearance.shadowStyle === 'none' ? 'bg-blue-100 text-blue-700' : active ? 'bg-gray-100' : ''}`}
+                                  onClick={() => setAppearance(prev => ({ ...prev, shadowStyle: 'none' as any }))}
+                                >
+                                  No Shadow
+                                </button>
+                              )}
+                            </Menu.Item>
+                            <Menu.Item>
+                              {({ active }: { active: boolean }) => (
+                                <button
+                                  className={`w-full text-left px-3 py-2 text-sm rounded transition-all duration-300 ease-in-out ${appearance.shadowStyle === 'soft' ? 'bg-blue-100 text-blue-700' : active ? 'bg-gray-100' : ''}`}
+                                  onClick={() => setAppearance(prev => ({ ...prev, shadowStyle: 'soft' as any }))}
+                                >
+                                  Soft
+                                </button>
+                              )}
+                            </Menu.Item>
+                            <Menu.Item>
+                              {({ active }: { active: boolean }) => (
+                                <button
+                                  className={`w-full text-left px-3 py-2 text-sm rounded transition-all duration-300 ease-in-out ${appearance.shadowStyle === 'medium' ? 'bg-blue-100 text-blue-700' : active ? 'bg-gray-100' : ''}`}
+                                  onClick={() => setAppearance(prev => ({ ...prev, shadowStyle: 'medium' as any }))}
+                                >
+                                  Medium
+                                </button>
+                              )}
+                            </Menu.Item>
+                            <Menu.Item>
+                              {({ active }: { active: boolean }) => (
+                                <button
+                                  className={`w-full text-left px-3 py-2 text-sm rounded transition-all duration-300 ease-in-out ${appearance.shadowStyle === 'strong' ? 'bg-blue-100 text-blue-700' : active ? 'bg-gray-100' : ''}`}
+                                  onClick={() => setAppearance(prev => ({ ...prev, shadowStyle: 'strong' as any }))}
+                                >
+                                  Strong
+                                </button>
+                              )}
+                            </Menu.Item>
+                          </Menu.Items>
+                        </Menu>
+                      </div>
+                    </CardContent>
                   </Card>
-                )}
-              </TabsContent>
+                </>
+              ) : (
+                <Card className="shadow-md rounded-lg border border-gray-200 bg-white p-12 text-center">
+                  <Palette className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">No Active Chatbot</h3>
+                  <p className="text-gray-500">Select a chatbot from the sidebar to customize its appearance.</p>
+                </Card>
+              )}
+            </TabsContent>
 
               {/* Visual Branding Tab */}
               <TabsContent value="global" className="space-y-6 animate-in fade-in duration-700 ease-in-out">

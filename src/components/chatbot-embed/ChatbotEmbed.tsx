@@ -59,6 +59,7 @@ interface ChatbotConfig {
   borderRadius?: number;
   shadowStyle?: string;
   isActive?: boolean;
+  fontFamily?: string;
 }
 
 interface Message {
@@ -933,7 +934,7 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
         .rankved-chatbot {
           position: fixed !important;
           pointer-events: auto;
-          font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+          font-family: ${dynamicConfig?.fontFamily || 'Inter'}, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
         }
         .rankved-chatbot * {
           box-sizing: border-box;

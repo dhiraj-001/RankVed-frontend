@@ -347,7 +347,7 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
       if (dynamicConfig.showInitForm) {
         setMessages([{
           id: 'lead-form-init',
-          text: 'Plese enter your details to get started',
+          text: dynamicConfig.welcomeMessage || 'Welcome ',
           sender: 'bot',
           timestamp: new Date(),
           shouldShowLead: true

@@ -25,41 +25,42 @@ export default function Settings() {
     // Basic Configuration
     name: activeChatbot?.name || '',
     aiSystemPrompt: activeChatbot?.aiSystemPrompt || '',
-    
 
-    
+
+
     // Branding
     chatWindowAvatar: activeChatbot?.chatWindowAvatar || '',
     chatBubbleIcon: activeChatbot?.chatBubbleIcon || '',
-    
+
     // Messaging
     welcomeMessage: activeChatbot?.welcomeMessage || '',
     showWelcomePopup: activeChatbot?.showWelcomePopup ?? true,
-    
+    showInitForm: activeChatbot?.showInitForm ?? false,
+
     // Notifications
     popupSoundEnabled: activeChatbot?.popupSoundEnabled ?? true,
     customPopupSound: activeChatbot?.customPopupSound || '',
-    
+
     // Integrations
     leadsWebhookUrl: activeChatbot?.leadsWebhookUrl || '',
-    
+
     // Flow & Branding
     businessType: activeChatbot?.businessType || 'general',
     poweredByText: activeChatbot?.poweredByText || '',
     poweredByLink: activeChatbot?.poweredByLink || '',
-    
+
     // Placement
     bubblePosition: activeChatbot?.bubblePosition || 'bottom-right',
     horizontalOffset: activeChatbot?.horizontalOffset || 20,
     verticalOffset: activeChatbot?.verticalOffset || 20,
-    
+
     // Lead Collection
     leadCollectionEnabled: activeChatbot?.leadCollectionEnabled ?? true,
-    
+
     // AI Provider
     aiProvider: activeChatbot?.aiProvider || 'platform',
     customApiKey: activeChatbot?.customApiKey || '',
-    
+
     // Usage Limits
     dailyChatLimit: activeChatbot?.dailyChatLimit || 100,
     monthlyChatLimit: activeChatbot?.monthlyChatLimit || 1000,
@@ -82,6 +83,7 @@ export default function Settings() {
         chatBubbleIcon: activeChatbot.chatBubbleIcon || '',
         welcomeMessage: activeChatbot.welcomeMessage || '',
         showWelcomePopup: activeChatbot.showWelcomePopup ?? true,
+        showInitForm: activeChatbot.showInitForm ?? false,
         popupSoundEnabled: activeChatbot.popupSoundEnabled ?? true,
         customPopupSound: activeChatbot.customPopupSound || '',
         leadsWebhookUrl: activeChatbot.leadsWebhookUrl || '',
@@ -405,6 +407,27 @@ export default function Settings() {
                       )}
                     </div>
                   </div>
+                </div>
+                <div className="flex items-center justify-between w-full py-4 px-4 bg-white/60 rounded-lg border border-blue-300">
+                  <div>
+                    <label htmlFor="showInitForm" className="block text-sm font-medium text-gray-700">
+                      Show Initial Form
+                    </label>
+                    <p className="text-xs text-gray-500">Display a lead collection form immediately when chat opens</p>
+                  </div>
+                  <Switch
+                    id="showInitForm"
+                    checked={settings.showInitForm || false}
+                    onCheckedChange={checked => {
+                      console.log('[Settings] Show initial form toggle changed:', {
+                        from: settings.showInitForm,
+                        to: checked,
+                        chatbotId: activeChatbot?.id
+                      });
+                      setSettings(prev => ({ ...prev, showInitForm: checked }));
+                    }}
+                    className="data-[state=checked]:bg-blue-600"
+                  />
                 </div>
                 <div className="flex items-center justify-between w-full py-4 px-4 bg-white/60 rounded-lg border border-blue-300">
                   <div>

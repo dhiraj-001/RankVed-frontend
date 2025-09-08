@@ -94,8 +94,7 @@ export function ChatPreview({ chatbot }: ChatPreviewProps) {
           maxHeight: 600,
           overflow: 'hidden',
           display: 'flex',
-          flexDirection: 'column',
-          fontFamily: fontFamily
+          flexDirection: 'column'
         }}
         data-rankved-widget="true"
       >
@@ -160,7 +159,7 @@ export function ChatPreview({ chatbot }: ChatPreviewProps) {
         </div>
 
         {/* Messages - Matching ChatbotEmbed.tsx */}
-        <div 
+        <div
           className="flex-1 overflow-y-auto"
           style={{
             background: appearance.backgroundColor,
@@ -168,7 +167,8 @@ export function ChatPreview({ chatbot }: ChatPreviewProps) {
             maxHeight: 'none',
             padding: '20px',
             scrollbarWidth: 'none',
-            msOverflowStyle: 'none'
+            msOverflowStyle: 'none',
+            fontFamily: fontFamily
           }}
         >
           {/* Bot Welcome Message */}
@@ -427,7 +427,7 @@ export function ChatPreview({ chatbot }: ChatPreviewProps) {
         </div>
 
         {/* Input Bar - Matching ChatbotEmbed.tsx */}
-        <div className="px-5 pb-3 pt-0" style={{ padding: '0px 20px 10px 20px', display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'transparent', position: 'relative' }}>
+        <div className="px-5 pb-3 pt-0" style={{ padding: '0px 20px 10px 20px', display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'transparent', position: 'relative', fontFamily: fontFamily }}>
           <div className="relative w-full flex items-center mb-1" style={{ position: 'relative', width: '100%', display: 'flex', alignItems: 'center', marginBottom: '3px' }}>
             <input
               className="w-full border rounded-full outline-none"

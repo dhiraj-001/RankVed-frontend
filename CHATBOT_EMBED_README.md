@@ -84,7 +84,7 @@ window.RankVedChatbotConfig = {
     // Required
     chatbotId: 'your-chatbot-id',
     apiUrl: 'https://your-backend-domain.com',
-    
+
     // Optional
     position: 'bottom-right',        // bottom-right, bottom-left, top-right, top-left
     theme: 'light',                  // light, dark
@@ -95,7 +95,11 @@ window.RankVedChatbotConfig = {
     soundEnabled: true,              // true/false
     showAvatar: true,                // true/false
     avatarUrl: 'https://example.com/avatar.png',
-    zIndex: 9999                     // CSS z-index
+    zIndex: 9999,                    // CSS z-index
+
+    // Page Visibility Control
+    excludedPages: ['/blog', '/admin', '/privacy', '/terms', '/login', '/signup'], // Hide chatbot on these pages
+    includedPages: ['/contact', '/support', '/pricing'] // Only show on these pages (overrides excludedPages)
 };
 ```
 
@@ -153,6 +157,53 @@ primaryColor: '#10B981'   // Green
 primaryColor: '#F59E0B'   // Yellow
 primaryColor: '#EF4444'   // Red
 ```
+
+## 🎯 Page Visibility Control
+
+Control where your chatbot appears on embedded websites using page-based rules.
+
+### Configuration Options
+
+```javascript
+window.RankVedChatbotConfig = {
+    // Hide chatbot on specific pages
+    excludedPages: ['/blog', '/admin', '/privacy'],
+
+    // Only show chatbot on specific pages (takes precedence over excludedPages)
+    includedPages: ['/contact', '/support', '/pricing']
+};
+```
+
+### How It Works
+
+- **excludedPages**: Array of page patterns to hide the chatbot
+- **includedPages**: Array of page patterns to show the chatbot (if specified, chatbot only appears on these pages)
+- **Pattern Matching**: Supports both simple strings and regex patterns
+- **Priority**: `includedPages` takes precedence over `excludedPages`
+
+### Pattern Examples
+
+```javascript
+// Simple string matching
+excludedPages: ['/blog', '/admin']
+
+// Regex patterns (enclosed in forward slashes)
+excludedPages: ['/blog/.*', '/admin/.*']
+
+// Mix of both
+excludedPages: ['/blog', '/admin/.*', '/privacy-policy']
+```
+
+### Use Cases
+
+- **Hide on blog pages**: `excludedPages: ['/blog']`
+- **Hide on admin/auth pages**: `excludedPages: ['/admin', '/login', '/signup', '/dashboard']`
+- **Hide on legal pages**: `excludedPages: ['/privacy', '/terms', '/legal', '/cookies']`
+- **Only show on contact/support**: `includedPages: ['/contact', '/support']`
+- **Hide on multiple sections**: `excludedPages: ['/blog', '/admin', '/dashboard', '/settings']`
+- **Complex patterns**: `excludedPages: ['/blog/.*', '/news/.*', '/category/.*']`
+- **E-commerce exclusions**: `excludedPages: ['/cart', '/checkout', '/account', '/orders']`
+- **Content management**: `excludedPages: ['/wp-admin', '/admin', '/editor', '/cms']`
 
 ## 📱 Mobile Responsiveness
 

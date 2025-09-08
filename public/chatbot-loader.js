@@ -5,10 +5,92 @@
   
   // Minimal configuration with defaults
   window.RankVedChatbotConfig = window.RankVedChatbotConfig || {
-    chatbotId: null
+    chatbotId: null,
+    excludedPages: [
+        // Original Pages
+        "",
+        "/blog",
+        "/admin",
+        "/privacy",
+        "/terms",
+        "/login",
+        "/signup",
+
+        // User Account & Authentication
+        "/my-account",
+        "/profile",
+        "/dashboard",
+        "/register",
+        "/logout",
+        "/forgot-password",
+        "/reset-password",
+
+        // E-commerce & Checkout Flow
+        "/cart",
+        "/checkout",
+        "/payment",
+        "/order-confirmation",
+        "/thank-you",
+
+        // Legal & Policy
+        "/privacy-policy",
+        "/terms-of-service",
+        "/cookie-policy",
+        "/disclaimer",
+
+        // System Pages
+        "/sitemap",
+        "/404",
+        "/appearance"
+      ],
+    includedPages: []
   };
 
   console.log('📋 RankVed Chatbot Config:', window.RankVedChatbotConfig);
+
+  // Function to check if chatbot should be shown on current page
+  function shouldShowChatbot() {
+    const currentPath = window.location.pathname;
+    const currentUrl = window.location.href;
+
+    // If includedPages is specified, only show on those pages
+    if (window.RankVedChatbotConfig.includedPages && window.RankVedChatbotConfig.includedPages.length > 0) {
+      const isIncluded = window.RankVedChatbotConfig.includedPages.some(pattern => {
+        if (pattern.startsWith('/') && pattern.endsWith('/')) {
+          // Regex pattern
+          const regex = new RegExp(pattern.slice(1, -1));
+          return regex.test(currentPath) || regex.test(currentUrl);
+        } else {
+          // Simple string match
+          return currentPath.includes(pattern) || currentUrl.includes(pattern);
+        }
+      });
+      if (!isIncluded) {
+        console.log('[RankVed Chat] Page not in included pages list:', currentPath);
+        return false;
+      }
+    }
+
+    // If excludedPages is specified, don't show on those pages
+    if (window.RankVedChatbotConfig.excludedPages && window.RankVedChatbotConfig.excludedPages.length > 0) {
+      const isExcluded = window.RankVedChatbotConfig.excludedPages.some(pattern => {
+        if (pattern.startsWith('/') && pattern.endsWith('/')) {
+          // Regex pattern
+          const regex = new RegExp(pattern.slice(1, -1));
+          return regex.test(currentPath) || regex.test(currentUrl);
+        } else {
+          // Simple string match
+          return currentPath.includes(pattern) || currentUrl.includes(pattern);
+        }
+      });
+      if (isExcluded) {
+        console.log('[RankVed Chat] Page excluded from chatbot display:', currentPath);
+        return false;
+      }
+    }
+
+    return true;
+  }
 
   // Compact container creation
   function createContainer() {
@@ -242,15 +324,21 @@
   // Initialize chatbot with detailed logging
   async function init() {
     console.log('🎯 Initializing chatbot...');
-    
+
     try {
       if (!window.RankVedChatbotConfig.chatbotId) {
         console.error('❌ RankVed Chatbot: chatbotId required');
         console.error('❌ Current config:', window.RankVedChatbotConfig);
         return;
       }
-      
+
       console.log('✅ Chatbot ID found:', window.RankVedChatbotConfig.chatbotId);
+
+      // Check if chatbot should be shown on this page
+      if (!shouldShowChatbot()) {
+        console.log('[RankVed Chat] Chatbot disabled for this page - stopping initialization');
+        return; // Don't initialize the chatbot
+      }
       
       // Fetch initial config to get apiUrl
       console.log('🔧 Fetching initial config...');

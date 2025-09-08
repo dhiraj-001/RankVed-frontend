@@ -493,6 +493,21 @@ export default function Appearance() {
                             <SelectItem value="Tahoma">Tahoma</SelectItem>
                             <SelectItem value="Trebuchet MS">Trebuchet MS</SelectItem>
                             <SelectItem value="Comic Sans MS">Comic Sans MS</SelectItem>
+                            <SelectItem value="Roboto">Roboto</SelectItem>
+                            <SelectItem value="Open Sans">Open Sans</SelectItem>
+                            <SelectItem value="Lato">Lato</SelectItem>
+                            <SelectItem value="Montserrat">Montserrat</SelectItem>
+                            <SelectItem value="Source Sans Pro">Source Sans Pro</SelectItem>
+                            <SelectItem value="Inter">Inter</SelectItem>
+                            <SelectItem value="Poppins">Poppins</SelectItem>
+                            <SelectItem value="Nunito">Nunito</SelectItem>
+                            <SelectItem value="Raleway">Raleway</SelectItem>
+                            <SelectItem value="Ubuntu">Ubuntu</SelectItem>
+                            <SelectItem value="Noto Sans">Noto Sans</SelectItem>
+                            <SelectItem value="Work Sans">Work Sans</SelectItem>
+                            <SelectItem value="Fira Sans">Fira Sans</SelectItem>
+                            <SelectItem value="Oxygen">Oxygen</SelectItem>
+                            <SelectItem value="PT Sans">PT Sans</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>

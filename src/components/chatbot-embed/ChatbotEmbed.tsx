@@ -60,6 +60,7 @@ interface ChatbotConfig {
   shadowStyle?: string;
   isActive?: boolean;
   fontFamily?: string;
+  showInitForm?: boolean;
 }
 
 interface Message {
@@ -243,6 +244,43 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
     }
   }, [dynamicConfig?.popupDelay, isConfigLoading, config.popupDelay, soundEnabled, audioRef, showChatBubble, hasPlayedInitialSound]);
 
+  // Google Fonts mapping for dynamic loading
+  const googleFontsMap: { [key: string]: string } = {
+    'Inter': 'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap',
+    'Roboto': 'https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap',
+    'Open Sans': 'https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&display=swap',
+    'Lato': 'https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap',
+    'Montserrat': 'https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap',
+    'Source Sans Pro': 'https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;400;600;700&display=swap',
+    'Poppins': 'https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap',
+    'Nunito': 'https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700&display=swap',
+    'Raleway': 'https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;500;600;700&display=swap',
+    'Ubuntu': 'https://fonts.googleapis.com/css2?family=Ubuntu:wght@300;400;500;700&display=swap',
+    'Noto Sans': 'https://fonts.googleapis.com/css2?family=Noto+Sans:wght@300;400;500;600;700&display=swap',
+    'Work Sans': 'https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500;600;700&display=swap',
+    'Fira Sans': 'https://fonts.googleapis.com/css2?family=Fira+Sans:wght@300;400;500;600;700&display=swap',
+    'Oxygen': 'https://fonts.googleapis.com/css2?family=Oxygen:wght@300;400;700&display=swap',
+    'PT Sans': 'https://fonts.googleapis.com/css2?family=PT+Sans:wght@400;700&display=swap'
+  };
+
+  // Function to dynamically load Google Fonts
+  const loadGoogleFont = (fontName: string) => {
+    if (!fontName || !googleFontsMap[fontName]) return;
+
+    // Check if font is already loaded
+    const existingLink = document.querySelector(`link[href="${googleFontsMap[fontName]}"]`);
+    if (existingLink) return;
+
+    // Create and append the font link
+    const link = document.createElement('link');
+    link.href = googleFontsMap[fontName];
+    link.rel = 'stylesheet';
+    link.crossOrigin = 'anonymous';
+    document.head.appendChild(link);
+
+    console.log(`Loading Google Font: ${fontName}`);
+  };
+
   // Fetch dynamic configuration from API
   useEffect(() => {
     const fetchConfig = async () => {
@@ -253,7 +291,7 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
         if (!apiUrl) {
           throw new Error('No API URL available');
         }
-        
+
         const response = await fetch(`${apiUrl}/api/chatbot/${config.chatbotId}/config`, {
           method: 'GET',
           headers: {
@@ -268,7 +306,7 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
         }
 
                 const dynamicConfigData = await response.json();
-        
+
         // Merge static config with dynamic config
         const mergedConfig = {
           ...config,
@@ -276,6 +314,11 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
         };
 
         setDynamicConfig(mergedConfig);
+
+        // Load the selected font if it's a Google Font
+        if (mergedConfig.fontFamily && googleFontsMap[mergedConfig.fontFamily]) {
+          loadGoogleFont(mergedConfig.fontFamily);
+        }
 
         // Set initial states based on dynamic config
         const initialSoundState = mergedConfig.popupSoundEnabled !== false;
@@ -299,8 +342,18 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
   useEffect(() => {
     
     if (dynamicConfig && isOpen && messages.length === 0) {
-      // Check if welcome message is enabled
-      if (dynamicConfig.showWelcomePopup) {
+      // Check if showInitForm is true to show lead form immediately
+      console.log('Dynamic Config on Open:', dynamicConfig);
+      if (dynamicConfig.showInitForm) {
+        setMessages([{
+          id: 'lead-form-init',
+          text: 'Plese enter your details to get started',
+          sender: 'bot',
+          timestamp: new Date(),
+          shouldShowLead: true
+        }]);
+        setShowWelcomeWidget(false);
+      } else if (dynamicConfig.showWelcomePopup) {
         // If custom welcome message exists and is not empty, show it
         if (dynamicConfig.welcomeMessage && dynamicConfig.welcomeMessage.trim() !== '') {
           setMessages([{
@@ -552,7 +605,22 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
   // Handle form submission
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    sendMessage(inputValue);
+
+    // Check if lead form is currently visible and should be submitted
+    const hasVisibleLeadForm = messages.some(message =>
+      message.sender === 'bot' &&
+      message.shouldShowLead &&
+      dynamicConfig?.leadCollectionEnabled &&
+      !leadSubmitted
+    );
+
+    if (hasVisibleLeadForm) {
+      // Submit the lead form instead of sending a message
+      handleLeadSubmit(e);
+    } else {
+      // Send the message normally
+      sendMessage(inputValue);
+    }
   };
 
   // Toggle sound
@@ -929,12 +997,9 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        
         .rankved-chatbot {
           position: fixed !important;
           pointer-events: auto;
-          font-family: ${dynamicConfig?.fontFamily || 'Inter'}, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
         }
         .rankved-chatbot * {
           box-sizing: border-box;
@@ -988,7 +1053,7 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
         }
         @media (min-width: 1024px) {
           .rankved-chatbot .chat-window {
-            width: 460px;
+            width: 380px;
             height: 900px;
             max-height: 90vh;
           }
@@ -1014,6 +1079,7 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
           background: ${theme === 'dark' ? '#1f2937' : '#fafafa'};
           scrollbar-width: none;
           -ms-overflow-style: none;
+          font-family: ${dynamicConfig?.fontFamily || 'Inter'}, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
         }
         .rankved-chatbot .chat-messages::-webkit-scrollbar {
           display: none;
@@ -1196,6 +1262,7 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
           box-shadow: 0 4px 6px -3px rgb(0 0 0 / 10%);
           box-sizing: border-box;
           line-height: 1.2;
+          font-family: ${dynamicConfig?.fontFamily || 'Inter'}, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
         }
         @media (min-width: 768px) {
           .rankved-chatbot .chat-input input {
@@ -1486,26 +1553,34 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
         
         /* Lead Form Styles */
         .rankved-chatbot .lead-form-container {
-          padding: 16px;
-          background: #ffffff;
-          border-top: 1px solid #e5e7eb;
+          padding: 20px;
+          background: ${theme === 'dark' ? '#1f2937' : '#ffffff'};
+          border-top: 1px solid ${theme === 'dark' ? '#374151' : '#e5e7eb'};
           flex-shrink: 0;
-          box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05);
+          box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.08);
+          border-radius: 12px 12px 0 0;
         }
         .rankved-chatbot .lead-form-header {
           text-align: center;
-          margin-bottom: 16px;
+          margin-bottom: 20px;
         }
         .rankved-chatbot .lead-form-header h3 {
           margin: 0;
-          font-size: 16px;
-          font-weight: 600;
-          color: #374151;
+          font-size: 18px;
+          font-weight: 700;
+          color: ${theme === 'dark' ? '#f9fafb' : '#374151'};
+          letter-spacing: -0.025em;
+        }
+        .rankved-chatbot .lead-form-header p {
+          margin: 8px 0 0 0;
+          font-size: 14px;
+          color: ${theme === 'dark' ? '#9ca3af' : '#6b7280'};
+          line-height: 1.4;
         }
         .rankved-chatbot .lead-form {
           display: flex;
           flex-direction: column;
-          gap: 12px;
+          gap: 16px;
         }
         .rankved-chatbot .lead-form-field {
           position: relative;
@@ -1514,72 +1589,131 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
         }
         .rankved-chatbot .field-icon {
           position: absolute;
-          left: 10px;
-          color: #9ca3af;
-          z-index: 1;
+          left: 14px;
+          color: ${theme === 'dark' ? '#6b7280' : '#9ca3af'};
+          z-index: 2;
+          transition: color 0.2s ease;
         }
         .rankved-chatbot .lead-form-field input {
           width: 100%;
-          padding: 10px 10px 10px 36px;
-          border: 1px solid #d1d5db;
-          border-radius: 6px;
-          font-size: 13px;
-          background: white;
-          transition: all 0.2s ease;
+          padding: 14px 16px 14px 44px;
+          border: 2px solid ${theme === 'dark' ? '#374151' : '#e5e7eb'};
+          border-radius: 10px;
+          font-size: 14px;
+          font-weight: 400;
+          background: ${theme === 'dark' ? '#374151' : 'white'};
+          color: ${theme === 'dark' ? '#f9fafb' : '#374151'};
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          box-sizing: border-box;
+        }
+        .rankved-chatbot .lead-form-field input::placeholder {
+          color: ${theme === 'dark' ? '#6b7280' : '#9ca3af'};
+          font-weight: 400;
         }
         .rankved-chatbot .lead-form-field input:focus {
           outline: none;
           border-color: ${primaryColor};
-          box-shadow: 0 0 0 2px ${primaryColor}15;
-        }
-        .rankved-chatbot .lead-form-field input:disabled {
-          background: #f3f4f6;
-          cursor: not-allowed;
-        }
-        .rankved-chatbot .lead-form-actions {
-          display: flex;
-          gap: 8px;
-          margin-top: 4px;
-        }
-        .rankved-chatbot .lead-submit-button {
-          flex: 1;
-          padding: 10px 16px;
-          background: ${primaryColor};
-          color: white;
-          border: none;
-          border-radius: 6px;
-          font-size: 13px;
-          font-weight: 500;
-          cursor: pointer;
-          transition: all 0.2s ease;
-        }
-        .rankved-chatbot .lead-submit-button:hover:not(:disabled) {
-          background: ${primaryColor}dd;
+          box-shadow: 0 0 0 3px ${primaryColor}20, 0 2px 8px rgba(0, 0, 0, 0.1);
           transform: translateY(-1px);
         }
-        .rankved-chatbot .lead-submit-button:disabled {
-          background: #9ca3af;
+        .rankved-chatbot .lead-form-field input:focus + .field-icon {
+          color: ${primaryColor};
+        }
+        .rankved-chatbot .lead-form-field input:disabled {
+          background: ${theme === 'dark' ? '#1f2937' : '#f9fafb'};
+          color: ${theme === 'dark' ? '#6b7280' : '#9ca3af'};
           cursor: not-allowed;
           transform: none;
         }
-        .rankved-chatbot .lead-cancel-button {
-          padding: 10px 16px;
-          background: white;
-          color: #6b7280;
-          border: 1px solid #d1d5db;
-          border-radius: 6px;
-          font-size: 13px;
+        .rankved-chatbot .lead-form-field.error input {
+          border-color: #ef4444;
+          box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+        }
+        .rankved-chatbot .lead-form-field.error .field-icon {
+          color: #ef4444;
+        }
+        .rankved-chatbot .field-error-message {
+          margin-top: 6px;
+          font-size: 12px;
+          color: #ef4444;
           font-weight: 500;
+          display: flex;
+          align-items: center;
+          gap: 4px;
+        }
+        .rankved-chatbot .lead-form-actions {
+          display: flex;
+          gap: 12px;
+          margin-top: 8px;
+        }
+        .rankved-chatbot .lead-submit-button {
+          flex: 1;
+          padding: 14px 20px;
+          background: linear-gradient(135deg, ${primaryColor} 0%, ${secondaryColor} 100%);
+          color: white;
+          border: none;
+          border-radius: 10px;
+          font-size: 14px;
+          font-weight: 600;
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          position: relative;
+          overflow: hidden;
+          box-shadow: 0 4px 12px ${primaryColor}30;
+        }
+        .rankved-chatbot .lead-submit-button::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: -100%;
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+          transition: left 0.5s;
+        }
+        .rankved-chatbot .lead-submit-button:hover:not(:disabled)::before {
+          left: 100%;
+        }
+        .rankved-chatbot .lead-submit-button:hover:not(:disabled) {
+          transform: translateY(-2px);
+          box-shadow: 0 8px 20px ${primaryColor}40;
+        }
+        .rankved-chatbot .lead-submit-button:active:not(:disabled) {
+          transform: translateY(0);
+          box-shadow: 0 2px 8px ${primaryColor}30;
+        }
+        .rankved-chatbot .lead-submit-button:disabled {
+          background: ${theme === 'dark' ? '#374151' : '#d1d5db'};
+          color: ${theme === 'dark' ? '#6b7280' : '#9ca3af'};
+          cursor: not-allowed;
+          transform: none;
+          box-shadow: none;
+        }
+        .rankved-chatbot .lead-cancel-button {
+          padding: 14px 20px;
+          background: ${theme === 'dark' ? '#374151' : 'white'};
+          color: ${theme === 'dark' ? '#d1d5db' : '#6b7280'};
+          border: 2px solid ${theme === 'dark' ? '#4b5563' : '#e5e7eb'};
+          border-radius: 10px;
+          font-size: 14px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .rankved-chatbot .lead-cancel-button:hover:not(:disabled) {
-          background: #f9fafb;
-          border-color: #9ca3af;
+          background: ${theme === 'dark' ? '#4b5563' : '#f9fafb'};
+          border-color: ${theme === 'dark' ? '#6b7280' : '#d1d5db'};
+          transform: translateY(-1px);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        .rankved-chatbot .lead-cancel-button:active:not(:disabled) {
+          transform: translateY(0);
         }
         .rankved-chatbot .lead-cancel-button:disabled {
-          background: #f3f4f6;
+          background: ${theme === 'dark' ? '#1f2937' : '#f3f4f6'};
+          color: ${theme === 'dark' ? '#4b5563' : '#9ca3af'};
           cursor: not-allowed;
+          transform: none;
         }
         
         /* Inline Lead Form Styles (as part of message) */

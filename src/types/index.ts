@@ -35,6 +35,7 @@ export interface Chatbot {
   // Messaging
   welcomeMessage: string;
   initialMessageDelay: number;
+  showInitForm?: boolean;
   
   // Notifications
   enableNotificationSound: boolean;
@@ -175,6 +176,7 @@ export interface InsertChatbot {
   chatBubbleIcon?: string;
   welcomeMessage?: string;
   initialMessageDelay?: number;
+  showInitForm?: boolean;
   enableNotificationSound?: boolean;
   customNotificationSound?: string;
   popupSoundEnabled?: boolean;

@@ -122,6 +122,7 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({
   const [isWindowVisible, setIsWindowVisible] = useState(false);
   const [showWelcomeWidget, setShowWelcomeWidget] = useState(false);
   const [showMessageText, setShowMessageText] = useState(true);
+  const [showWelcomeMessage, setShowWelcomeMessage] = useState(false);
 
   // Lead collection states
   const [leadData, setLeadData] = useState<LeadData>({
@@ -140,6 +141,12 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({
   // **NEW**: Handlers for opening and closing the chat window with animation
   const handleOpen = () => {
     setIsOpen(true);
+    setShowWelcomeMessage(false); // Hide welcome message when chat is opened
+  };
+
+  // **NEW**: Handler to close the welcome message
+  const handleCloseWelcomeMessage = () => {
+    setShowWelcomeMessage(false);
   };
 
   const handleClose = () => {
@@ -197,16 +204,21 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({
   }, [dynamicConfig?.popupSoundVolume, audioRef]);
 
   // Handle popup delay - show chat bubble after delay
+  // Handle popup delay - show chat bubble after delay
   useEffect(() => {
     if (dynamicConfig && !isConfigLoading && !showChatBubble) {
       const popupDelay = dynamicConfig.popupDelay || config.popupDelay || 0;
       console.log("Popup delay set to:", popupDelay, "ms");
+
+      console.log('Popup delay set to:', popupDelay, 'ms');
 
       if (popupDelay > 0) {
         console.log("Waiting", popupDelay, "ms before showing chat bubble...");
         const timer = setTimeout(() => {
           console.log("Showing chat bubble after popup delay");
           setShowChatBubble(true);
+
+          setShowWelcomeMessage(true); // Show welcome message with bubble
 
           // Try to play sound when bubble appears
           if (
@@ -246,11 +258,14 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({
           }
         }, popupDelay);
 
+
         return () => clearTimeout(timer);
       } else {
         // No delay, show immediately
         console.log("No popup delay, showing chat bubble immediately");
         setShowChatBubble(true);
+
+        setShowWelcomeMessage(true); // Show welcome message with bubble
 
         // Try to play sound when bubble appears immediately
         if (
@@ -510,8 +525,8 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({
         throw new Error("No API URL available");
       }
 
-      const response = await fetch(`${apiUrl}/api/chat`, {
-        method: "POST",
+      const response = await fetch(`${apiUrl}/api/chat/rag`, {
+        method: 'POST',
         headers: {
           "Content-Type": "application/json",
           "X-Chatbot-ID": dynamicConfig.chatbotId,
@@ -530,6 +545,7 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({
       }
 
       const data = await response.json();
+      console.log('First message response data:', data);
 
       // Simulate typing delay
       setTimeout(() => {
@@ -643,9 +659,8 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({
       if (!apiUrl) {
         throw new Error("No API URL available");
       }
-
-      const response = await fetch(`${apiUrl}/api/chat`, {
-        method: "POST",
+      const response = await fetch(`${apiUrl}/api/chat/rag`, {
+        method: 'POST',
         headers: {
           "Content-Type": "application/json",
           "X-Chatbot-ID": dynamicConfig.chatbotId,
@@ -1985,10 +2000,187 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({
           background: #f3f4f6;
           cursor: not-allowed;
         }
+
+        /* Welcome Message Overlay Styles */
+        .rankved-chatbot .welcome-message-overlay {
+          position: absolute;
+          bottom: 60px;
+          right: 0;
+          background: ${dynamicConfig?.primaryColor};
+          border-radius: 12px 12px 4px 12px;
+          box-shadow: ${getShadowStyles()};
+          padding: 10px;
+          width: 210px;
+          z-index: 1000;
+          animation: fadeInUp 0.3s ease-out;
+          border: 1px solid ${theme === 'dark' ? '#374151' : '#e5e7eb'};
+          color: white;
+        }
+
+        .rankved-chatbot .welcome-message-content {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+        }
+
+        .rankved-chatbot .welcome-message-text {
+          font-size: 14px;
+          font-weight: 500;
+          color: white;
+          line-height: 1.4;
+          flex: 1;
+        }
+
+        .rankved-chatbot .welcome-message-close {
+          background: none;
+          border: none;
+          color: #fff;
+          cursor: pointer;
+          padding: 4px;
+          border-radius: 4px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: all 0.2s ease;
+          flex-shrink: 0;
+        }
+
+        .rankved-chatbot .welcome-message-close:hover {
+          background: ${theme === 'dark' ? '#374151' : '#f3f4f6'};
+          color: ${theme === 'dark' ? '#f9fafb' : '#374151'};
+        }
+
+        .rankved-chatbot .welcome-message-arrow {
+          position: absolute;
+          bottom: -8px;
+          right: 20px;
+          width: 0;
+          height: 0;
+          border-left: 8px solid transparent;
+          border-right: 8px solid transparent;
+          border-top: 8px solid ${theme === 'dark' ? '#1f2937' : 'white'};
+        }
+
+        .rankved-chatbot .welcome-message-arrow::before {
+          content: '';
+          position: absolute;
+          top: -10px;
+          left: -8px;
+          width: 0;
+          height: 0;
+          border-left: 8px solid transparent;
+          border-right: 8px solid transparent;
+          border-top: 8px solid ${theme === 'dark' ? '#374151' : '#e5e7eb'};
+        }
+
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        /* Position adjustments for different bubble positions */
+        .rankved-chatbot[data-position="bottom-left"] .welcome-message-overlay {
+          right: auto;
+          left: 0;
+        }
+
+        .rankved-chatbot[data-position="bottom-left"] .welcome-message-arrow {
+          right: auto;
+          left: 20px;
+        }
+
+        .rankved-chatbot[data-position="top-right"] .welcome-message-overlay {
+          bottom: auto;
+          top: 70px;
+        }
+
+        .rankved-chatbot[data-position="top-right"] .welcome-message-arrow {
+          bottom: auto;
+          top: -8px;
+          border-top: none;
+          border-bottom: 8px solid ${theme === 'dark' ? '#1f2937' : 'white'};
+        }
+
+        .rankved-chatbot[data-position="top-right"] .welcome-message-arrow::before {
+          top: auto;
+          bottom: -10px;
+          border-top: none;
+          border-bottom: 8px solid ${theme === 'dark' ? '#374151' : '#e5e7eb'};
+        }
+
+        .rankved-chatbot[data-position="top-left"] .welcome-message-overlay {
+          bottom: auto;
+          top: 70px;
+          right: auto;
+          left: 0;
+        }
+
+        .rankved-chatbot[data-position="top-left"] .welcome-message-arrow {
+          bottom: auto;
+          top: -8px;
+          right: auto;
+          left: 20px;
+          border-top: none;
+          border-bottom: 8px solid ${theme === 'dark' ? '#1f2937' : 'white'};
+        }
+
+        .rankved-chatbot[data-position="top-left"] .welcome-message-arrow::before {
+          top: auto;
+          bottom: -10px;
+          border-top: none;
+          border-bottom: 8px solid ${theme === 'dark' ? '#374151' : '#e5e7eb'};
+        }
+
+        /* Mobile responsiveness */
+        @media (max-width: 480px) {
+          .rankved-chatbot .welcome-message-overlay {
+            max-width: 250px;
+            padding: 12px 16px;
+            bottom: 65px;
+          }
+
+          .rankved-chatbot .welcome-message-text {
+            font-size: 13px;
+          }
+
+          .rankved-chatbot .welcome-message-arrow {
+            right: 16px;
+          }
+
+          .rankved-chatbot[data-position="bottom-left"] .welcome-message-arrow {
+            left: 16px;
+          }
+        }
       `}</style>
 
       {showChatBubble && (
         <div className="rankved-chatbot" style={getPositionStyles()}>
+          {/* Welcome Message Overlay */}
+          {showWelcomeMessage && !isOpen && (
+            <div className="welcome-message-overlay">
+              <div className="welcome-message-content">
+                <span className="welcome-message-text">
+                  Chat with {dynamicConfig?.chatWidgetName || dynamicConfig?.name || 'AI Assistant'}
+                </span>
+                <button
+                  className="welcome-message-close"
+                  onClick={handleCloseWelcomeMessage}
+                  aria-label="Close welcome message"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+              <div className="welcome-message-arrow"></div>
+            </div>
+          )}
+
           {!isOpen && (
             <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: "10px", justifyContent: "flex-end" }}>
               {showMessageText && (

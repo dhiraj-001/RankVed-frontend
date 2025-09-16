@@ -1,5 +1,15 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { MessageCircle, X, Send, Volume2, VolumeX, User, Phone, Mail, RotateCcw } from 'lucide-react';
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import {
+  MessageCircle,
+  X,
+  Send,
+  Volume2,
+  VolumeX,
+  User,
+  Phone,
+  Mail,
+  RotateCcw,
+} from "lucide-react";
 
 // Declare global window property for RankVedChatbotConfig
 declare global {
@@ -14,7 +24,7 @@ declare global {
 interface ChatbotConfig {
   chatbotId: string;
   position: string;
-  theme: 'light' | 'dark';
+  theme: "light" | "dark";
   primaryColor: string;
   zIndex: number;
   apiUrl: string;
@@ -66,7 +76,7 @@ interface ChatbotConfig {
 interface Message {
   id: string;
   text: string;
-  sender: 'user' | 'bot';
+  sender: "user" | "bot";
   timestamp: Date;
   followUpButtons?: Array<{ text: string; payload: string | object }>;
   ctaButton?: { text: string; link: string };
@@ -87,21 +97,27 @@ interface ChatbotEmbedProps {
   referer: string;
 }
 
-const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: ChatbotEmbedProps) => {
+const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({
+  config,
+  domain,
+  referer,
+}: ChatbotEmbedProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
-  const [inputValue, setInputValue] = useState('');
+  const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [audioRef, setAudioRef] = useState<HTMLAudioElement | null>(null);
-  const [dynamicConfig, setDynamicConfig] = useState<ChatbotConfig | null>(null);
+  const [dynamicConfig, setDynamicConfig] = useState<ChatbotConfig | null>(
+    null
+  );
   const [isConfigLoading, setIsConfigLoading] = useState(true);
   const [configError, setConfigError] = useState<string | null>(null);
   const [isFirstMessage, setIsFirstMessage] = useState(true);
   const [isFirstMessageLoading, setIsFirstMessageLoading] = useState(false);
   const [hasPlayedInitialSound, setHasPlayedInitialSound] = useState(false);
   const [showChatBubble, setShowChatBubble] = useState(false);
-  
+
   // **NEW**: State to manage the animation and visibility of the chat window
   const [isWindowVisible, setIsWindowVisible] = useState(false);
   const [showWelcomeWidget, setShowWelcomeWidget] = useState(false);
@@ -109,13 +125,13 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
 
   // Lead collection states
   const [leadData, setLeadData] = useState<LeadData>({
-    name: '',
-    email: '',
-    phone: ''
+    name: "",
+    email: "",
+    phone: "",
   });
   const [isSubmittingLead, setIsSubmittingLead] = useState(false);
   const [leadSubmitted, setLeadSubmitted] = useState(false);
-  
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -135,7 +151,7 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
       setIsOpen(false); // Unmount component after animation
     }, ANIMATION_DURATION);
   };
-  
+
   // **NEW**: Effect to trigger fade-in animation when window is opened
   useEffect(() => {
     if (isOpen) {
@@ -150,25 +166,26 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
     if (dynamicConfig && !isConfigLoading && !audioRef) {
       // Use the frontend URL for sound files, not the backend API URL
       const frontendUrl = window.location.origin;
-      const soundUrl = dynamicConfig.customPopupSound || `${frontendUrl}/openclose.mp3`;
-      console.log('Loading sound from:', soundUrl);
-      console.log('Frontend URL:', frontendUrl);
-      
+      const soundUrl =
+        dynamicConfig.customPopupSound || `${frontendUrl}/openclose.mp3`;
+      console.log("Loading sound from:", soundUrl);
+      console.log("Frontend URL:", frontendUrl);
+
       // Create audio element and handle loading
       const audio = new Audio();
-      audio.preload = 'auto';
-      
+      audio.preload = "auto";
+
       // Add event listeners to track loading
-      audio.addEventListener('canplaythrough', () => {
-        console.log('✅ Audio loaded successfully');
+      audio.addEventListener("canplaythrough", () => {
+        console.log("✅ Audio loaded successfully");
         setAudioRef(audio);
       });
-      
-      audio.addEventListener('error', (e) => {
-        console.error('❌ Audio loading error:', e);
-        console.error('❌ Audio error details:', audio.error);
+
+      audio.addEventListener("error", (e) => {
+        console.error("❌ Audio loading error:", e);
+        console.error("❌ Audio error details:", audio.error);
       });
-      
+
       // Set the source after adding event listeners
       audio.src = soundUrl;
     }
@@ -182,89 +199,141 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
     }
   }, [dynamicConfig?.popupSoundVolume, audioRef]);
 
-
-
-    // Handle popup delay - show chat bubble after delay
+  // Handle popup delay - show chat bubble after delay
   useEffect(() => {
     if (dynamicConfig && !isConfigLoading && !showChatBubble) {
       const popupDelay = dynamicConfig.popupDelay || config.popupDelay || 0;
-      console.log('Popup delay set to:', popupDelay, 'ms');
-      
+      console.log("Popup delay set to:", popupDelay, "ms");
+
       if (popupDelay > 0) {
-        console.log('Waiting', popupDelay, 'ms before showing chat bubble...');
+        console.log("Waiting", popupDelay, "ms before showing chat bubble...");
         const timer = setTimeout(() => {
-          console.log('Showing chat bubble after popup delay');
+          console.log("Showing chat bubble after popup delay");
           setShowChatBubble(true);
           setShowWelcomeMessage(true); // Show welcome message with bubble
           // Try to play sound when bubble appears
-          if (soundEnabled && audioRef && dynamicConfig.popupSoundEnabled !== false && !hasPlayedInitialSound) {
+          if (
+            soundEnabled &&
+            audioRef &&
+            dynamicConfig.popupSoundEnabled !== false &&
+            !hasPlayedInitialSound
+          ) {
             setTimeout(() => {
               try {
                 audioRef.currentTime = 0;
                 audioRef.volume = (dynamicConfig.popupSoundVolume || 50) / 100;
-                audioRef.play().then(() => {
-                  console.log('🎵 ✅ Sound played successfully when bubble appeared!');
-                  setHasPlayedInitialSound(true);
-                }).catch((error) => {
-                  console.log('⚠️ Autoplay blocked by browser (expected):', error.message);
-                  setHasPlayedInitialSound(true); // Mark as played even if blocked
-                });
-                console.log('🎵 Attempting to play sound when bubble appears');
+                audioRef
+                  .play()
+                  .then(() => {
+                    console.log(
+                      "🎵 ✅ Sound played successfully when bubble appeared!"
+                    );
+                    setHasPlayedInitialSound(true);
+                  })
+                  .catch((error) => {
+                    console.log(
+                      "⚠️ Autoplay blocked by browser (expected):",
+                      error.message
+                    );
+                    setHasPlayedInitialSound(true); // Mark as played even if blocked
+                  });
+                console.log("🎵 Attempting to play sound when bubble appears");
               } catch (error) {
-                console.error('❌ Error playing sound when bubble appears:', error);
+                console.error(
+                  "❌ Error playing sound when bubble appears:",
+                  error
+                );
                 setHasPlayedInitialSound(true);
               }
             }, 100); // Small delay to ensure bubble is rendered
           }
         }, popupDelay);
-        
+
         return () => clearTimeout(timer);
       } else {
         // No delay, show immediately
-        console.log('No popup delay, showing chat bubble immediately');
+        console.log("No popup delay, showing chat bubble immediately");
         setShowChatBubble(true);
         setShowWelcomeMessage(true); // Show welcome message with bubble
         // Try to play sound when bubble appears immediately
-        if (soundEnabled && audioRef && dynamicConfig.popupSoundEnabled !== false && !hasPlayedInitialSound) {
+        if (
+          soundEnabled &&
+          audioRef &&
+          dynamicConfig.popupSoundEnabled !== false &&
+          !hasPlayedInitialSound
+        ) {
           setTimeout(() => {
             try {
               audioRef.currentTime = 0;
               audioRef.volume = (dynamicConfig.popupSoundVolume || 50) / 100;
-              audioRef.play().then(() => {
-                console.log('🎵 ✅ Sound played successfully when bubble appeared!');
-                setHasPlayedInitialSound(true);
-              }).catch((error) => {
-                console.log('⚠️ Autoplay blocked by browser (expected):', error.message);
-                setHasPlayedInitialSound(true);
-              });
-              console.log('🎵 Attempting to play sound when bubble appears');
+              audioRef
+                .play()
+                .then(() => {
+                  console.log(
+                    "🎵 ✅ Sound played successfully when bubble appeared!"
+                  );
+                  setHasPlayedInitialSound(true);
+                })
+                .catch((error) => {
+                  console.log(
+                    "⚠️ Autoplay blocked by browser (expected):",
+                    error.message
+                  );
+                  setHasPlayedInitialSound(true);
+                });
+              console.log("🎵 Attempting to play sound when bubble appears");
             } catch (error) {
-              console.error('❌ Error playing sound when bubble appears:', error);
+              console.error(
+                "❌ Error playing sound when bubble appears:",
+                error
+              );
               setHasPlayedInitialSound(true);
             }
           }, 100);
         }
       }
     }
-  }, [dynamicConfig?.popupDelay, isConfigLoading, config.popupDelay, soundEnabled, audioRef, showChatBubble, hasPlayedInitialSound]);
+  }, [
+    dynamicConfig?.popupDelay,
+    isConfigLoading,
+    config.popupDelay,
+    soundEnabled,
+    audioRef,
+    showChatBubble,
+    hasPlayedInitialSound,
+  ]);
 
   // Google Fonts mapping for dynamic loading
   const googleFontsMap: { [key: string]: string } = {
-    'Inter': 'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap',
-    'Roboto': 'https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap',
-    'Open Sans': 'https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&display=swap',
-    'Lato': 'https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap',
-    'Montserrat': 'https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap',
-    'Source Sans Pro': 'https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;400;600;700&display=swap',
-    'Poppins': 'https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap',
-    'Nunito': 'https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700&display=swap',
-    'Raleway': 'https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;500;600;700&display=swap',
-    'Ubuntu': 'https://fonts.googleapis.com/css2?family=Ubuntu:wght@300;400;500;700&display=swap',
-    'Noto Sans': 'https://fonts.googleapis.com/css2?family=Noto+Sans:wght@300;400;500;600;700&display=swap',
-    'Work Sans': 'https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500;600;700&display=swap',
-    'Fira Sans': 'https://fonts.googleapis.com/css2?family=Fira+Sans:wght@300;400;500;600;700&display=swap',
-    'Oxygen': 'https://fonts.googleapis.com/css2?family=Oxygen:wght@300;400;700&display=swap',
-    'PT Sans': 'https://fonts.googleapis.com/css2?family=PT+Sans:wght@400;700&display=swap'
+    Inter:
+      "https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap",
+    Roboto:
+      "https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap",
+    "Open Sans":
+      "https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&display=swap",
+    Lato: "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap",
+    Montserrat:
+      "https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap",
+    "Source Sans Pro":
+      "https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;400;600;700&display=swap",
+    Poppins:
+      "https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap",
+    Nunito:
+      "https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700&display=swap",
+    Raleway:
+      "https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;500;600;700&display=swap",
+    Ubuntu:
+      "https://fonts.googleapis.com/css2?family=Ubuntu:wght@300;400;500;700&display=swap",
+    "Noto Sans":
+      "https://fonts.googleapis.com/css2?family=Noto+Sans:wght@300;400;500;600;700&display=swap",
+    "Work Sans":
+      "https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500;600;700&display=swap",
+    "Fira Sans":
+      "https://fonts.googleapis.com/css2?family=Fira+Sans:wght@300;400;500;600;700&display=swap",
+    Oxygen:
+      "https://fonts.googleapis.com/css2?family=Oxygen:wght@300;400;700&display=swap",
+    "PT Sans":
+      "https://fonts.googleapis.com/css2?family=PT+Sans:wght@400;700&display=swap",
   };
 
   // Function to dynamically load Google Fonts
@@ -272,14 +341,16 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
     if (!fontName || !googleFontsMap[fontName]) return;
 
     // Check if font is already loaded
-    const existingLink = document.querySelector(`link[href="${googleFontsMap[fontName]}"]`);
+    const existingLink = document.querySelector(
+      `link[href="${googleFontsMap[fontName]}"]`
+    );
     if (existingLink) return;
 
     // Create and append the font link
-    const link = document.createElement('link');
+    const link = document.createElement("link");
     link.href = googleFontsMap[fontName];
-    link.rel = 'stylesheet';
-    link.crossOrigin = 'anonymous';
+    link.rel = "stylesheet";
+    link.crossOrigin = "anonymous";
     document.head.appendChild(link);
 
     console.log(`Loading Google Font: ${fontName}`);
@@ -293,44 +364,49 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
         // Use the apiUrl from the config that was already fetched by the loader
         const apiUrl = config.apiUrl || window.RankVedChatbotConfig?.apiUrl;
         if (!apiUrl) {
-          throw new Error('No API URL available');
+          throw new Error("No API URL available");
         }
 
-        const response = await fetch(`${apiUrl}/api/chatbot/${config.chatbotId}/config`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Domain': domain,
-            'X-Referer': referer
+        const response = await fetch(
+          `${apiUrl}/api/chatbot/${config.chatbotId}/config`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              "X-Domain": domain,
+              "X-Referer": referer,
+            },
           }
-        });
+        );
 
         if (!response.ok) {
           throw new Error(`Failed to fetch config: ${response.status}`);
         }
 
-                const dynamicConfigData = await response.json();
+        const dynamicConfigData = await response.json();
 
         // Merge static config with dynamic config
         const mergedConfig = {
           ...config,
-          ...dynamicConfigData
+          ...dynamicConfigData,
         };
 
         setDynamicConfig(mergedConfig);
 
         // Load the selected font if it's a Google Font
-        if (mergedConfig.fontFamily && googleFontsMap[mergedConfig.fontFamily]) {
+        if (
+          mergedConfig.fontFamily &&
+          googleFontsMap[mergedConfig.fontFamily]
+        ) {
           loadGoogleFont(mergedConfig.fontFamily);
         }
 
         // Set initial states based on dynamic config
         const initialSoundState = mergedConfig.popupSoundEnabled !== false;
         setSoundEnabled(initialSoundState);
-
       } catch (error) {
-        console.error('Error fetching chatbot config:', error);
-        setConfigError('Failed to load chatbot configuration');
+        console.error("Error fetching chatbot config:", error);
+        setConfigError("Failed to load chatbot configuration");
         // Fallback to static config
         setDynamicConfig(config);
         setSoundEnabled(config.soundEnabled);
@@ -344,28 +420,34 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
 
   // Handle welcome message logic and auto-load first message
   useEffect(() => {
-    
     if (dynamicConfig && isOpen && messages.length === 0) {
       // Check if showInitForm is true to show lead form immediately
-      console.log('Dynamic Config on Open:', dynamicConfig);
+      console.log("Dynamic Config on Open:", dynamicConfig);
       if (dynamicConfig.showInitForm) {
-        setMessages([{
-          id: 'lead-form-init',
-          text: dynamicConfig.welcomeMessage || 'Welcome ',
-          sender: 'bot',
-          timestamp: new Date(),
-          shouldShowLead: true
-        }]);
+        setMessages([
+          {
+            id: "lead-form-init",
+            text: dynamicConfig.welcomeMessage || "Welcome ",
+            sender: "bot",
+            timestamp: new Date(),
+            shouldShowLead: true,
+          },
+        ]);
         setShowWelcomeWidget(false);
       } else if (dynamicConfig.showWelcomePopup) {
         // If custom welcome message exists and is not empty, show it
-        if (dynamicConfig.welcomeMessage && dynamicConfig.welcomeMessage.trim() !== '') {
-          setMessages([{
-            id: 'greeting',
-            text: dynamicConfig.welcomeMessage,
-            sender: 'bot',
-            timestamp: new Date()
-          }]);
+        if (
+          dynamicConfig.welcomeMessage &&
+          dynamicConfig.welcomeMessage.trim() !== ""
+        ) {
+          setMessages([
+            {
+              id: "greeting",
+              text: dynamicConfig.welcomeMessage,
+              sender: "bot",
+              timestamp: new Date(),
+            },
+          ]);
           setShowWelcomeWidget(false); // Hide welcome widget when welcome message is shown
         } else {
           // If no custom message or message is blank, start loading first message immediately
@@ -383,7 +465,7 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
 
   // Scroll to bottom when new messages arrive
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   // Focus input when chat opens
@@ -393,60 +475,58 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
     }
   }, [isOpen, isWindowVisible]);
 
-
-
   // Play bubble sound when bubble appears
   // Play notification sound for new messages
   const playNotificationSound = useCallback(() => {
     if (!soundEnabled || !audioRef) {
-      console.log('🔇 Sound disabled or no audio ref available');
+      console.log("🔇 Sound disabled or no audio ref available");
       return;
     }
     try {
-      console.log('🔊 Playing notification sound...');
+      console.log("🔊 Playing notification sound...");
       audioRef.currentTime = 0;
       audioRef.volume = (dynamicConfig?.popupSoundVolume || 50) / 100;
-      audioRef.play().then(() => {
-        console.log('✅ Sound played successfully');
-      }).catch((error) => {
-        console.error('❌ Error playing sound:', error);
-      });
+      audioRef
+        .play()
+        .then(() => {
+          console.log("✅ Sound played successfully");
+        })
+        .catch((error) => {
+          console.error("❌ Error playing sound:", error);
+        });
     } catch (error) {
-      console.error('❌ Error playing notification sound:', error);
+      console.error("❌ Error playing notification sound:", error);
     }
   }, [soundEnabled, audioRef, dynamicConfig?.popupSoundVolume]);
-
-
-
-
 
   // Send first message automatically
   const sendFirstMessage = async () => {
     if (!dynamicConfig) return;
-    
+
     try {
-      const apiUrl = dynamicConfig.apiUrl || window.RankVedChatbotConfig?.apiUrl;
+      const apiUrl =
+        dynamicConfig.apiUrl || window.RankVedChatbotConfig?.apiUrl;
       if (!apiUrl) {
-        throw new Error('No API URL available');
+        throw new Error("No API URL available");
       }
-      
+
       const response = await fetch(`${apiUrl}/api/chat/rag`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'X-Chatbot-ID': dynamicConfig.chatbotId,
-          'X-Domain': domain,
-          'X-Referer': referer
+          "Content-Type": "application/json",
+          "X-Chatbot-ID": dynamicConfig.chatbotId,
+          "X-Domain": domain,
+          "X-Referer": referer,
         },
         body: JSON.stringify({
-          message: 'hello',
+          message: "hello",
           sessionId: getSessionId(),
-          chatbotId: dynamicConfig.chatbotId
-        })
+          chatbotId: dynamicConfig.chatbotId,
+        }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to send first message');
+        throw new Error("Failed to send first message");
       }
 
       const data = await response.json();
@@ -455,13 +535,13 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
       setTimeout(() => {
         const botMessage: Message = {
           id: (Date.now() + 1).toString(),
-          text: data.response || 'Hello! How can I help you today?',
-          sender: 'bot',
+          text: data.response || "Hello! How can I help you today?",
+          sender: "bot",
           timestamp: new Date(),
           followUpButtons: data.follow_up_buttons || data.followUpButtons || [],
           ctaButton: data.cta_button || data.ctaButton || undefined,
           shouldShowLead: data.shouldShowLead || false,
-          intentId: data.intent_id || data.intentId || 'unrecognized_intent'
+          intentId: data.intent_id || data.intentId || "unrecognized_intent",
         };
 
         setMessages([botMessage]);
@@ -470,14 +550,13 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
         setShowWelcomeWidget(false); // Hide welcome widget when first message is loaded
         playNotificationSound();
       }, dynamicConfig.replyDelay || 1000);
-
     } catch (error) {
-      console.error('Error sending first message:', error);
+      console.error("Error sending first message:", error);
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
-        text: 'Hello! How can I help you today?',
-        sender: 'bot',
-        timestamp: new Date()
+        text: "Hello! How can I help you today?",
+        sender: "bot",
+        timestamp: new Date(),
       };
       setMessages([errorMessage]);
       setIsFirstMessageLoading(false);
@@ -488,23 +567,29 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
 
   // Get or create session ID
   const getSessionId = () => {
-    let sessionId = localStorage.getItem('rankved-chatbot-session');
+    let sessionId = localStorage.getItem("rankved-chatbot-session");
     // Check if the existing session ID is in the old format and clear it
-    if (sessionId && (sessionId.startsWith('session_') || sessionId.includes('-'))) {
-      localStorage.removeItem('rankved-chatbot-session');
+    if (
+      sessionId &&
+      (sessionId.startsWith("session_") || sessionId.includes("-"))
+    ) {
+      localStorage.removeItem("rankved-chatbot-session");
       sessionId = null;
     }
     if (!sessionId) {
       // Generate a proper UUID v4 format
       const generateUUID = () => {
-        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-          const r = Math.random() * 16 | 0;
-          const v = c === 'x' ? r : (r & 0x3 | 0x8);
-          return v.toString(16);
-        });
+        return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(
+          /[xy]/g,
+          function (c) {
+            const r = (Math.random() * 16) | 0;
+            const v = c === "x" ? r : (r & 0x3) | 0x8;
+            return v.toString(16);
+          }
+        );
       };
       sessionId = generateUUID();
-      localStorage.setItem('rankved-chatbot-session', sessionId);
+      localStorage.setItem("rankved-chatbot-session", sessionId);
     }
     return sessionId;
   };
@@ -525,11 +610,15 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
     let messageToSend = text.trim();
     let shouldShowUserMessage = true;
 
-    if (isFirstMessage && dynamicConfig.showWelcomePopup && 
-        (!dynamicConfig.welcomeMessage || dynamicConfig.welcomeMessage.trim() === '')) {
+    if (
+      isFirstMessage &&
+      dynamicConfig.showWelcomePopup &&
+      (!dynamicConfig.welcomeMessage ||
+        dynamicConfig.welcomeMessage.trim() === "")
+    ) {
       // If it's the first message and welcome is enabled but no custom message, send "hello" automatically
       console.log("First message detected, sending 'hello' automatically");
-      messageToSend = 'hello';
+      messageToSend = "hello";
       shouldShowUserMessage = false; // Don't show the "hello" message to user
       setIsFirstMessage(false);
     }
@@ -537,40 +626,41 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
     const userMessage: Message = {
       id: Date.now().toString(),
       text: text.trim(),
-      sender: 'user',
-      timestamp: new Date()
+      sender: "user",
+      timestamp: new Date(),
     };
 
     // Only show user message if it should be visible
     if (shouldShowUserMessage) {
-      setMessages(prev => [...prev, userMessage]);
+      setMessages((prev) => [...prev, userMessage]);
     }
-    setInputValue('');
+    setInputValue("");
     setIsLoading(true);
 
     try {
-      const apiUrl = dynamicConfig.apiUrl || window.RankVedChatbotConfig?.apiUrl;
+      const apiUrl =
+        dynamicConfig.apiUrl || window.RankVedChatbotConfig?.apiUrl;
       if (!apiUrl) {
-        throw new Error('No API URL available');
+        throw new Error("No API URL available");
       }
-      
+
       const response = await fetch(`${apiUrl}/api/chat/rag`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'X-Chatbot-ID': dynamicConfig.chatbotId,
-          'X-Domain': domain,
-          'X-Referer': referer
+          "Content-Type": "application/json",
+          "X-Chatbot-ID": dynamicConfig.chatbotId,
+          "X-Domain": domain,
+          "X-Referer": referer,
         },
         body: JSON.stringify({
           message: messageToSend,
           sessionId: getSessionId(),
-          chatbotId: dynamicConfig.chatbotId
-        })
+          chatbotId: dynamicConfig.chatbotId,
+        }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to send message');
+        throw new Error("Failed to send message");
       }
 
       const data = await response.json();
@@ -579,29 +669,28 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
       setTimeout(() => {
         const botMessage: Message = {
           id: (Date.now() + 1).toString(),
-          text: data.response || 'Sorry, I couldn\'t process your message.',
-          sender: 'bot',
+          text: data.response || "Sorry, I couldn't process your message.",
+          sender: "bot",
           timestamp: new Date(),
           followUpButtons: data.follow_up_buttons || data.followUpButtons || [],
           ctaButton: data.cta_button || data.ctaButton || undefined,
           shouldShowLead: data.shouldShowLead || false,
-          intentId: data.intent_id || data.intentId || 'unrecognized_intent'
+          intentId: data.intent_id || data.intentId || "unrecognized_intent",
         };
 
-        setMessages(prev => [...prev, botMessage]);
+        setMessages((prev) => [...prev, botMessage]);
         setIsLoading(false);
         playNotificationSound();
       }, dynamicConfig.replyDelay || 1000);
-
     } catch (error) {
-      console.error('Error sending message:', error);
+      console.error("Error sending message:", error);
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
-        text: 'Sorry, there was an error processing your message. Please try again.',
-        sender: 'bot',
-        timestamp: new Date()
+        text: "Sorry, there was an error processing your message. Please try again.",
+        sender: "bot",
+        timestamp: new Date(),
       };
-      setMessages(prev => [...prev, errorMessage]);
+      setMessages((prev) => [...prev, errorMessage]);
       setIsLoading(false);
     }
   };
@@ -611,11 +700,12 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
     e.preventDefault();
 
     // Check if lead form is currently visible and should be submitted
-    const hasVisibleLeadForm = messages.some(message =>
-      message.sender === 'bot' &&
-      message.shouldShowLead &&
-      dynamicConfig?.leadCollectionEnabled &&
-      !leadSubmitted
+    const hasVisibleLeadForm = messages.some(
+      (message) =>
+        message.sender === "bot" &&
+        message.shouldShowLead &&
+        dynamicConfig?.leadCollectionEnabled &&
+        !leadSubmitted
     );
 
     if (hasVisibleLeadForm) {
@@ -632,21 +722,27 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
     const newSoundState = !soundEnabled;
     console.log(`🔊 Toggling sound: ${soundEnabled} → ${newSoundState}`);
     setSoundEnabled(newSoundState);
-    
+
     // If turning sound on and we have audio, test it
     if (newSoundState && audioRef) {
-      console.log('🔊 Testing sound after enabling...');
+      console.log("🔊 Testing sound after enabling...");
       setTimeout(() => {
         try {
           audioRef.currentTime = 0;
           audioRef.volume = (dynamicConfig?.popupSoundVolume || 50) / 100;
-          audioRef.play().then(() => {
-            console.log('✅ Test sound played successfully');
-          }).catch((error) => {
-            console.log('⚠️ Test sound blocked by browser (normal):', error.message);
-          });
+          audioRef
+            .play()
+            .then(() => {
+              console.log("✅ Test sound played successfully");
+            })
+            .catch((error) => {
+              console.log(
+                "⚠️ Test sound blocked by browser (normal):",
+                error.message
+              );
+            });
         } catch (error) {
-          console.error('❌ Error testing sound:', error);
+          console.error("❌ Error testing sound:", error);
         }
       }, 100);
     }
@@ -656,38 +752,41 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
   const resetConversation = () => {
     // Clear messages
     setMessages([]);
-    
+
     // Reset first message states
     setIsFirstMessage(true);
     setIsFirstMessageLoading(false);
-    
+
     // Clear input
-    setInputValue('');
-    
+    setInputValue("");
+
     // Reset lead form states
     setLeadData({
-      name: '',
-      email: '',
-      phone: ''
+      name: "",
+      email: "",
+      phone: "",
     });
     setLeadSubmitted(false);
     setIsSubmittingLead(false);
-    
+
     // Show welcome widget after reset
     setShowWelcomeWidget(true);
-    
+
     // Generate new session ID
     const generateUUID = () => {
-      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-        const r = Math.random() * 16 | 0;
-        const v = c === 'x' ? r : (r & 0x3 | 0x8);
-        return v.toString(16);
-      });
+      return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(
+        /[xy]/g,
+        function (c) {
+          const r = (Math.random() * 16) | 0;
+          const v = c === "x" ? r : (r & 0x3) | 0x8;
+          return v.toString(16);
+        }
+      );
     };
     const newSessionId = generateUUID();
-    localStorage.setItem('rankved-chatbot-session', newSessionId);
-    
-    console.log('🔄 Conversation reset successfully');
+    localStorage.setItem("rankved-chatbot-session", newSessionId);
+
+    console.log("🔄 Conversation reset successfully");
   };
 
   // Handle lead form submission
@@ -696,94 +795,102 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
     if (!dynamicConfig) return;
 
     // Validate required fields
-    const requiredFields = dynamicConfig.leadCollectionFields || ['name', 'phone'];
-    const missingFields = requiredFields.filter(field => {
+    const requiredFields = dynamicConfig.leadCollectionFields || [
+      "name",
+      "phone",
+    ];
+    const missingFields = requiredFields.filter((field) => {
       const value = leadData[field];
-      return !value || (typeof value === 'string' && value.trim() === '');
+      return !value || (typeof value === "string" && value.trim() === "");
     });
 
     if (missingFields.length > 0) {
       const errorMessage: Message = {
         id: Date.now().toString(),
-        text: `Please fill in the required fields: ${missingFields.join(', ')}`,
-        sender: 'bot',
-        timestamp: new Date()
+        text: `Please fill in the required fields: ${missingFields.join(", ")}`,
+        sender: "bot",
+        timestamp: new Date(),
       };
-      setMessages(prev => [...prev, errorMessage]);
+      setMessages((prev) => [...prev, errorMessage]);
       return;
     }
 
     setIsSubmittingLead(true);
-    
+
     try {
-      const apiUrl = dynamicConfig.apiUrl || window.RankVedChatbotConfig?.apiUrl;
+      const apiUrl =
+        dynamicConfig.apiUrl || window.RankVedChatbotConfig?.apiUrl;
       if (!apiUrl) {
-        throw new Error('No API URL available');
+        throw new Error("No API URL available");
       }
-      
-      const response = await fetch(`${apiUrl}/api/chat/${dynamicConfig.chatbotId}/leads`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Domain': domain,
-          'X-Referer': referer
-        },
-        body: JSON.stringify({
-          chatbotId: dynamicConfig.chatbotId,
-          name: leadData.name,
-          email: leadData.email,
-          phone: leadData.phone,
-          consentGiven: true,
-          source: 'chat_widget',
-          conversationContext: {
-            messages: messages.map(msg => ({
-              role: msg.sender,
-              content: msg.text,
-              timestamp: msg.timestamp
-            })),
-            variables: {
-              page: window.location.href,
-              referrer: document.referrer,
-              userAgent: navigator.userAgent
-            }
-          }
-        })
-      });
+
+      const response = await fetch(
+        `${apiUrl}/api/chat/${dynamicConfig.chatbotId}/leads`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Domain": domain,
+            "X-Referer": referer,
+          },
+          body: JSON.stringify({
+            chatbotId: dynamicConfig.chatbotId,
+            name: leadData.name,
+            email: leadData.email,
+            phone: leadData.phone,
+            consentGiven: true,
+            source: "chat_widget",
+            conversationContext: {
+              messages: messages.map((msg) => ({
+                role: msg.sender,
+                content: msg.text,
+                timestamp: msg.timestamp,
+              })),
+              variables: {
+                page: window.location.href,
+                referrer: document.referrer,
+                userAgent: navigator.userAgent,
+              },
+            },
+          }),
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
+        throw new Error(
+          errorData.message || `HTTP ${response.status}: ${response.statusText}`
+        );
       }
 
       await response.json();
       setLeadSubmitted(true);
-      
+
       // Reset lead form data
       setLeadData({
-        name: '',
-        email: '',
-        phone: ''
+        name: "",
+        email: "",
+        phone: "",
       });
-      
+
       // Add a success message
       const successMessage: Message = {
         id: Date.now().toString(),
-        text: 'Thank you! Your information has been submitted successfully. We\'ll get back to you soon!',
-        sender: 'bot',
-        timestamp: new Date()
+        text: "Thank you! Your information has been submitted successfully. We'll get back to you soon!",
+        sender: "bot",
+        timestamp: new Date(),
       };
-      setMessages(prev => [...prev, successMessage]);
-
+      setMessages((prev) => [...prev, successMessage]);
     } catch (error) {
-      console.error('Error submitting lead:', error);
+      console.error("Error submitting lead:", error);
       // Add an error message
       const errorMessage: Message = {
         id: Date.now().toString(),
-        text: 'Sorry, there was an error submitting your information. Please try again.',
-        sender: 'bot',
-        timestamp: new Date()
+        text: "Sorry, there was an error submitting your information. Please try again.",
+        sender: "bot",
+        timestamp: new Date(),
       };
-      setMessages(prev => [...prev, errorMessage]);
+      setMessages((prev) => [...prev, errorMessage]);
     } finally {
       setIsSubmittingLead(false);
     }
@@ -791,19 +898,18 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
 
   // Handle lead form input changes
   const handleLeadInputChange = (field: string, value: string) => {
-    setLeadData(prev => ({
+    setLeadData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
-
 
   // Function to parse and render formatted text
   const renderFormattedText = (text: string) => {
     if (!text) return null;
 
     // Split by line breaks first
-    const lines = text.split('\n');
+    const lines = text.split("\n");
 
     return lines.map((line, lineIndex) => {
       if (!line.trim()) {
@@ -816,7 +922,9 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
         return (
           <div key={lineIndex} className="key-point">
             <span className="key-point-marker">{keyPointMatch[1]}</span>
-            <span className="key-point-text">{renderInlineFormatting(keyPointMatch[2])}</span>
+            <span className="key-point-text">
+              {renderInlineFormatting(keyPointMatch[2])}
+            </span>
           </div>
         );
       }
@@ -827,7 +935,11 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
         const level = headerMatch[1].length;
         const headerText = renderInlineFormatting(headerMatch[2]);
         const Tag = `h${Math.min(level, 6)}` as keyof JSX.IntrinsicElements;
-        return <Tag key={lineIndex} className="formatted-header">{headerText}</Tag>;
+        return (
+          <Tag key={lineIndex} className="formatted-header">
+            {headerText}
+          </Tag>
+        );
       }
 
       // Regular paragraph
@@ -845,36 +957,42 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
 
     // Handle HTML tags from AI responses first
     let processedText = text;
-    
+
     // Replace HTML tags with markdown equivalents
     processedText = processedText
-      .replace(/<strong>(.*?)<\/strong>/g, '**$1**')
-      .replace(/<em>(.*?)<\/em>/g, '*$1*')
-      .replace(/<code>(.*?)<\/code>/g, '`$1`')
-      .replace(/<a\s+href="([^"]+)"[^>]*>(.*?)<\/a>/g, '[$2]($1)');
+      .replace(/<strong>(.*?)<\/strong>/g, "**$1**")
+      .replace(/<em>(.*?)<\/em>/g, "*$1*")
+      .replace(/<code>(.*?)<\/code>/g, "`$1`")
+      .replace(/<a\s+href="([^"]+)"[^>]*>(.*?)<\/a>/g, "[$2]($1)");
 
     // Simple approach: process one pattern at a time
     let remainingText = processedText;
-    
+
     // Process bold text first
     const boldParts = remainingText.split(/(\*\*.*?\*\*)/);
     const boldResult = boldParts.map((part, index) => {
-      if (part.startsWith('**') && part.endsWith('**')) {
+      if (part.startsWith("**") && part.endsWith("**")) {
         const content = part.slice(2, -2);
         return <strong key={`bold-${index}`}>{content}</strong>;
       }
       return part;
     });
-    
+
     // Process italic text
     const italicResult: (string | JSX.Element)[] = [];
     boldResult.forEach((part, index) => {
-      if (typeof part === 'string') {
+      if (typeof part === "string") {
         const italicParts = part.split(/(\*.*?\*)/);
         italicParts.forEach((italicPart, italicIndex) => {
-          if (italicPart.startsWith('*') && italicPart.endsWith('*') && italicPart.length > 2) {
+          if (
+            italicPart.startsWith("*") &&
+            italicPart.endsWith("*") &&
+            italicPart.length > 2
+          ) {
             const content = italicPart.slice(1, -1);
-            italicResult.push(<em key={`italic-${index}-${italicIndex}`}>{content}</em>);
+            italicResult.push(
+              <em key={`italic-${index}-${italicIndex}`}>{content}</em>
+            );
           } else {
             italicResult.push(italicPart);
           }
@@ -883,16 +1001,22 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
         italicResult.push(part);
       }
     });
-    
+
     // Process code
     const codeResult: (string | JSX.Element)[] = [];
     italicResult.forEach((part, index) => {
-      if (typeof part === 'string') {
+      if (typeof part === "string") {
         const codeParts = part.split(/(`.*?`)/);
         codeParts.forEach((codePart, codeIndex) => {
-          if (codePart.startsWith('`') && codePart.endsWith('`') && codePart.length > 2) {
+          if (
+            codePart.startsWith("`") &&
+            codePart.endsWith("`") &&
+            codePart.length > 2
+          ) {
             const content = codePart.slice(1, -1);
-            codeResult.push(<code key={`code-${index}-${codeIndex}`}>{content}</code>);
+            codeResult.push(
+              <code key={`code-${index}-${codeIndex}`}>{content}</code>
+            );
           } else {
             codeResult.push(codePart);
           }
@@ -901,20 +1025,20 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
         codeResult.push(part);
       }
     });
-    
+
     // Process links
     const linkResult: (string | JSX.Element)[] = [];
     codeResult.forEach((part, index) => {
-      if (typeof part === 'string') {
+      if (typeof part === "string") {
         const linkParts = part.split(/(\[.*?\]\(.*?\))/);
         linkParts.forEach((linkPart, linkIndex) => {
           const linkMatch = linkPart.match(/\[([^\]]+)\]\(([^)]+)\)/);
           if (linkMatch) {
             linkResult.push(
-              <a 
-                key={`link-${index}-${linkIndex}`} 
-                href={linkMatch[2]} 
-                target="_blank" 
+              <a
+                key={`link-${index}-${linkIndex}`}
+                href={linkMatch[2]}
+                target="_blank"
                 rel="noopener noreferrer"
               >
                 {linkMatch[1]}
@@ -939,7 +1063,7 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
 
   // Don't render if there's a config error
   if (configError) {
-    console.error('Chatbot config error:', configError);
+    console.error("Chatbot config error:", configError);
     return null;
   }
 
@@ -948,53 +1072,73 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
     return null;
   }
 
-  const theme = dynamicConfig?.chatWindowTheme === 'dark' ? 'dark' : 'light';
-  const primaryColor = dynamicConfig?.primaryColor || '#6366F1';
-  const secondaryColor = dynamicConfig?.secondaryColor || '#797cf6d4';
+  const theme = dynamicConfig?.chatWindowTheme === "dark" ? "dark" : "light";
+  const primaryColor = dynamicConfig?.primaryColor || "#6366F1";
+  const secondaryColor = dynamicConfig?.secondaryColor || "#797cf6d4";
 
   // Get position styles based on dynamic config
   const getPositionStyles = () => {
     const baseStyles = {
-      position: 'fixed' as const,
+      position: "fixed" as const,
       zIndex: dynamicConfig?.zIndex || 9999,
-      '--primary-color': primaryColor,
-      '--secondary-color': secondaryColor
+      "--primary-color": primaryColor,
+      "--secondary-color": secondaryColor,
     } as React.CSSProperties;
 
-    const position = dynamicConfig?.bubblePosition || 'bottom-right';
+    const position = dynamicConfig?.bubblePosition || "bottom-right";
     const horizontalOffset = dynamicConfig?.horizontalOffset || 20;
     const verticalOffset = dynamicConfig?.verticalOffset || 20;
 
     switch (position) {
-      case 'bottom-right':
-        return { ...baseStyles, bottom: `${verticalOffset}px`, right: `${horizontalOffset}px` };
-      case 'bottom-left':
-        return { ...baseStyles, bottom: `${verticalOffset}px`, left: `${horizontalOffset}px` };
-      case 'top-right':
-        return { ...baseStyles, top: `${verticalOffset}px`, right: `${horizontalOffset}px` };
-      case 'top-left':
-        return { ...baseStyles, top: `${verticalOffset}px`, left: `${horizontalOffset}px` };
+      case "bottom-right":
+        return {
+          ...baseStyles,
+          bottom: `${verticalOffset}px`,
+          right: `${horizontalOffset}px`,
+        };
+      case "bottom-left":
+        return {
+          ...baseStyles,
+          bottom: `${verticalOffset}px`,
+          left: `${horizontalOffset}px`,
+        };
+      case "top-right":
+        return {
+          ...baseStyles,
+          top: `${verticalOffset}px`,
+          right: `${horizontalOffset}px`,
+        };
+      case "top-left":
+        return {
+          ...baseStyles,
+          top: `${verticalOffset}px`,
+          left: `${horizontalOffset}px`,
+        };
       default:
-        return { ...baseStyles, bottom: `${verticalOffset}px`, right: `${horizontalOffset}px` };
+        return {
+          ...baseStyles,
+          bottom: `${verticalOffset}px`,
+          right: `${horizontalOffset}px`,
+        };
     }
   };
 
   const borderRadius = dynamicConfig?.borderRadius || 16;
-  const shadowStyle = dynamicConfig?.shadowStyle || 'soft';
+  const shadowStyle = dynamicConfig?.shadowStyle || "soft";
 
   // Get shadow styles
   const getShadowStyles = () => {
     switch (shadowStyle) {
-      case 'none':
-        return 'none';
-      case 'soft':
-        return '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)';
-      case 'medium':
-        return '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)';
-      case 'strong':
-        return '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)';
+      case "none":
+        return "none";
+      case "soft":
+        return "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)";
+      case "medium":
+        return "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)";
+      case "strong":
+        return "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)";
       default:
-        return '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)';
+        return "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)";
     }
   };
 
@@ -1028,7 +1172,7 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
           width: 380px;
           height: 600px;
           max-height: 85vh;
-          background: ${theme === 'dark' ? '#111827' : 'white'};
+          background: ${theme === "dark" ? "#111827" : "white"};
           border-radius: ${borderRadius}px;
           box-shadow: ${getShadowStyles()};
           overflow: hidden;
@@ -1080,10 +1224,12 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
           padding: 20px;
           min-height: 300px;
           max-height: none;
-          background: ${theme === 'dark' ? '#1f2937' : '#fafafa'};
+          background: ${theme === "dark" ? "#1f2937" : "#fafafa"};
           scrollbar-width: none;
           -ms-overflow-style: none;
-          font-family: ${dynamicConfig?.fontFamily || 'Inter'}, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+          font-family: ${
+            dynamicConfig?.fontFamily || "Inter"
+          }, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
         }
         .rankved-chatbot .chat-messages::-webkit-scrollbar {
           display: none;
@@ -1163,14 +1309,14 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
         .rankved-chatbot .welcome-title-large {
           font-size: 24px;
           font-weight: 700;
-          color: ${theme === 'dark' ? '#f9fafb' : '#1f2937'};
+          color: ${theme === "dark" ? "#f9fafb" : "#1f2937"};
           margin-bottom: 12px;
           line-height: 1.2;
         }
         
         .rankved-chatbot .welcome-text-large {
           font-size: 16px;
-          color: ${theme === 'dark' ? '#9ca3af' : '#6b7280'};
+          color: ${theme === "dark" ? "#9ca3af" : "#6b7280"};
           line-height: 1.4;
           max-width: 280px;
         }
@@ -1232,8 +1378,8 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
           margin-left: auto;
         }
         .rankved-chatbot .message.bot .message-bubble {
-          background: ${theme === 'dark' ? '#374151' : '#ededed'};
-          color: ${theme === 'dark' ? '#f9fafb' : '#374151'};
+          background: ${theme === "dark" ? "#374151" : "#ededed"};
+          color: ${theme === "dark" ? "#f9fafb" : "#374151"};
           max-width: 80%;  
           border-radius: 18px 18px 18px 4px;
           box-shadow: 2px 2px 2px 0px #f0f0f02b;
@@ -1257,16 +1403,18 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
         .rankved-chatbot .chat-input input {
           width: 100%;
           padding: 12px 48px 12px 16px;
-          border: 1px solid ${theme === 'dark' ? '#374151' : '#e5e7eb'};
+          border: 1px solid ${theme === "dark" ? "#374151" : "#e5e7eb"};
           border-radius: 25px;
           outline: none;
           font-size: 13px;
-          background: ${theme === 'dark' ? '#374151' : 'white'};
-          color: ${theme === 'dark' ? '#f9fafb' : '#374151'};
+          background: ${theme === "dark" ? "#374151" : "white"};
+          color: ${theme === "dark" ? "#f9fafb" : "#374151"};
           box-shadow: 0 4px 6px -3px rgb(0 0 0 / 10%);
           box-sizing: border-box;
           line-height: 1.2;
-          font-family: ${dynamicConfig?.fontFamily || 'Inter'}, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+          font-family: ${
+            dynamicConfig?.fontFamily || "Inter"
+          }, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
         }
         @media (min-width: 768px) {
           .rankved-chatbot .chat-input input {
@@ -1558,8 +1706,8 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
         /* Lead Form Styles */
         .rankved-chatbot .lead-form-container {
           padding: 20px;
-          background: ${theme === 'dark' ? '#1f2937' : '#ffffff'};
-          border-top: 1px solid ${theme === 'dark' ? '#374151' : '#e5e7eb'};
+          background: ${theme === "dark" ? "#1f2937" : "#ffffff"};
+          border-top: 1px solid ${theme === "dark" ? "#374151" : "#e5e7eb"};
           flex-shrink: 0;
           box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.08);
           border-radius: 12px 12px 0 0;
@@ -1572,13 +1720,13 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
           margin: 0;
           font-size: 18px;
           font-weight: 700;
-          color: ${theme === 'dark' ? '#f9fafb' : '#374151'};
+          color: ${theme === "dark" ? "#f9fafb" : "#374151"};
           letter-spacing: -0.025em;
         }
         .rankved-chatbot .lead-form-header p {
           margin: 8px 0 0 0;
           font-size: 14px;
-          color: ${theme === 'dark' ? '#9ca3af' : '#6b7280'};
+          color: ${theme === "dark" ? "#9ca3af" : "#6b7280"};
           line-height: 1.4;
         }
         .rankved-chatbot .lead-form {
@@ -1594,24 +1742,24 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
         .rankved-chatbot .field-icon {
           position: absolute;
           left: 14px;
-          color: ${theme === 'dark' ? '#6b7280' : '#9ca3af'};
+          color: ${theme === "dark" ? "#6b7280" : "#9ca3af"};
           z-index: 2;
           transition: color 0.2s ease;
         }
         .rankved-chatbot .lead-form-field input {
           width: 100%;
           padding: 14px 16px 14px 44px;
-          border: 2px solid ${theme === 'dark' ? '#374151' : '#e5e7eb'};
+          border: 2px solid ${theme === "dark" ? "#374151" : "#e5e7eb"};
           border-radius: 10px;
           font-size: 14px;
           font-weight: 400;
-          background: ${theme === 'dark' ? '#374151' : 'white'};
-          color: ${theme === 'dark' ? '#f9fafb' : '#374151'};
+          background: ${theme === "dark" ? "#374151" : "white"};
+          color: ${theme === "dark" ? "#f9fafb" : "#374151"};
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
           box-sizing: border-box;
         }
         .rankved-chatbot .lead-form-field input::placeholder {
-          color: ${theme === 'dark' ? '#6b7280' : '#9ca3af'};
+          color: ${theme === "dark" ? "#6b7280" : "#9ca3af"};
           font-weight: 400;
         }
         .rankved-chatbot .lead-form-field input:focus {
@@ -1624,8 +1772,8 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
           color: ${primaryColor};
         }
         .rankved-chatbot .lead-form-field input:disabled {
-          background: ${theme === 'dark' ? '#1f2937' : '#f9fafb'};
-          color: ${theme === 'dark' ? '#6b7280' : '#9ca3af'};
+          background: ${theme === "dark" ? "#1f2937" : "#f9fafb"};
+          color: ${theme === "dark" ? "#6b7280" : "#9ca3af"};
           cursor: not-allowed;
           transform: none;
         }
@@ -1687,17 +1835,17 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
           box-shadow: 0 2px 8px ${primaryColor}30;
         }
         .rankved-chatbot .lead-submit-button:disabled {
-          background: ${theme === 'dark' ? '#374151' : '#d1d5db'};
-          color: ${theme === 'dark' ? '#6b7280' : '#9ca3af'};
+          background: ${theme === "dark" ? "#374151" : "#d1d5db"};
+          color: ${theme === "dark" ? "#6b7280" : "#9ca3af"};
           cursor: not-allowed;
           transform: none;
           box-shadow: none;
         }
         .rankved-chatbot .lead-cancel-button {
           padding: 14px 20px;
-          background: ${theme === 'dark' ? '#374151' : 'white'};
-          color: ${theme === 'dark' ? '#d1d5db' : '#6b7280'};
-          border: 2px solid ${theme === 'dark' ? '#4b5563' : '#e5e7eb'};
+          background: ${theme === "dark" ? "#374151" : "white"};
+          color: ${theme === "dark" ? "#d1d5db" : "#6b7280"};
+          border: 2px solid ${theme === "dark" ? "#4b5563" : "#e5e7eb"};
           border-radius: 10px;
           font-size: 14px;
           font-weight: 600;
@@ -1705,8 +1853,8 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .rankved-chatbot .lead-cancel-button:hover:not(:disabled) {
-          background: ${theme === 'dark' ? '#4b5563' : '#f9fafb'};
-          border-color: ${theme === 'dark' ? '#6b7280' : '#d1d5db'};
+          background: ${theme === "dark" ? "#4b5563" : "#f9fafb"};
+          border-color: ${theme === "dark" ? "#6b7280" : "#d1d5db"};
           transform: translateY(-1px);
           box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
@@ -1714,8 +1862,8 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
           transform: translateY(0);
         }
         .rankved-chatbot .lead-cancel-button:disabled {
-          background: ${theme === 'dark' ? '#1f2937' : '#f3f4f6'};
-          color: ${theme === 'dark' ? '#4b5563' : '#9ca3af'};
+          background: ${theme === "dark" ? "#1f2937" : "#f3f4f6"};
+          color: ${theme === "dark" ? "#4b5563" : "#9ca3af"};
           cursor: not-allowed;
           transform: none;
         }
@@ -1726,8 +1874,8 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
           margin-left: auto;
           margin-right: auto;
           padding: 12px;
-          background: ${theme === 'dark' ? '#374151' : '#f8fafc'};
-          border: 1px solid ${theme === 'dark' ? '#4b5563' : '#e5e7eb'};
+          background: ${theme === "dark" ? "#374151" : "#f8fafc"};
+          border: 1px solid ${theme === "dark" ? "#4b5563" : "#e5e7eb"};
           width: 90%;
           border-radius: 8px;
           box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
@@ -1761,11 +1909,11 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
         .rankved-chatbot .lead-form-message .lead-form-field input {
           width: 100%;
           padding: 8px 8px 8px 28px;
-          border: 1px solid ${theme === 'dark' ? '#4b5563' : '#d1d5db'};
+          border: 1px solid ${theme === "dark" ? "#4b5563" : "#d1d5db"};
           border-radius: 4px;
           font-size: 12px;
-          background: ${theme === 'dark' ? '#4b5563' : 'white'};
-          color: ${theme === 'dark' ? '#f9fafb' : '#374151'};
+          background: ${theme === "dark" ? "#4b5563" : "white"};
+          color: ${theme === "dark" ? "#f9fafb" : "#374151"};
           transition: all 0.2s ease;
         }
         .rankved-chatbot .lead-form-message .lead-form-field input:focus {
@@ -1845,7 +1993,7 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
         .rankved-chatbot .welcome-message-text {
           font-size: 14px;
           font-weight: 500;
-          color: ${theme === 'dark' ? '#f9fafb' : '#374151'};
+          color: ${theme === "dark" ? "#f9fafb" : "#374151"};
           line-height: 1.4;
           flex: 1;
           color: white;
@@ -1854,7 +2002,7 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
         .rankved-chatbot .welcome-message-close {
           background: none;
           border: none;
-          color: ${theme === 'dark' ? '#9ca3af' : '#6b7280'};
+          color: ${theme === "dark" ? "#9ca3af" : "#6b7280"};
           cursor: pointer;
           padding: 4px;
           border-radius: 4px;
@@ -1867,8 +2015,8 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
         }
 
         .rankved-chatbot .welcome-message-close:hover {
-          background: ${theme === 'dark' ? '#374151' : '#f3f4f6'};
-          color: ${theme === 'dark' ? '#f9fafb' : '#374151'};
+          background: ${theme === "dark" ? "#374151" : "#f3f4f6"};
+          color: ${theme === "dark" ? "#f9fafb" : "#374151"};
         }
 
         .rankved-chatbot .welcome-message-arrow {
@@ -1879,7 +2027,7 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
           height: 0;
           border-left: 8px solid transparent;
           border-right: 8px solid transparent;
-          border-top: 8px solid ${theme === 'dark' ? '#1f2937' : 'white'};
+          border-top: 8px solid ${theme === "dark" ? "#1f2937" : "white"};
         }
 
         .rankved-chatbot .welcome-message-arrow::before {
@@ -1891,7 +2039,7 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
           height: 0;
           border-left: 8px solid transparent;
           border-right: 8px solid transparent;
-          border-top: 8px solid ${theme === 'dark' ? '#374151' : '#e5e7eb'};
+          border-top: 8px solid ${theme === "dark" ? "#374151" : "#e5e7eb"};
         }
 
         @keyframes fadeInUp {
@@ -1925,14 +2073,14 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
           bottom: auto;
           top: -8px;
           border-top: none;
-          border-bottom: 8px solid ${theme === 'dark' ? '#1f2937' : 'white'};
+          border-bottom: 8px solid ${theme === "dark" ? "#1f2937" : "white"};
         }
 
         .rankved-chatbot[data-position="top-right"] .welcome-message-arrow::before {
           top: auto;
           bottom: -10px;
           border-top: none;
-          border-bottom: 8px solid ${theme === 'dark' ? '#374151' : '#e5e7eb'};
+          border-bottom: 8px solid ${theme === "dark" ? "#374151" : "#e5e7eb"};
         }
 
         .rankved-chatbot[data-position="top-left"] .welcome-message-overlay {
@@ -1948,14 +2096,14 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
           right: auto;
           left: 20px;
           border-top: none;
-          border-bottom: 8px solid ${theme === 'dark' ? '#1f2937' : 'white'};
+          border-bottom: 8px solid ${theme === "dark" ? "#1f2937" : "white"};
         }
 
         .rankved-chatbot[data-position="top-left"] .welcome-message-arrow::before {
           top: auto;
           bottom: -10px;
           border-top: none;
-          border-bottom: 8px solid ${theme === 'dark' ? '#374151' : '#e5e7eb'};
+          border-bottom: 8px solid ${theme === "dark" ? "#374151" : "#e5e7eb"};
         }
 
         /* Mobile responsiveness */
@@ -1980,16 +2128,17 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
         }
        `}</style>
 
-
       {showChatBubble && (
         <div className="rankved-chatbot" style={getPositionStyles()}>
-
           {/* Welcome Message Overlay */}
-         {showWelcomeMessage && !isOpen && (
+          {showWelcomeMessage && !isOpen && (
             <div className="welcome-message-overlay">
               <div className="welcome-message-content">
-                                <span className="welcome-message-text">
-                  Chat with {dynamicConfig?.chatWidgetName || dynamicConfig?.name || 'AI Assistant'}
+                <span className="welcome-message-text">
+                  Chat with{" "}
+                  {dynamicConfig?.chatWidgetName ||
+                    dynamicConfig?.name ||
+                    "AI Assistant"}
                 </span>
                 <button
                   className="welcome-message-close"
@@ -2005,56 +2154,79 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
           {!isOpen && (
             <div className="chat-bubble" onClick={handleOpen}>
               {dynamicConfig?.chatBubbleIcon ? (
-                <img src={dynamicConfig.chatBubbleIcon} alt="Chat" style={{ width: '35px', height: '35x', borderRadius: '50%', objectFit: 'cover' }} />
+                <img
+                  src={dynamicConfig.chatBubbleIcon}
+                  alt="Chat"
+                  style={{
+                    width: "35px",
+                    height: "35x",
+                    borderRadius: "50%",
+                    objectFit: "cover",
+                  }}
+                />
               ) : (
                 <MessageCircle size={28} />
               )}
             </div>
           )}
-          
+
           {isOpen && (
-            <div className={`chat-window ${isWindowVisible ? 'visible' : ''}`}>
+            <div className={`chat-window ${isWindowVisible ? "visible" : ""}`}>
               <div className="chat-header">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div
+                  style={{ display: "flex", alignItems: "center", gap: "8px" }}
+                >
                   {dynamicConfig?.chatWidgetIcon ? (
                     <img
                       src={dynamicConfig.chatWidgetIcon}
                       alt="Widget Icon"
-                      style={{ width: '38px', height: '38px', borderRadius: '50%', objectFit: 'cover' }}
+                      style={{
+                        width: "38px",
+                        height: "38px",
+                        borderRadius: "50%",
+                        objectFit: "cover",
+                      }}
                     />
-                  ) : dynamicConfig?.showAvatar && dynamicConfig?.chatWindowAvatar ? (
+                  ) : dynamicConfig?.showAvatar &&
+                    dynamicConfig?.chatWindowAvatar ? (
                     <img
                       src={dynamicConfig.chatWindowAvatar}
                       alt="Avatar"
-                      style={{ width: '32px', height: '32px', borderRadius: '50%' }}
+                      style={{
+                        width: "32px",
+                        height: "32px",
+                        borderRadius: "50%",
+                      }}
                     />
                   ) : null}
-                  <span style={{ fontWeight: '600' }}>
-                    {dynamicConfig?.chatWidgetName || 'Support Chat'}
+                  <span style={{ fontWeight: "600" }}>
+                    {dynamicConfig?.chatWidgetName || "Support Chat"}
                   </span>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div
+                  style={{ display: "flex", alignItems: "center", gap: "8px" }}
+                >
                   <button
                     onClick={resetConversation}
                     style={{
-                      background: 'none',
-                      border: 'none',
-                      color: 'white',
-                      cursor: 'pointer',
-                      padding: '4px',
-                      borderRadius: '4px',
-                      transition: 'all 0.2s ease',
-                      transform: 'scale(1)'
+                      background: "none",
+                      border: "none",
+                      color: "white",
+                      cursor: "pointer",
+                      padding: "4px",
+                      borderRadius: "4px",
+                      transition: "all 0.2s ease",
+                      transform: "scale(1)",
                     }}
                     title="Reset conversation"
                     onMouseDown={(e) => {
-                      e.currentTarget.style.transform = 'scale(0.9)';
+                      e.currentTarget.style.transform = "scale(0.9)";
                     }}
                     onMouseUp={(e) => {
-                      e.currentTarget.style.transform = 'scale(1)';
+                      e.currentTarget.style.transform = "scale(1)";
                     }}
                     onMouseLeave={(e) => {
-                      e.currentTarget.style.transform = 'scale(1)';
+                      e.currentTarget.style.transform = "scale(1)";
                     }}
                   >
                     <RotateCcw size={16} />
@@ -2062,36 +2234,40 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
                   <button
                     onClick={toggleSound}
                     style={{
-                      background: 'none',
-                      border: 'none',
-                      color: 'white',
-                      cursor: 'pointer',
-                      padding: '4px',
-                      borderRadius: '4px',
-                      transition: 'all 0.2s ease',
-                      transform: 'scale(1)'
+                      background: "none",
+                      border: "none",
+                      color: "white",
+                      cursor: "pointer",
+                      padding: "4px",
+                      borderRadius: "4px",
+                      transition: "all 0.2s ease",
+                      transform: "scale(1)",
                     }}
-                    title={soundEnabled ? 'Mute sound' : 'Unmute sound'}
+                    title={soundEnabled ? "Mute sound" : "Unmute sound"}
                     onMouseDown={(e) => {
-                      e.currentTarget.style.transform = 'scale(0.9)';
+                      e.currentTarget.style.transform = "scale(0.9)";
                     }}
                     onMouseUp={(e) => {
-                      e.currentTarget.style.transform = 'scale(1)';
+                      e.currentTarget.style.transform = "scale(1)";
                     }}
                     onMouseLeave={(e) => {
-                      e.currentTarget.style.transform = 'scale(1)';
+                      e.currentTarget.style.transform = "scale(1)";
                     }}
                   >
-                    {soundEnabled ? <Volume2 size={16} /> : <VolumeX size={16} />}
+                    {soundEnabled ? (
+                      <Volume2 size={16} />
+                    ) : (
+                      <VolumeX size={16} />
+                    )}
                   </button>
                   <button
                     onClick={handleClose}
                     style={{
-                      background: 'none',
-                      border: 'none',
-                      color: 'white',
-                      cursor: 'pointer',
-                      padding: '4px'
+                      background: "none",
+                      border: "none",
+                      color: "white",
+                      cursor: "pointer",
+                      padding: "4px",
                     }}
                   >
                     <X size={16} />
@@ -2101,38 +2277,53 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
 
               <div className="chat-messages">
                 {/* Show welcome message when popup is disabled and no messages exist, OR when conversation is reset */}
-                {((!dynamicConfig?.showWelcomePopup && messages.length === 0 && !isFirstMessageLoading) || showWelcomeWidget) && (
+                {((!dynamicConfig?.showWelcomePopup &&
+                  messages.length === 0 &&
+                  !isFirstMessageLoading) ||
+                  showWelcomeWidget) && (
                   <div className="welcome-container">
                     <div className="welcome-avatar-large">
                       {dynamicConfig?.chatWidgetIcon ? (
                         <img
                           src={dynamicConfig.chatWidgetIcon}
                           alt="Bot Avatar"
-                          style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }}
+                          style={{
+                            width: "100%",
+                            height: "100%",
+                            borderRadius: "50%",
+                            objectFit: "cover",
+                          }}
                         />
                       ) : (
                         <MessageCircle size={48} />
                       )}
                     </div>
                     <div className="welcome-title-large">
-                      {dynamicConfig?.name || dynamicConfig?.chatWidgetName || 'AI Assistant'}
+                      {dynamicConfig?.name ||
+                        dynamicConfig?.chatWidgetName ||
+                        "AI Assistant"}
                     </div>
                     <div className="welcome-text-large">
-                      {dynamicConfig?.welcomeMessage || 'Ask Your Query'}
+                      {dynamicConfig?.welcomeMessage || "Ask Your Query"}
                     </div>
                   </div>
                 )}
-                
+
                 {messages.map((message) => (
                   <div key={message.id} className={`message ${message.sender}`}>
                     <div className="message-content">
-                      {message.sender === 'bot' && (
+                      {message.sender === "bot" && (
                         <div className="message-avatar">
                           {dynamicConfig?.chatWindowAvatar ? (
                             <img
                               src={dynamicConfig.chatWindowAvatar}
                               alt="Bot Avatar"
-                              style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }}
+                              style={{
+                                width: "100%",
+                                height: "100%",
+                                borderRadius: "50%",
+                                objectFit: "cover",
+                              }}
                             />
                           ) : (
                             <MessageCircle size={16} />
@@ -2140,130 +2331,165 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
                         </div>
                       )}
                       <div className="message-bubble">
-                        {message.sender === 'bot' ? renderFormattedText(message.text) : message.text}
+                        {message.sender === "bot"
+                          ? renderFormattedText(message.text)
+                          : message.text}
                       </div>
                     </div>
 
                     {/* Message actions (follow-up buttons and CTA) */}
-                    {(message.sender === 'bot' && ((message.followUpButtons && message.followUpButtons.length > 0) || message.ctaButton)) && (
-                      <div className="message-actions">
-                        {/* Follow-up buttons */}
-                        {message.followUpButtons && message.followUpButtons.length > 0 && (
-                          <div className="follow-up-buttons">
-                            {message.followUpButtons.map((button, index) => (
-                              <button
-                                key={index}
-                                className="follow-up-button"
-                                onClick={() => {
-                                  // Send the button text as the message instead of the payload
-                                  if (button.text && button.text.trim()) {
-                                    sendMessage(button.text);
-                                  }
-                                }}
-                              >
-                                {button.text}
-                              </button>
-                            ))}
-                          </div>
-                        )}
+                    {message.sender === "bot" &&
+                      ((message.followUpButtons &&
+                        message.followUpButtons.length > 0) ||
+                        message.ctaButton) && (
+                        <div className="message-actions">
+                          {/* Follow-up buttons */}
+                          {message.followUpButtons &&
+                            message.followUpButtons.length > 0 && (
+                              <div className="follow-up-buttons">
+                                {message.followUpButtons.map(
+                                  (button, index) => (
+                                    <button
+                                      key={index}
+                                      className="follow-up-button"
+                                      onClick={() => {
+                                        // Send the button text as the message instead of the payload
+                                        if (button.text && button.text.trim()) {
+                                          sendMessage(button.text);
+                                        }
+                                      }}
+                                    >
+                                      {button.text}
+                                    </button>
+                                  )
+                                )}
+                              </div>
+                            )}
 
-                        {/* CTA button */}
-                        {message.ctaButton && (
-                          <a
-                            href={message.ctaButton.link}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="cta-button"
-                          >
-                            {message.ctaButton.text}
-                          </a>
-                        )}
-                      </div>
-                    )}
+                          {/* CTA button */}
+                          {message.ctaButton && (
+                            <a
+                              href={message.ctaButton.link}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="cta-button"
+                            >
+                              {message.ctaButton.text}
+                            </a>
+                          )}
+                        </div>
+                      )}
 
                     {/* Lead Form - Show as part of bot message when shouldShowLead is true */}
-                    {message.sender === 'bot' && message.shouldShowLead && dynamicConfig?.leadCollectionEnabled && !leadSubmitted && (
-                      <div className="lead-form-message">
-                        <div className="lead-form-header">
-                          <h3>Contact Details</h3>
-                        </div>
-                        <form onSubmit={handleLeadSubmit} className="lead-form">
-                          {dynamicConfig?.leadCollectionFields?.includes('name') && (
-                            <div className="lead-form-field">
-                              <div className="field-icon">
-                                <User size={14} />
-                              </div>
-                              <input
-                                type="text"
-                                placeholder="Your Name"
-                                value={leadData.name}
-                                onChange={(e) => handleLeadInputChange('name', e.target.value)}
-                                required
-                                disabled={isSubmittingLead}
-                              />
-                            </div>
-                          )}
-                          
-                          {dynamicConfig?.leadCollectionFields?.includes('email') && (
-                            <div className="lead-form-field">
-                              <div className="field-icon">
-                                <Mail size={14} />
-                              </div>
-                              <input
-                                type="email"
-                                placeholder="Your Email"
-                                value={leadData.email}
-                                onChange={(e) => handleLeadInputChange('email', e.target.value)}
-                                required
-                                disabled={isSubmittingLead}
-                              />
-                            </div>
-                          )}
-                          
-                          {dynamicConfig?.leadCollectionFields?.includes('phone') && (
-                            <div className="lead-form-field">
-                              <div className="field-icon">
-                                <Phone size={14} />
-                              </div>
-                              <input
-                                type="tel"
-                                placeholder="Your Phone"
-                                value={leadData.phone}
-                                onChange={(e) => handleLeadInputChange('phone', e.target.value)}
-                                required
-                                disabled={isSubmittingLead}
-                              />
-                            </div>
-                          )}
-                          
-                          <div className="lead-form-actions">
-                            <button
-                              type="submit"
-                              disabled={isSubmittingLead}
-                              className="lead-submit-button"
-                            >
-                              {isSubmittingLead ? 'Submitting...' : 'Submit'}
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setLeadSubmitted(true);
-                                // Reset lead form data when cancelled
-                                setLeadData({
-                                  name: '',
-                                  email: '',
-                                  phone: ''
-                                });
-                              }}
-                              className="lead-cancel-button"
-                              disabled={isSubmittingLead}
-                            >
-                              Cancel
-                            </button>
+                    {message.sender === "bot" &&
+                      message.shouldShowLead &&
+                      dynamicConfig?.leadCollectionEnabled &&
+                      !leadSubmitted && (
+                        <div className="lead-form-message">
+                          <div className="lead-form-header">
+                            <h3>Contact Details</h3>
                           </div>
-                        </form>
-                      </div>
-                    )}
+                          <form
+                            onSubmit={handleLeadSubmit}
+                            className="lead-form"
+                          >
+                            {dynamicConfig?.leadCollectionFields?.includes(
+                              "name"
+                            ) && (
+                              <div className="lead-form-field">
+                                <div className="field-icon">
+                                  <User size={14} />
+                                </div>
+                                <input
+                                  type="text"
+                                  placeholder="Your Name"
+                                  value={leadData.name}
+                                  onChange={(e) =>
+                                    handleLeadInputChange(
+                                      "name",
+                                      e.target.value
+                                    )
+                                  }
+                                  required
+                                  disabled={isSubmittingLead}
+                                />
+                              </div>
+                            )}
+
+                            {dynamicConfig?.leadCollectionFields?.includes(
+                              "email"
+                            ) && (
+                              <div className="lead-form-field">
+                                <div className="field-icon">
+                                  <Mail size={14} />
+                                </div>
+                                <input
+                                  type="email"
+                                  placeholder="Your Email"
+                                  value={leadData.email}
+                                  onChange={(e) =>
+                                    handleLeadInputChange(
+                                      "email",
+                                      e.target.value
+                                    )
+                                  }
+                                  required
+                                  disabled={isSubmittingLead}
+                                />
+                              </div>
+                            )}
+
+                            {dynamicConfig?.leadCollectionFields?.includes(
+                              "phone"
+                            ) && (
+                              <div className="lead-form-field">
+                                <div className="field-icon">
+                                  <Phone size={14} />
+                                </div>
+                                <input
+                                  type="tel"
+                                  placeholder="Your Phone"
+                                  value={leadData.phone}
+                                  onChange={(e) =>
+                                    handleLeadInputChange(
+                                      "phone",
+                                      e.target.value
+                                    )
+                                  }
+                                  required
+                                  disabled={isSubmittingLead}
+                                />
+                              </div>
+                            )}
+
+                            <div className="lead-form-actions">
+                              <button
+                                type="submit"
+                                disabled={isSubmittingLead}
+                                className="lead-submit-button"
+                              >
+                                {isSubmittingLead ? "Submitting..." : "Submit"}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setLeadSubmitted(true);
+                                  // Reset lead form data when cancelled
+                                  setLeadData({
+                                    name: "",
+                                    email: "",
+                                    phone: "",
+                                  });
+                                }}
+                                className="lead-cancel-button"
+                                disabled={isSubmittingLead}
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          </form>
+                        </div>
+                      )}
                   </div>
                 ))}
 
@@ -2275,7 +2501,12 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
                           <img
                             src={dynamicConfig.chatWindowAvatar}
                             alt="Bot Avatar"
-                            style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }}
+                            style={{
+                              width: "100%",
+                              height: "100%",
+                              borderRadius: "50%",
+                              objectFit: "cover",
+                            }}
                           />
                         ) : (
                           <MessageCircle size={16} />
@@ -2300,7 +2531,12 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
                           <img
                             src={dynamicConfig.chatWindowAvatar}
                             alt="Bot Avatar"
-                            style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }}
+                            style={{
+                              width: "100%",
+                              height: "100%",
+                              borderRadius: "50%",
+                              objectFit: "cover",
+                            }}
                           />
                         ) : (
                           <MessageCircle size={16} />
@@ -2333,25 +2569,45 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({ config, domain, referer }: 
                         setShowWelcomeWidget(false);
                       }
                     }}
-                    placeholder={dynamicConfig?.inputPlaceholder || 'Type your message...'}
+                    placeholder={
+                      dynamicConfig?.inputPlaceholder || "Type your message..."
+                    }
                     disabled={isLoading || isFirstMessageLoading}
                   />
-                  <button type="submit" disabled={isLoading || isFirstMessageLoading || !inputValue.trim()}>
+                  <button
+                    type="submit"
+                    disabled={
+                      isLoading || isFirstMessageLoading || !inputValue.trim()
+                    }
+                  >
                     <Send size={16} />
                   </button>
                 </div>
                 <div className="powered-by">
-                  {dynamicConfig?.poweredByText && dynamicConfig.poweredByText.trim() !== '' ? (
+                  {dynamicConfig?.poweredByText &&
+                  dynamicConfig.poweredByText.trim() !== "" ? (
                     <a
-                      href={dynamicConfig.poweredByLink || '#'}
+                      href={
+                        dynamicConfig.poweredByLink || "https://rankved.com"
+                      }
                       target="_blank"
                       rel="noopener noreferrer"
-                      style={{ color: 'inherit', textDecoration: 'none' }}
+                      style={{ color: "inherit", textDecoration: "none" }}
                     >
                       {`⚡ Powered by ${dynamicConfig.poweredByText}`}
                     </a>
                   ) : (
-                    `⚡ Powered by RankVed`
+                    <>
+                      {"⚡ Powered by "}
+                      <a
+                        href="https://rankved.com"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ color: "inherit", textDecoration: "none" }}
+                      >
+                        Rankved
+                      </a>
+                    </>
                   )}
                 </div>
               </form>

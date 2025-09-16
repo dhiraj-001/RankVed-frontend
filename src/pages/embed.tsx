@@ -98,7 +98,7 @@ const ChatWidget = ({ chatbotId, config = {} }) => {
 
 export default ChatWidget;
 
-// <ChatWidget chatbotId={${activeChatbot.id}} config={{}} />
+// <ChatWidget chatbotId="${activeChatbot.id}" config={{}} />
 `;
 
   // Iframe embed code with dynamic positioning from database
@@ -124,12 +124,14 @@ export default ChatWidget;
       break;
   }
 
-  const iframeEmbedCode = `<iframe
+const iframeEmbedCode = `<iframe
   src="${backendUrl}/api/iframe/${activeChatbot.id}"
-  style="position: fixed; ${positionStyle} width: 100%; height: 100%; border: none; border-radius: 16px;  z-index: 9999;"
+  style="position: fixed; ${positionStyle} width: 400px; height: 700px; border: none; border-radius: 16px; z-index: 9999; overflow: auto;"
   sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+  scrolling="yes"
   title="RankVed Chatbot">
 </iframe>`;
+
 
   const copyToClipboard = async (text: string, type: string) => {
     try {

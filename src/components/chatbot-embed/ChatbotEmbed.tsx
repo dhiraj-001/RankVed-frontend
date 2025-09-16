@@ -1227,6 +1227,7 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({
           background: ${theme === "dark" ? "#1f2937" : "#fafafa"};
           scrollbar-width: none;
           -ms-overflow-style: none;
+          overscroll-behavior: contain;
           font-family: ${
             dynamicConfig?.fontFamily || "Inter"
           }, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
@@ -2157,12 +2158,12 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({
                 <img
                   src={dynamicConfig.chatBubbleIcon}
                   alt="Chat"
-                  style={{
-                    width: "35px",
-                    height: "35x",
-                    borderRadius: "50%",
-                    objectFit: "cover",
-                  }}
+            style={{
+              width: "35px",
+              height: "35px",
+              borderRadius: "50%",
+              objectFit: "cover",
+            }}
                 />
               ) : (
                 <MessageCircle size={28} />

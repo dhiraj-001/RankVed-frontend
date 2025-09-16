@@ -127,7 +127,7 @@ export default function Training() {
       normalizedTrainingDataLength: normalizedTrainingData.length,
       normalizedOriginalDataLength: normalizedOriginalData.length,
       hasChanges,
-      trainingDataPreview: trainingData.substring(0, 50) + '...',
+      trainingDataPreview: trainingData.substring(0, 50) + '...', 
       originalDataPreview: originalData.substring(0, 50) + '...'
     });
   }, [debouncedTrainingData, activeChatbot?.plainData]);
@@ -226,6 +226,11 @@ export default function Training() {
       }
       return response.json();
     },
+  });
+
+  const ingestData = useMutation({
+    mutationFn: ({ chatbotId, text }: { chatbotId: string; text: string }) =>
+      apiRequest('POST', '/api/embeddings/ingest', { chatbotId, text }),
   });
 
   // Sound testing function with pause support
@@ -485,6 +490,33 @@ export default function Training() {
       });
       
       console.log('[Training] Save result:', result);
+      
+      // Show success message
+      const wordCount = trainingData ? trainingData.split(/\s+/).filter(word => word.length > 0).length : 0;
+      toast({
+        title: 'Data Saved',
+        description: `Training data (${wordCount} words) and question flow saved successfully.`,
+        duration: 3000, // Auto-dismiss after 3 seconds
+      });
+
+      // After saving, trigger the ingestion process if training data changed
+      if (hasTrainingDataChanges) {
+        try {
+          await ingestData.mutateAsync({ chatbotId: activeChatbot.id, text: trainingData });
+          toast({
+            title: 'AI Indexing Started',
+            description: 'Your new data is being processed for AI search.',
+          });
+        } catch (ingestError) {
+          console.error('[Training] Error starting ingestion:', ingestError);
+          toast({
+            title: 'AI Indexing Failed',
+            description: 'Data saved, but AI indexing failed. Please try saving again.',
+            variant: 'destructive',
+          });
+        }
+      }
+      
       setHasTrainingDataChanges(false);
       setHasFlowChanges(false);
       
@@ -494,13 +526,6 @@ export default function Training() {
         console.log('[Training] Updated original flow after save:', parsedFlow);
       }
       
-      // Show success message
-      const wordCount = trainingData ? trainingData.split(/\s+/).filter(word => word.length > 0).length : 0;
-      toast({
-        title: 'Data Saved',
-        description: `Training data (${wordCount} words) and question flow saved successfully.`,
-        duration: 3000, // Auto-dismiss after 3 seconds
-      });
     } catch (error) {
       console.error('[Training] Error saving chatbot data:', error);
       toast({
@@ -917,7 +942,7 @@ We serve over 1,000+ companies worldwide and are trusted by industry leaders.`;
               {hasTrainingDataChanges && <Badge variant="secondary" className="ml-1 bg-green-100 text-green-700 text-xs">Changed</Badge>}
               {hasFlowChanges && <Badge variant="secondary" className="ml-1 bg-blue-100 text-blue-700 text-xs">Flow</Badge>}
             </Button>
-          </div>
+                      </div>
         </div>
       </div>
 
@@ -1121,13 +1146,13 @@ We serve over 1,000+ companies worldwide and are trusted by industry leaders.`;
                       <div className="space-y-2 max-h-32 overflow-y-auto">
                         {Object.entries(fetchingStates).map(([url, status]) => (
                           <div key={url} className="flex items-center gap-2 p-2 rounded-md border bg-slate-50">
-                            <div className={`w-2 h-2 rounded-full ${
+                            <div className={`w-2 h-2 rounded-full ${ 
                               status === 'fetching' ? 'bg-blue-500 animate-pulse' :
                               status === 'success' ? 'bg-green-500' :
                               status === 'error' ? 'bg-red-500' : 'bg-slate-300'
                             }`}></div>
                             <span className="text-xs text-slate-600 flex-1 truncate">{url}</span>
-                            <Badge variant="secondary" className={`text-xs ${
+                            <Badge variant="secondary" className={`text-xs ${ 
                               status === 'fetching' ? 'bg-blue-100 text-blue-700' :
                               status === 'success' ? 'bg-green-100 text-green-700' :
                               status === 'error' ? 'bg-red-100 text-red-700' : 'bg-slate-100 text-slate-700'
@@ -1475,7 +1500,7 @@ We serve over 1,000+ companies worldwide and are trusted by industry leaders.`;
                               {filteredCustomSounds.map((sound: CustomSound) => (
                               <div
                                 key={sound.id}
-                                className={`flex items-center justify-between p-2 rounded-md cursor-pointer transition-colors ${
+                                className={`flex items-center justify-between p-2 rounded-md cursor-pointer transition-colors ${ 
                                   selectedPopupSound === sound.soundUrl
                                     ? 'bg-purple-100 border border-purple-300'
                                     : 'bg-gray-50 hover:bg-gray-100'
@@ -1494,7 +1519,7 @@ We serve over 1,000+ companies worldwide and are trusted by industry leaders.`;
                                         setHasSoundSettingsChanges(true);
                                         toast({
                                           title: 'Sound Selected',
-                                          description: `${sound.name} has been set as the popup sound.`,
+                                          description: `${sound.name} has been set as the popup sound.`, 
                                         });
                                       },
                                       onError: () => {
@@ -1681,7 +1706,7 @@ We serve over 1,000+ companies worldwide and are trusted by industry leaders.`;
                         variant={chatBubblePopupDelay === seconds * 1000 ? "default" : "outline"}
                         size="sm"
                         onClick={() => setChatBubblePopupDelay(seconds * 1000)}
-                        className={`transition-all duration-300 ease-in-out ${
+                        className={`transition-all duration-300 ease-in-out ${ 
                           chatBubblePopupDelay === seconds * 1000 
                             ? "bg-blue-600 text-white hover:bg-blue-700" 
                             : "hover:bg-blue-50 hover:border-blue-200"
@@ -1703,7 +1728,7 @@ We serve over 1,000+ companies worldwide and are trusted by industry leaders.`;
                         variant={messagePopupDelay === seconds * 1000 ? "default" : "outline"}
                         size="sm"
                         onClick={() => setMessagePopupDelay(seconds * 1000)}
-                        className={`transition-all duration-300 ease-in-out ${
+                        className={`transition-all duration-300 ease-in-out ${ 
                           messagePopupDelay === seconds * 1000 
                             ? "bg-blue-600 text-white hover:bg-blue-700" 
                             : "hover:bg-blue-50 hover:border-blue-200"

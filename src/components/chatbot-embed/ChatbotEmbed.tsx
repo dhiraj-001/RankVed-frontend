@@ -1141,13 +1141,21 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({
         return "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)";
     }
   };
-
   return (
     <>
       <style>{`
+        /* Add this to prevent body scrolling when chat is open */
+        body.chatbot-open {
+          overflow: hidden;
+          position: fixed;
+          width: 100%;
+          height: 100%;
+        }
+        
         .rankved-chatbot {
           position: fixed !important;
           pointer-events: auto;
+          z-index: 9999; /* Ensure high z-index */
         }
         .rankved-chatbot * {
           box-sizing: border-box;
@@ -1164,6 +1172,7 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({
           box-shadow: ${getShadowStyles()};
           transition: all 0.3s ease;
           color: white;
+          z-index: 10000; /* Higher than the chat window */
         }
         .rankved-chatbot .chat-bubble:hover {
           transform: scale(1.1);
@@ -1178,14 +1187,15 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({
           overflow: hidden;
           display: flex;
           flex-direction: column;
+          z-index: 9999; /* High z-index */
 
-          /* **NEW**: Animation styles for chat window */
+          /* Animation styles for chat window */
           opacity: 0;
           transform: translateY(15px);
           visibility: hidden;
           transition: opacity ${ANIMATION_DURATION}ms ease, transform ${ANIMATION_DURATION}ms ease, visibility ${ANIMATION_DURATION}ms;
         }
-        /* **NEW**: Visible state for chat window */
+        /* Visible state for chat window */
         .rankved-chatbot .chat-window.visible {
             opacity: 1;
             transform: translateY(0);

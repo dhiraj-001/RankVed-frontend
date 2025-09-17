@@ -93,15 +93,25 @@
   }
 
   // Compact container creation
-  function createContainer() {
-    console.log('🏗️ Creating chatbot container...');
-    const c = document.createElement('div');
-    c.id = 'rankved-chatbot-container';
-    c.style.cssText = 'position:fixed;z-index:9999;font-family:-apple-system,BlinkMacSystemFont,\'Segoe UI\',Roboto,sans-serif;pointer-events:none;bottom:20px;right:20px;';
-    document.body.appendChild(c);
-    console.log('✅ Container created and added to DOM');
-    return c;
-  }
+function createContainer() {
+  console.log('🏗️ Creating chatbot container...');
+  const c = document.createElement('div');
+  c.id = 'rankved-chatbot-container';
+  c.style.cssText = `
+    position: fixed;
+    z-index: 9999;
+    font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+    bottom: 20px;
+    right: 20px;
+    pointer-events: auto; /* ✅ allow interaction inside chatbot */
+    max-height: 80vh;
+    overflow-y: auto;     /* ✅ make chatbot scrollable */
+    overscroll-behavior: contain; /* ✅ prevent background scroll */
+  `;
+  document.body.appendChild(c);
+  console.log('✅ Container created and added to DOM');
+  return c;
+}
 
   // Load React if not available
   function loadReact() {

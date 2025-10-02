@@ -1990,91 +1990,141 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({
         }
 
 /* Welcome Message Overlay Styles */
-        .rankved-chatbot .welcome-message-overlay {
-          position: absolute;
-          bottom: 60px;
-          right: 0;
-          background: ${dynamicConfig?.primaryColor};
-          border-radius: 12px;
-          box-shadow: ${getShadowStyles()};
-          padding: 10px 10px;
-          width: 220px;
-          z-index: 1000;
-          animation: fadeInUp 0.3s ease-out;
-          color: white;
-        }
+.rankved-chatbot .welcome-message-overlay {
+  position: absolute;
+  bottom: 70px;
+  right: 0;
+  background: linear-gradient(135deg, ${dynamicConfig?.primaryColor} 0%, ${dynamicConfig?.primaryColor}99 100%);
+  border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15), 0 5px 10px rgba(0, 0, 0, 0.1);
+  padding: 16px;
+  width: 260px;
+  z-index: 1000;
+  animation: slideInBounce 0.6s ease-out;
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+}
 
-        .rankved-chatbot .welcome-message-content {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 12px;
-          color: white;
-        }
+.rankved-chatbot .welcome-message-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: white;
+  position: relative;
+}
 
-        .rankved-chatbot .welcome-message-text {
-          font-size: 14px;
-          font-weight: 500;
-          color: ${theme === "dark" ? "#f9fafb" : "#374151"};
-          line-height: 1.4;
-          flex: 1;
-          color: white;
-        }
+.rankved-chatbot .welcome-message-icon {
+  width: 36px;
+  height: 36px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  animation: pulse 2s infinite;
+}
 
-        .rankved-chatbot .welcome-message-close {
-          background: none;
-          border: none;
-          color: ${theme === "dark" ? "#9ca3af" : "#6b7280"};
-          cursor: pointer;
-          padding: 4px;
-          border-radius: 4px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          transition: all 0.2s ease;
-          flex-shrink: 0;
-          color: white;
-        }
+.rankved-chatbot .welcome-message-icon svg {
+  color: white;
+}
 
-        .rankved-chatbot .welcome-message-close:hover {
-          background: ${theme === "dark" ? "#374151" : "#f3f4f6"};
-          color: ${theme === "dark" ? "#f9fafb" : "#374151"};
-        }
+.rankved-chatbot .welcome-message-text {
+  font-size: 14px;
+  font-weight: 600;
+  color: white;
+  line-height: 1.4;
+  flex: 1;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
 
-        .rankved-chatbot .welcome-message-arrow {
-          position: absolute;
-          bottom: -8px;
-          right: 20px;
-          width: 0;
-          height: 0;
-          border-left: 8px solid transparent;
-          border-right: 8px solid transparent;
-          border-top: 8px solid ${theme === "dark" ? "#1f2937" : "white"};
-        }
+.rankved-chatbot .welcome-message-close {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+}
 
-        .rankved-chatbot .welcome-message-arrow::before {
-          content: '';
-          position: absolute;
-          top: -10px;
-          left: -8px;
-          width: 0;
-          height: 0;
-          border-left: 8px solid transparent;
-          border-right: 8px solid transparent;
-          border-top: 8px solid ${theme === "dark" ? "#374151" : "#e5e7eb"};
-        }
+.rankved-chatbot .welcome-message-close:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.1);
+}
 
-        @keyframes fadeInUp {
-          from {
-            opacity: 0;
-            transform: translateY(10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
+.rankved-chatbot .welcome-message-arrow {
+  position: absolute;
+  bottom: -6px;
+  right: 20px;
+  width: 12px;
+  height: 12px;
+  background: linear-gradient(135deg, ${dynamicConfig?.primaryColor} 0%, ${dynamicConfig?.primaryColor}99 100%);
+  transform: rotate(45deg);
+  border-radius: 2px;
+}
 
+@keyframes slideInBounce {
+  0% {
+    opacity: 0;
+    transform: translateY(20px) scale(0.9);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-5px) scale(1.02);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Add a subtle glow effect */
+.rankved-chatbot .welcome-message-overlay::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(135deg, ${dynamicConfig?.primaryColor}33, transparent 30%);
+  border-radius: 18px;
+  z-index: -1;
+  opacity: 0.6;
+  animation: glow 3s ease-in-out infinite alternate;
+}
+
+@keyframes glow {
+  from {
+    opacity: 0.4;
+  }
+  to {
+    opacity: 0.8;
+  }
+}
         /* Position adjustments for different bubble positions */
         .rankved-chatbot[data-position="bottom-left"] .welcome-message-overlay {
           right: auto;
@@ -2152,27 +2202,31 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({
 
       {showChatBubble && (
         <div className="rankved-chatbot" style={getPositionStyles()}>
-          {/* Welcome Message Overlay */}
           {showWelcomeMessage && !isOpen && (
-            <div className="welcome-message-overlay">
-              <div className="welcome-message-content">
-                <span className="welcome-message-text">
-                  Chat with{" "}
-                  {dynamicConfig?.chatWidgetName ||
-                    dynamicConfig?.name ||
-                    "AI Assistant"}
-                </span>
-                <button
-                  className="welcome-message-close"
-                  onClick={handleCloseWelcomeMessage}
-                  aria-label="Close welcome message"
-                >
-                  <X size={14} />
-                </button>
-              </div>
-              <div className="welcome-message-arrow"></div>
-            </div>
-          )}
+  <div className="welcome-message-overlay">
+    <div className="welcome-message-content">
+      <div className="welcome-message-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M8 12H8.01M12 12H12.01M16 12H16.01M21 12C21 16.418 16.97 20 12 20C10.46 20 9.01 19.656 7.74 19.051L3 20L4.418 16.072C3.335 14.795 2.667 13.192 2.477 11.449C2.478 11.432 2.479 11.416 2.48 11.399C2.49 11.266 2.5 11.133 2.5 11C2.5 6.582 6.53 2 12 2C17.47 2 21.5 6.582 21.5 11C21.5 11.133 21.51 11.266 21.52 11.399C21.521 11.416 21.522 11.432 21.523 11.449C21.478 11.632 21.454 11.815 21.454 12H21Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      </div>
+      <span className="welcome-message-text">
+        Chat with{" "}
+        {dynamicConfig?.chatWidgetName ||
+          dynamicConfig?.name ||
+          "AI Assistant"}
+      </span>
+      <button
+        className="welcome-message-close"
+        onClick={handleCloseWelcomeMessage}
+        aria-label="Close welcome message"
+      >
+        <X size={14} />
+      </button>
+    </div>
+    <div className="welcome-message-arrow"></div>
+  </div>
+)}
           {!isOpen && (
             <div className="chat-bubble" onClick={handleOpen}>
               {dynamicConfig?.chatBubbleIcon ? (

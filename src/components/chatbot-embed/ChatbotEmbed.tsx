@@ -152,12 +152,23 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({
     }, ANIMATION_DURATION);
   };
 
-  // **NEW**: Effect to trigger fade-in animation when window is opened
+  // Effect to handle body scroll and chat window visibility
   useEffect(() => {
     if (isOpen) {
-      // Use a small timeout to ensure the element is in the DOM before adding the visibility class
+      // Prevent body scrolling
+      document.body.classList.add("chatbot-open");
+
+      // Trigger fade-in animation
       const timer = setTimeout(() => setIsWindowVisible(true), 10);
-      return () => clearTimeout(timer);
+
+      // Cleanup function
+      return () => {
+        clearTimeout(timer);
+        document.body.classList.remove("chatbot-open");
+      };
+    } else {
+      // Ensure the class is removed if the component closes for other reasons
+      document.body.classList.remove("chatbot-open");
     }
   }, [isOpen]);
 
@@ -1899,7 +1910,7 @@ const ChatbotEmbed: React.FC<ChatbotEmbedProps> = ({
           margin: 0;
           font-size: 14px;
           font-weight: 600;
-          color: #374151;
+          color: ${theme === "dark" ? "#f9fafb" : "#374151"};
         }
         .rankved-chatbot .lead-form-message .lead-form {
           display: flex;

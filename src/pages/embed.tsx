@@ -31,7 +31,8 @@ export default function Embed() {
    
     { value: 'script', label: 'Full Config' },
     { value: 'iframe', label: 'Iframe' },
-    { value: 'react', label: 'React Component' }
+    { value: 'react', label: 'React Component' },
+    { value: 'wordpress', label: 'WordPress' }
   ];
 
   if (!activeChatbot) {
@@ -131,6 +132,36 @@ const iframeEmbedCode = `<iframe
   scrolling="yes"
   title="RankVed Chatbot">
 </iframe>`;
+
+  const wordpressEmbedCode = `<?php
+/*
+Plugin Name: RankVed Chatbot
+Plugin URI: https://rankved.com
+Description: Adds the RankVed chatbot to your WordPress site.
+Version: 1.0
+Author: RankVed
+Author URI: https://rankved.com
+*/
+
+// Function to add the chatbot script to the footer
+function rankved_chatbot_script() {
+    $chatbotId = "${activeChatbot.id}";
+    $frontendUrl = "${window.location.origin}";
+    
+    echo <<<EOT
+<script>
+window.RankVedChatbotConfig = {
+    chatbotId: '{$chatbotId}',
+    frontendUrl: '{$frontendUrl}'
+};
+</script>
+<script src="{$frontendUrl}/chatbot-loader.js" defer></script>
+EOT;
+}
+
+// Add the script to the wp_footer action
+add_action('wp_footer', 'rankved_chatbot_script');
+`;
 
 
   const copyToClipboard = async (text: string, type: string) => {
@@ -323,6 +354,15 @@ const iframeEmbedCode = `<iframe
                       <span className="transition-all duration-500 ease-in-out">React</span>
                     </div>
                   </TabsTrigger>
+                  <TabsTrigger 
+                    value="wordpress" 
+                    className="flex-1 text-gray-600 hover:text-gray-800 focus:text-gray-800 font-medium py-3 px-4 rounded-md data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 data-[state=active]:border-b-2 data-[state=active]:border-blue-500 transition-all duration-500 ease-in-out hover:bg-gray-50"
+                  >
+                    <div className="flex items-center space-x-2 transition-all duration-500 ease-in-out">
+                      <Code className="h-4 w-4 transition-transform duration-500 ease-in-out data-[state=active]:scale-110" />
+                      <span className="transition-all duration-500 ease-in-out">WordPress</span>
+                    </div>
+                  </TabsTrigger>
                 </TabsList>
 
               
@@ -434,6 +474,43 @@ const iframeEmbedCode = `<iframe
                     />
                     <p className="text-xs sm:text-sm text-slate-600 mt-2">
                       Embed the chatbot as an iframe. This method provides complete isolation but may have some limitations with styling.
+                    </p>
+                  </div>
+                </TabsContent>
+
+                {/* WordPress Tab */}
+                <TabsContent value="wordpress" className="space-y-4 animate-in fade-in duration-700 ease-in-out">
+                  <div>
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
+                      <h3 className="font-medium text-slate-900">WordPress Plugin</h3>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => copyToClipboard(wordpressEmbedCode, 'wordpress')}
+                            aria-label="Copy WordPress code"
+                            className="transition-all border-blue-200 text-blue-700 hover:bg-blue-50"
+                          >
+                            {copiedType === 'wordpress' ? (
+                              <CheckCircle className="h-4 w-4 mr-2 text-green-600 animate-bounce" />
+                            ) : (
+                              <Copy className="h-4 w-4 mr-2" />
+                            )}
+                            {copiedType === 'wordpress' ? 'Copied!' : 'Copy Code'}
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Copy WordPress Code</TooltipContent>
+                      </Tooltip>
+                    </div>
+                    <Textarea
+                      value={wordpressEmbedCode}
+                      readOnly
+                      rows={12}
+                      className="font-mono text-xs sm:text-sm bg-slate-50 border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 resize-none"
+                    />
+                    <p className="text-xs sm:text-sm text-slate-600 mt-2">
+                      Save this code as a PHP file (e.g., rankved-chatbot.php) in your WordPress plugins directory, then activate it from the admin panel.
                     </p>
                   </div>
                 </TabsContent>
